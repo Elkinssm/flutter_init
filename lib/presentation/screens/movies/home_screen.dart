@@ -1,4 +1,6 @@
+import 'package:cinemapedia/config/constants/environment.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomeScreen extends StatelessWidget {
   /// The name of the HomeScreen route.
@@ -8,6 +10,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Placeholder());
+    return Scaffold(body: Center(child: Text(Environment.movieDBKey)));
   }
 }
