@@ -1,0 +1,30 @@
+import 'package:flutter/widgets.dart';
+
+final colors = <Color>[
+  Color.fromRGBO(0, 0, 0, 1),
+  Color.fromRGBO(217, 73, 41, 1),
+];
+
+class CustomSubtitleText extends StatelessWidget {
+  final String text;
+  final int color;
+  CustomSubtitleText({super.key, required this.text, required this.color})
+    : assert(color >= 0 && color <= colors.length);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color selectedColor = colors[color];
+
+    return Center(
+      child: Text(
+        text,
+        style: TextStyle(
+          color: selectedColor,
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w600,
+          fontSize: 19,
+        ),
+      ),
+    );
+  }
+}
