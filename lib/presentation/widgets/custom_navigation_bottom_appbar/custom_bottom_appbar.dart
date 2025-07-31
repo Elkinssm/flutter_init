@@ -12,15 +12,23 @@ class CustomBottomAppbar extends StatelessWidget {
         alignment: Alignment.bottomCenter,
         children: [
           CustomPaint(
-            size: Size(double.infinity, 80),
-            painter: CurvedBarPainter(),
+            size: Size(double.infinity, 65),
+            painter: BlockBarPainterOrange(),
+          ),
+          CustomPaint(
+            size: Size(double.infinity, 94.5),
+            painter: CurvedBarPainterOrange(),
+          ),
+          CustomPaint(
+            size: Size(double.infinity, 92),
+            painter: CurvedBarPainterwhite(),
           ),
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: SizedBox(
-              height: 80,
+              height: 65,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

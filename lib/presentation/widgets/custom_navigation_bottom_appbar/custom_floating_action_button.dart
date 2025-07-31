@@ -8,15 +8,21 @@ class CustomFloatingActionButton extends StatelessWidget {
     final paddingGreenButton = MediaQuery.of(context).size.height;
 
     return Padding(
-      padding: EdgeInsets.only(top: paddingGreenButton * 0.05),
-      child: FloatingActionButton(
-        onPressed: () {},
-        shape: const CircleBorder(),
-        backgroundColor: Color.fromRGBO(79, 166, 38, 1),
-        child: Image.asset(
-          'assets/images/whistle-96.png',
-          height: 26,
-          width: 26,
+      padding: EdgeInsets.only(top: paddingGreenButton * 0.10, left: 1),
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: FloatingActionButton(
+          onPressed: () {},
+          elevation: 0,
+          highlightElevation: 0,
+          shape: const CircleBorder(),
+          backgroundColor: Color.fromRGBO(79, 166, 38, 1),
+          child: Image.asset(
+            'assets/images/whistle-96.png',
+            height: 26,
+            width: 26,
+          ),
         ),
       ),
     );

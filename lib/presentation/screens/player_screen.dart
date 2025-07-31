@@ -41,13 +41,20 @@ class _PlayerScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16),
-          GestureDetector(onTap: () => context.push('/assistance_screen') ,child: _asistenciaCard()),
+          GestureDetector(
+            onTap: () => context.push('/assistance_screen'),
+            child: _asistenciaCard(),
+          ),
           SizedBox(height: 16),
           Row(
             children: [
               Expanded(child: _proximoPartidoCard()),
               SizedBox(width: 12),
-              Expanded(child: _desempenoCard(() => context.push('/performance_screen'))),
+              Expanded(
+                child: _desempenoCard(
+                  () => context.push('/performance_screen'),
+                ),
+              ),
             ],
           ),
           SizedBox(height: 16),
@@ -200,7 +207,10 @@ class _PlayerScreen extends StatelessWidget {
               children: const [
                 Icon(Icons.show_chart, color: Colors.green),
                 SizedBox(width: 8),
-                Text('Desempeño', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  'Desempeño',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),

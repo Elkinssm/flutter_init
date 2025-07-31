@@ -1,7 +1,5 @@
 import 'package:cinemapedia/presentation/screens/screens.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/loading_screen',
