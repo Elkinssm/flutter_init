@@ -1,37 +1,65 @@
+import 'package:cinemapedia/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
-Widget infoCard({
-  required IconData icon,
-  required String title,
-  required String subtitle,
-  Color bgColor = Colors.white,
-}) {
-  return Container(
-    padding: EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey,
-          blurRadius: 8,
-          offset: Offset(0, 4),
+class CustomCards extends StatelessWidget {
+  final double sizeTextButton;
+  final String title;
+  final String subtitle;
+  final String textButton;
+  final VoidCallback action;
+
+  const CustomCards({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.action,
+    required this.textButton,
+    required this.sizeTextButton,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      width: 175,
+      child: Card(
+        color: Color.fromRGBO(229, 240, 246, 1),
+        elevation: 4.0,
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Column(
+              children: [
+                CustomTitleText(
+                  text: title,
+                  size: 19,
+                  color: Color.fromRGBO(11, 25, 38, 1),
+                ),
+                SizedBox(height: 3),
+                CustomText(
+                  text: subtitle,
+                  size: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+                SizedBox(height: 3),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: action,
+                    child: CustomText(
+                      color: Color.fromRGBO(27, 71, 56, 1),
+                      text: textButton,
+                      size: sizeTextButton,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Icon(icon, size: 32),
-        SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text(subtitle),
-          ],
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }

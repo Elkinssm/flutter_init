@@ -1,9 +1,10 @@
 import 'package:cinemapedia/config/router/app_router.dart';
 import 'package:cinemapedia/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Coach_App',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: true,
       theme: AppTheme().getTheme(),
       routerConfig: appRouter,
     );

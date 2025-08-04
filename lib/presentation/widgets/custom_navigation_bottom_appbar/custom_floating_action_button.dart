@@ -20,8 +20,8 @@ class CustomFloatingActionButton extends StatelessWidget {
           backgroundColor: Color.fromRGBO(79, 166, 38, 1),
           child: Image.asset(
             'assets/images/whistle-96.png',
-            height: 26,
-            width: 26,
+            cacheHeight: 26,
+            cacheWidth: 26,
           ),
         ),
       ),

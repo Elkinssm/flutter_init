@@ -20,7 +20,7 @@ class CustomTitleText extends StatelessWidget {
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: size,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w900,
         fontFamily: font,
         color: color,
       ),

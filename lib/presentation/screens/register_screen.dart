@@ -13,7 +13,7 @@ class RegisterScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color.fromRGBO(249, 248, 247, 1),
       appBar: CustomAppbar(title: 'Registro jugador'),
-      body: ProviderScope(child: _RegisterView()),
+      body: _RegisterView(),
     );
   }
 }

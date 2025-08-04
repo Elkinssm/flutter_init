@@ -14,7 +14,7 @@ class LoginScreen extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: ProviderScope(child: _LoginView()),
+        child: _LoginView(),
       ),
     );
   }
@@ -37,9 +37,12 @@ class _LoginView extends ConsumerWidget {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.asset(
-                        'assets/images/image8.png',
-                        fit: BoxFit.cover,
+                      child: RepaintBoundary(
+                        child: Image.asset(
+                          'assets/images/image8.png',
+                          fit: BoxFit.cover,
+                          cacheWidth: MediaQuery.of(context).size.width.toInt(),
+                        ),
                       ),
                     ),
                     Positioned.fill(
@@ -99,7 +102,7 @@ class _LoginView extends ConsumerWidget {
                             : const Spacer(),
                         OnboardingNextButton(
                           text: 'Continuar',
-                          action: () => context.go('/player_screen'),
+                          action: () => context.push('/player_screen'),
                         ),
                         const SizedBox(height: 70),
                         Row(

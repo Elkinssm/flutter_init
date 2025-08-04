@@ -1,11 +1,15 @@
+import 'package:cinemapedia/presentation/providers/selected_icon_provider.dart';
 import 'package:cinemapedia/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CustomBottomAppbar extends StatelessWidget {
+class CustomBottomAppbar extends ConsumerWidget {
   const CustomBottomAppbar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIndex = ref.watch(selectedIconProvider); // Observa el estado
+
     return SizedBox(
       height: 100,
       child: Stack(
@@ -32,33 +36,33 @@ class CustomBottomAppbar extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Image.asset(
-                    'assets/images/home-black-100.png',
-                    height: 26,
-                    width: 26,
-                  ),
-                  Image.asset(
-                    'assets/images/winner-black-100.png',
-                    height: 26,
-                    width: 26,
-                  ),
+                  _buildIcon(ref, 0, selectedIndex, 'home'),
+                  _buildIcon(ref, 1, selectedIndex, 'winner'),
                   const SizedBox(width: 60), // Espacio del botón central
-                  Image.asset(
-                    'assets/images/stadium-black-100.png',
-                    height: 26,
-                    width: 26,
-                  ),
-                  Image.asset(
-                    'assets/images/message-black-100.png',
-                    height: 26,
-                    width: 26,
-                  ),
+                  _buildIcon(ref, 2, selectedIndex, 'stadium'),
+                  _buildIcon(ref, 3, selectedIndex, 'message'),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Método que construye cada icono dinámicamente
+  Widget _buildIcon(WidgetRef ref, int index, int selectedIndex, String name) {
+    final isSelected = selectedIndex == index;
+    final imagePath =
+        isSelected
+            ? 'assets/images/$name-100.png'
+            : 'assets/images/$name-black-100.png';
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(selectedIconProvider.notifier).state = index; // Cambia estado
+      },
+      child: Image.asset(imagePath, height: 26, width: 26),
     );
   }
 }
