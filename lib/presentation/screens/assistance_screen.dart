@@ -1,6 +1,10 @@
+import 'package:cinemapedia/presentation/providers/calendar_provider.dart';
 import 'package:cinemapedia/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 class AssistanceScreen extends StatelessWidget {
   static const String name = '/assistance_screen';
@@ -19,148 +23,202 @@ class AssistanceScreen extends StatelessWidget {
   }
 }
 
-class _AssitanceView extends StatelessWidget {
+class _AssitanceView extends ConsumerWidget {
   const _AssitanceView();
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text(
-            'Davith\nBallesteros',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: const [
-              Expanded(child: _CategoryCard()),
-              SizedBox(width: 16),
-              Expanded(child: _TotalAssistanceCard()),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const _AssistanceCalendarCard(),
-        ],
-      ),
-    );
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.of(context).size;
+    final assistanceState = ref.watch(assistanceProvider);
+    final assistanceNotifier = ref.read(assistanceProvider.notifier);
 
-class _CategoryCard extends StatelessWidget {
-  const _CategoryCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black12,
-      color: const Color(0xFFEAF6FD),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text(
-              'Categoría',
-              style: TextStyle(fontWeight: FontWeight.bold),
+    return Column(
+      children: [
+        Center(
+          child: Padding(
+            padding: EdgeInsets.only(top: size.height * 0.02),
+            child: CustomTitleText(
+              text: 'David\nBallesteros',
+              size: 28,
+              color: const Color.fromRGBO(11, 25, 38, 1),
             ),
-            const SizedBox(height: 8),
-            const Text('2012', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.push('/history_screen'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        const SizedBox(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 8,
+          children: [
+            CustomCards(
+              action: () => context.push('/history_screen'),
+              title: 'Categoría',
+              subtitle: '2012',
+              textButton: 'Ver historico',
+              sizeTextButton: 14,
+            ),
+            SizedBox(
+              height: 120,
+              width: 175,
+              child: Card(
+                color: const Color.fromRGBO(229, 240, 246, 1),
+                elevation: 4.0,
+                child: Padding(
+                  padding: const EdgeInsets.all(7),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      children: [
+                        CustomTitleText(
+                          text: 'Total\nAsistencia',
+                          size: 18,
+                          color: const Color.fromRGBO(11, 25, 38, 1),
+                        ),
+                        const SizedBox(height: 9),
+                        const CustomText(
+                          text: '90%',
+                          size: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                elevation: 2,
               ),
-              child: const Text('Ver historico'),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 20),
+        // Calendar
+        _Calendar(
+          assistanceState: assistanceState,
+          assistanceNotifier: assistanceNotifier,
+        ),
+      ],
     );
   }
 }
 
-class _TotalAssistanceCard extends StatelessWidget {
-  const _TotalAssistanceCard();
+class _Calendar extends StatelessWidget {
+  const _Calendar({
+    required this.assistanceState,
+    required this.assistanceNotifier,
+  });
+
+  final AssistanceState assistanceState;
+  final AssistanceNotifier assistanceNotifier;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.black12,
-      color: const Color(0xFFEAF6FD),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: const [
-            Text(
-              'Total\nAsistencia',
-              style: TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 12),
-            Text(
-              '90%',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F5E9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE4C77F), width: 1),
       ),
-    );
-  }
-}
-
-class _AssistanceCalendarCard extends StatelessWidget {
-  const _AssistanceCalendarCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Color(0xFFEADCA7), width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Asistencia',
-              style: TextStyle(fontWeight: FontWeight.bold),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 10, top: 10),
+            child: CustomText(
+              text: 'Asistencia',
+              fontWeight: FontWeight.bold,
+              size: 18,
             ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  'Julio 2025',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Icon(Icons.chevron_right),
-              ],
+          ),
+          TableCalendar(
+            pageAnimationEnabled: true,
+            pageAnimationDuration: Duration(milliseconds: 300),
+            pageAnimationCurve: Curves.easeInOut,
+            rowHeight: 38,
+            locale: 'es_ES',
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: assistanceState.focusedDay,
+            selectedDayPredicate:
+                (day) => isSameDay(assistanceState.selectedDay, day),
+            calendarFormat: CalendarFormat.month,
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            headerStyle: HeaderStyle(
+              formatButtonVisible: false,
+              titleCentered: true,
+              leftChevronIcon: const Icon(
+                Icons.chevron_left,
+                color: Colors.black,
+              ),
+              rightChevronIcon: const Icon(
+                Icons.chevron_right,
+                color: Colors.black,
+              ),
+              titleTextStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0B1926),
+              ),
+              titleTextFormatter:
+                  (date, locale) =>
+                      '${toBeginningOfSentenceCase(DateFormat.MMMM(locale).format(date))} ${date.year}',
             ),
-            const Divider(height: 20),
-            Image.asset(
-              'assets/calendar_placeholder.png', // reemplaza por un widget real de calendario si lo deseas
-              height: 240,
-              fit: BoxFit.contain,
+            calendarStyle: const CalendarStyle(
+              outsideDaysVisible: false,
+              defaultTextStyle: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF0B1926),
+              ),
+              weekendTextStyle: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF0B1926),
+              ),
+              todayDecoration: BoxDecoration(
+                color: Color(0xFF55A06F),
+                shape: BoxShape.circle,
+              ),
+              selectedDecoration: BoxDecoration(
+                color: Color(0xFF55A06F),
+                shape: BoxShape.circle,
+              ),
             ),
-          ],
-        ),
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) {
+                final isAttended = assistanceState.attendedDays.any(
+                  (d) =>
+                      d.year == day.year &&
+                      d.month == day.month &&
+                      d.day == day.day,
+                );
+                if (isAttended) {
+                  return Center(
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF55A06F),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return null;
+              },
+            ),
+            onDaySelected: (selectedDay, focusedDay) {
+              assistanceNotifier.selectDay(selectedDay, focusedDay);
+            },
+            onPageChanged: (focusedDay) {
+              assistanceNotifier.changeMonth(focusedDay);
+            },
+          ),
+        ],
       ),
     );
   }

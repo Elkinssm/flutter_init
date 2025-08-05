@@ -1,3 +1,4 @@
+import 'package:cinemapedia/presentation/providers/calendar_provider.dart';
 import 'package:cinemapedia/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:cinemapedia/presentation/providers/register_provider.dart';
 import 'package:cinemapedia/presentation/providers/selected_icon_provider.dart';
@@ -54,6 +55,7 @@ class LoadingNotifier extends StateNotifier<double> {
     ref.read(keyboardVisibilityProvider.notifier);
     ref.read(selectedIconProvider.notifier);
     ref.read(formFieldsProvider);
+    ref.read(assistanceProvider.notifier);
     await Future.delayed(const Duration(milliseconds: 100));
   }
 

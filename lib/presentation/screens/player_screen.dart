@@ -37,10 +37,14 @@ class _PlayerScreen extends StatelessWidget {
                 spacing: 5,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 30, bottom: 60),
+                    padding: const EdgeInsets.only(
+                      right: 25,
+                      bottom: 60,
+                      left: 5,
+                    ),
                     child: CustomTitleText(
                       text: 'David\nBallesteros',
-                      size: 25,
+                      size: 28,
                       font: 'Inter',
                       color: Color.fromRGBO(11, 25, 38, 1),
                     ),
@@ -50,7 +54,7 @@ class _PlayerScreen extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: screenHeigth * 0.20),
+              padding: EdgeInsets.only(top: screenHeigth * 0.22),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 9.5,
@@ -82,7 +86,7 @@ class _PlayerScreen extends StatelessWidget {
           spacing: 1,
           children: [
             CustomInfoCard(
-              assetImage: 'assets/images/group14.png' ,
+              assetImage: 'assets/images/group14.png',
               title: "Próximo Partido",
               data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
             ),
