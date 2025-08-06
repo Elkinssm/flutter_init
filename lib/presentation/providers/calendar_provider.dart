@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Estado para el calendario
 class AssistanceState {
   final DateTime focusedDay;
   final DateTime? selectedDay;
@@ -25,7 +24,6 @@ class AssistanceState {
   }
 }
 
-/// Notifier para manejar la lógica del calendario
 class AssistanceNotifier extends StateNotifier<AssistanceState> {
   AssistanceNotifier()
     : super(

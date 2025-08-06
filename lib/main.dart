@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Coach_App',
       debugShowCheckedModeBanner: false,
-      // showPerformanceOverlay: true,
+      showPerformanceOverlay: true,
       theme: AppTheme().getTheme(),
       routerConfig: appRouter,
       supportedLocales: const [Locale('es', 'ES')],

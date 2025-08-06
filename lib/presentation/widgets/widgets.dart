@@ -8,6 +8,7 @@ export 'package:cinemapedia/presentation/widgets/custom_navigation_bottom_appbar
 export 'package:cinemapedia/presentation/widgets/custom_navigation_bottom_appbar/custom_bottom_appbar.dart';
 export 'package:cinemapedia/presentation/widgets/custom_navigation_bottom_appbar/custom_floating_action_button.dart';
 export 'package:cinemapedia/presentation/widgets/inputs/custom_text_from_field.dart';
+export 'package:cinemapedia/presentation/widgets/table/table_stats.dart';
 export 'package:cinemapedia/presentation/widgets/texts/custom_subtitle_text.dart';
 export 'package:cinemapedia/presentation/widgets/texts/custom_text.dart';
 export 'package:cinemapedia/presentation/widgets/texts/custom_title_text.dart';

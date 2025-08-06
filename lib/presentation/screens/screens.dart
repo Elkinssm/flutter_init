@@ -6,3 +6,4 @@ export 'package:cinemapedia/presentation/screens/performance_screen.dart';
 export 'package:cinemapedia/presentation/screens/player_screen.dart';
 export 'package:cinemapedia/presentation/screens/register_screen.dart';
 export 'package:cinemapedia/presentation/screens/welcome_screen.dart';
+export 'package:cinemapedia/presentation/widgets/table/monthly_summaary.dart';
