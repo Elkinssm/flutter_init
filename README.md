@@ -1,6 +1,6 @@
-# Cinemapedia
+# Coach_App
 
-Cinemapedia es una aplicación Flutter multi-plataforma para explorar películas usando la API de [The Movie DB](https://www.themoviedb.org/). El proyecto está estructurado siguiendo buenas prácticas de Clean Architecture y usa Riverpod para la gestión de estado.
+Coach_App es una aplicación Flutter multi-plataforma para explorar películas usando la API de [The Movie DB](https://www.themoviedb.org/). El proyecto está estructurado siguiendo buenas prácticas de Clean Architecture y usa Riverpod para la gestión de estado.
 
 ## 🚀 Desarrollo Local
 

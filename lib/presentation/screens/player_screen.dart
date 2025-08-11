@@ -1,4 +1,4 @@
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:Coach_App/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -91,14 +91,17 @@ class _PlayerScreen extends StatelessWidget {
               data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
             ),
             const SizedBox(width: 10),
-            CustomInfoCard(
-              icon: Icons.speed,
-              title: "Desempeño",
-              data: [
-                "Velocidad: 8.4 km/h",
-                "Precisión tiros: 75%",
-                "Toques efectivos: 95%",
-              ],
+            GestureDetector(
+              onTap: () => context.push('/performance_screen'),
+              child: CustomInfoCard(
+                icon: Icons.speed,
+                title: "Desempeño",
+                data: [
+                  "Velocidad: 8.4 km/h",
+                  "Precisión tiros: 75%",
+                  "Toques efectivos: 95%",
+                ],
+              ),
             ),
           ],
         ),

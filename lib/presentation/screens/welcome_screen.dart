@@ -1,4 +1,4 @@
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:Coach_App/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -64,7 +64,10 @@ class _WelcomeView extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20),
-          OnboardingNextButton(action: () => context.push('/login_screen'), text: 'Continuar',),
+          OnboardingNextButton(
+            action: () => context.push('/login_screen'),
+            text: 'Continuar',
+          ),
           SizedBox(height: 40),
         ],
       ),

@@ -1,4 +1,4 @@
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:Coach_App/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

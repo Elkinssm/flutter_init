@@ -1,4 +1,4 @@
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:Coach_App/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -75,9 +75,7 @@ class CustomSupportStats extends StatelessWidget {
                               ),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            padding: const EdgeInsets.all(
-                              2,
-                            ), // Padding interno como en el code 1
+                            padding: const EdgeInsets.all(2),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: LinearProgressIndicator(

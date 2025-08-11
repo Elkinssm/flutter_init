@@ -1,6 +1,6 @@
 {
-    "name": "cinemapedia",
-    "short_name": "cinemapedia",
+    "name": "Coach_App",
+    "short_name": "Coach_App",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "cinemapedia" "\0"
+            VALUE "FileDescription", "Coach_App" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "cinemapedia" "\0"
+            VALUE "InternalName", "Coach_App" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "cinemapedia.exe" "\0"
-            VALUE "ProductName", "cinemapedia" "\0"
+            VALUE "OriginalFilename", "Coach_App.exe" "\0"
+            VALUE "ProductName", "Coach_App" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

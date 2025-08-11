@@ -1,5 +1,5 @@
-import 'package:cinemapedia/presentation/providers/loading_provider.dart';
-import 'package:cinemapedia/presentation/widgets/widgets.dart';
+import 'package:Coach_App/presentation/providers/loading_provider.dart';
+import 'package:Coach_App/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +47,9 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _CustomLinearProgressIndicator(progressValue: effectiveProgress),
+                child: _CustomLinearProgressIndicator(
+                  progressValue: effectiveProgress,
+                ),
               ),
               const SizedBox(height: 20),
               const PrimaryTitleText(text: 'Cargando\ntu experiencia . . . '),

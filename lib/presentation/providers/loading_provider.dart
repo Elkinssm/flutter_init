@@ -1,7 +1,7 @@
-import 'package:cinemapedia/presentation/providers/calendar_provider.dart';
-import 'package:cinemapedia/presentation/providers/keyboard_visibility_provider.dart';
-import 'package:cinemapedia/presentation/providers/register_provider.dart';
-import 'package:cinemapedia/presentation/providers/selected_icon_provider.dart';
+import 'package:Coach_App/presentation/providers/calendar_provider.dart';
+import 'package:Coach_App/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:Coach_App/presentation/providers/register_provider.dart';
+import 'package:Coach_App/presentation/providers/selected_icon_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
@@ -28,27 +28,27 @@ class LoadingNotifier extends StateNotifier<double> {
 
   Future<void> _preloadImages(BuildContext context) async {
     final images = [
-    'assets/images/group5.png',
-    'assets/images/group6.png',
-    'assets/images/group14.png',
-    'assets/images/home-black-100.png',
-    'assets/images/home-100.png',
-    'assets/images/image7.png',
-    'assets/images/image8.png',
-    'assets/images/message-100.png',
-    'assets/images/message-black-100.png',
-    'assets/images/player.png',
-    'assets/images/stadium-100.png',
-    'assets/images/stadium-black-100.png',
-    'assets/images/subtract.png',
-    'assets/images/whistle-96.png',
-    'assets/images/winner-100.png',
-    'assets/images/winner-black-100.png',
-  ];
+      'assets/images/group5.png',
+      'assets/images/group6.png',
+      'assets/images/group14.png',
+      'assets/images/home-black-100.png',
+      'assets/images/home-100.png',
+      'assets/images/image7.png',
+      'assets/images/image8.png',
+      'assets/images/message-100.png',
+      'assets/images/message-black-100.png',
+      'assets/images/player.png',
+      'assets/images/stadium-100.png',
+      'assets/images/stadium-black-100.png',
+      'assets/images/subtract.png',
+      'assets/images/whistle-96.png',
+      'assets/images/winner-100.png',
+      'assets/images/winner-black-100.png',
+    ];
 
-  for (final img in images) {
-    await precacheImage(AssetImage(img), context);
-  }
+    for (final img in images) {
+      await precacheImage(AssetImage(img), context);
+    }
   }
 
   Future<void> _initializeProviders() async {
