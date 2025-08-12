@@ -1,7 +1,7 @@
-import 'package:Coach_App/presentation/providers/calendar_provider.dart';
-import 'package:Coach_App/presentation/providers/keyboard_visibility_provider.dart';
-import 'package:Coach_App/presentation/providers/register_provider.dart';
-import 'package:Coach_App/presentation/providers/selected_icon_provider.dart';
+import 'package:coach_app/presentation/providers/calendar_provider.dart';
+import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:coach_app/presentation/providers/register_provider.dart';
+import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
@@ -44,6 +44,11 @@ class LoadingNotifier extends StateNotifier<double> {
       'assets/images/whistle-96.png',
       'assets/images/winner-100.png',
       'assets/images/winner-black-100.png',
+      'assets/images/coach.png',
+      'assets/images/student-icon.png',
+      'assets/images/edit-icon.png',
+      'assets/images/calendar-icon.png',
+      'assets/images/cup-icon.png',
     ];
 
     for (final img in images) {

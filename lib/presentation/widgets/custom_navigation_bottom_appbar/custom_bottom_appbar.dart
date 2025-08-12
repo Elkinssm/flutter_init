@@ -1,5 +1,5 @@
-import 'package:Coach_App/presentation/providers/selected_icon_provider.dart';
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,7 +11,7 @@ class CustomBottomAppbar extends ConsumerWidget {
     final selectedIndex = ref.watch(selectedIconProvider); // Observa el estado
 
     return SizedBox(
-      height: 100,
+      height: 90,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -58,7 +58,7 @@ class CustomBottomAppbar extends ConsumerWidget {
             ? 'assets/images/$name-100.png'
             : 'assets/images/$name-black-100.png';
 
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         ref.read(selectedIconProvider.notifier).state = index; // Cambia estado
       },

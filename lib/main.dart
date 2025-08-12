@@ -1,5 +1,5 @@
-import 'package:Coach_App/config/router/app_router.dart';
-import 'package:Coach_App/config/theme/app_theme.dart';
+import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Coach_App',
+      title: 'coach_app',
       debugShowCheckedModeBanner: false,
       // showPerformanceOverlay: true,
       theme: AppTheme().getTheme(),

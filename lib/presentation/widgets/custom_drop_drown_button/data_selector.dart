@@ -1,4 +1,4 @@
-import 'package:Coach_App/presentation/widgets/texts/custom_text.dart';
+import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

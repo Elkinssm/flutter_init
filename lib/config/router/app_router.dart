@@ -1,4 +1,4 @@
-import 'package:Coach_App/presentation/screens/screens.dart';
+import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
@@ -43,6 +43,11 @@ final appRouter = GoRouter(
       path: '/performance_screen',
       name: PerformanceScreen.name,
       builder: (context, state) => const PerformanceScreen(),
+    ),
+    GoRoute(
+      path: '/coach_screen',
+      name: CoachScreen.name,
+      builder: (context, state) => const CoachScreen(),
     ),
   ],
 );

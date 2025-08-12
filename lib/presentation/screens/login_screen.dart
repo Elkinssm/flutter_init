@@ -1,5 +1,5 @@
-import 'package:Coach_App/presentation/providers/keyboard_visibility_provider.dart';
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -102,7 +102,7 @@ class _LoginView extends ConsumerWidget {
                             : const Spacer(),
                         OnboardingNextButton(
                           text: 'Continuar',
-                          action: () => context.push('/player_screen'),
+                          action: () => context.push('/coach_screen'),
                         ),
                         const SizedBox(height: 70),
                         Row(

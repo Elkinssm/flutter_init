@@ -1,4 +1,4 @@
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,7 +7,7 @@ class CustomSupportStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => context.push('/assistance_screen'),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14),

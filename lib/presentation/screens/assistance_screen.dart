@@ -1,5 +1,5 @@
-import 'package:Coach_App/presentation/providers/calendar_provider.dart';
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/providers/calendar_provider.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +88,6 @@ class _AssitanceView extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 20),
-        // Calendar
         _Calendar(
           assistanceState: assistanceState,
           assistanceNotifier: assistanceNotifier,
@@ -116,6 +115,14 @@ class _Calendar extends StatelessWidget {
         color: const Color(0xFFF8F5E9),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE4C77F), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset(3, 3),
+            blurRadius: 6,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

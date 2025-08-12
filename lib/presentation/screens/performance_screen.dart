@@ -1,5 +1,5 @@
-import 'package:Coach_App/presentation/providers/selected_value_provider.dart';
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/providers/selected_value_provider.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -46,6 +46,14 @@ class _PerformanceView extends ConsumerWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Color.fromRGBO(245, 240, 230, 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  offset: Offset(3, 3),
+                  blurRadius: 6,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(5.0),
@@ -60,6 +68,14 @@ class _PerformanceView extends ConsumerWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Color.fromRGBO(229, 240, 246, 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  offset: Offset(3, 3),
+                  blurRadius: 6,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(5.0),

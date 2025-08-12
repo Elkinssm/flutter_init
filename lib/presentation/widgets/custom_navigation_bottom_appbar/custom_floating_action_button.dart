@@ -8,7 +8,7 @@ class CustomFloatingActionButton extends StatelessWidget {
     final paddingGreenButton = MediaQuery.of(context).size.height;
 
     return Padding(
-      padding: EdgeInsets.only(top: paddingGreenButton * 0.10, left: 1),
+      padding: EdgeInsets.only(top: paddingGreenButton * 0.078, left: 1),
       child: SizedBox(
         width: 48,
         height: 48,

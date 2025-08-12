@@ -1,4 +1,4 @@
-import 'package:Coach_App/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/table/monthly_summaary.dart';

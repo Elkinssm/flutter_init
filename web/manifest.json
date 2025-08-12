@@ -1,6 +1,6 @@
 {
-    "name": "Coach_App",
-    "short_name": "Coach_App",
+    "name": "coach_app",
+    "short_name": "coach_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
