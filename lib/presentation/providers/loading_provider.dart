@@ -2,6 +2,7 @@ import 'package:coach_app/presentation/providers/calendar_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/providers/register_provider.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
+import 'package:coach_app/presentation/providers/selected_value_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
@@ -61,6 +62,9 @@ class LoadingNotifier extends StateNotifier<double> {
     ref.read(selectedIconProvider.notifier);
     ref.read(formFieldsProvider);
     ref.read(assistanceProvider.notifier);
+    ref.read(formFieldsProvider);
+    ref.read(selectedValueLineChartProvider);
+    ref.read(selectedValueBarChartProvider);
     await Future.delayed(const Duration(milliseconds: 100));
   }
 

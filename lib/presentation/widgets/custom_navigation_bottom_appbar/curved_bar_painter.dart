@@ -59,7 +59,7 @@ class BlockBarPainterOrange extends CustomPainter {
           ..style = PaintingStyle.fill;
     final path = Path();
     path.moveTo(size.width * 0.54, 0);
-    path.cubicTo(210, -54, size.width * 0.52, 0, size.width - 125, 0);
+    path.cubicTo(206, -54, size.width * 0.52, 0, size.width - 125, 0);
     path.moveTo(size.width * 0.31, 0);
     path.cubicTo(size.width * 0.50, 0, 178, -52, size.width - 210, 0);
     path.moveTo(0, 0);

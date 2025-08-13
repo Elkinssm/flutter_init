@@ -11,7 +11,7 @@ class CustomBottomAppbar extends ConsumerWidget {
     final selectedIndex = ref.watch(selectedIconProvider); // Observa el estado
 
     return SizedBox(
-      height: 90,
+      height: 91,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [

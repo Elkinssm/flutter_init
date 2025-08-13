@@ -41,34 +41,13 @@ class _CoachView extends StatelessWidget {
                     font: 'Inter',
                     color: Color.fromRGBO(11, 25, 38, 1),
                   ),
-                  SizedBox(
-                    height: 120,
+                  CustomButtonCard(
                     width: 150,
-                    child: Card(
-                      color: const Color.fromRGBO(229, 240, 246, 1),
-                      elevation: 4.0,
-                      child: Padding(
-                        padding: const EdgeInsets.all(7),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Column(
-                            children: [
-                              CustomTitleText(
-                                text: 'Estudiantes',
-                                size: 22,
-                                color: const Color.fromRGBO(11, 25, 38, 1),
-                              ),
-                              const SizedBox(height: 19),
-                              const CustomText(
-                                text: '20',
-                                size: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    height: 120,
+                    titleText: 'Estudiantes',
+                    subtitleText: '20',
+                    titleTextSize: 22,
+                    subtitleTextSize: 24,
                   ),
                 ],
               ),
@@ -135,7 +114,7 @@ class _CoachView extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             CustomActionButton(
               image: 'assets/images/student-icon.png',
@@ -151,7 +130,7 @@ class _CoachView extends StatelessWidget {
         Stack(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 CustomActionButton(
                   image: 'assets/images/calendar-icon.png',

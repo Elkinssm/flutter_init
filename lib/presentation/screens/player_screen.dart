@@ -83,42 +83,39 @@ class _PlayerScreen extends StatelessWidget {
         SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 1,
+          spacing: 3,
           children: [
             CustomInfoCard(
               assetImage: 'assets/images/group14.png',
               title: "Próximo Partido",
               data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
             ),
-            const SizedBox(width: 10),
-            InkWell(
+            const SizedBox(width: 12),
+            CustomInfoCard(
+              icon: Icons.speed,
+              title: "Desempeño",
+              data: [
+                "Velocidad: 8.4 km/h",
+                "Precisión tiros: 75%",
+                "Toques efectivos: 95%",
+              ],
               onTap: () => context.push('/performance_screen'),
-              child: CustomInfoCard(
-                icon: Icons.speed,
-                title: "Desempeño",
-                data: [
-                  "Velocidad: 8.4 km/h",
-                  "Precisión tiros: 75%",
-                  "Toques efectivos: 95%",
-                ],
-              ),
             ),
           ],
         ),
         SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 3,
           children: [
             ExerciseCard(
               title: 'Ejercicios\nde fuerza',
               icon: Icons.fitness_center,
-              onTap: () {},
             ),
             const SizedBox(width: 12),
             ExerciseCard(
               title: 'Ejercicios\nde velocidad',
               icon: Icons.directions_run,
-              onTap: () {},
             ),
           ],
         ),

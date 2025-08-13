@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-class CustomInfoCard extends StatelessWidget {
+class CustomInfoCard extends StatefulWidget {
   final IconData? icon;
   final String title;
   final List<String>? data;
   final String? assetImage;
+  final VoidCallback? onTap;
 
   const CustomInfoCard({
     super.key,
@@ -12,17 +13,54 @@ class CustomInfoCard extends StatelessWidget {
     required this.title,
     this.data,
     this.assetImage,
+    this.onTap,
   });
 
   @override
+  State<CustomInfoCard> createState() => _CustomInfoCardState();
+}
+
+class _CustomInfoCardState extends State<CustomInfoCard> {
+  bool _isPressed = false;
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 175,
-      height: 120,
-      child: Card(
-        color: const Color.fromRGBO(229, 240, 246, 1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: 166,
+        height: 120,
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(229, 240, 246, 1),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow:
+              _isPressed
+                  ? []
+                  : const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(2, 4),
+                    ),
+                  ],
+        ),
+        margin: EdgeInsets.only(top: _isPressed ? 4 : 0),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -31,13 +69,17 @@ class CustomInfoCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (assetImage != null)
-                    Image.asset(assetImage!, cacheWidth: 24, cacheHeight: 24)
-                  else if (icon != null)
-                    Icon(icon, size: 20),
+                  if (widget.assetImage != null)
+                    Image.asset(
+                      widget.assetImage!,
+                      cacheWidth: 24,
+                      cacheHeight: 24,
+                    )
+                  else if (widget.icon != null)
+                    Icon(widget.icon, size: 20),
                   const SizedBox(width: 6),
                   Text(
-                    title,
+                    widget.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -47,13 +89,13 @@ class CustomInfoCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              if (data != null && data!.isNotEmpty)
+              if (widget.data != null && widget.data!.isNotEmpty)
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children:
-                        data!
+                        widget.data!
                             .map(
                               (item) => Text(
                                 item,

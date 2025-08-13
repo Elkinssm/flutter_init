@@ -1,6 +1,7 @@
 export 'package:coach_app/presentation/widgets/appbar/custom_appbar.dart';
 export 'package:coach_app/presentation/widgets/buttons/custom_action_button.dart';
 export 'package:coach_app/presentation/widgets/buttons/onboarding_next_button.dart';
+export 'package:coach_app/presentation/widgets/cards/custom_button_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_cards.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_info_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_support_stats.dart';
