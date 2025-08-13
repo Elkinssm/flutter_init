@@ -49,5 +49,20 @@ final appRouter = GoRouter(
       name: CoachScreen.name,
       builder: (context, state) => const CoachScreen(),
     ),
+    GoRoute(
+      path: '/category_screen',
+      name: CategoryScreen.name,
+      builder: (context, state) => const CategoryScreen(),
+    ),
+    GoRoute(
+      path: '/selected_category_screen',
+      name: SelectedCategoryScreen.name,
+      builder: (context, state) => const SelectedCategoryScreen(),
+    ),
+    GoRoute(
+      path: '/daily_attendance_screen',
+      name: DailyAttendanceScreen.name,
+      builder: (context, state) => const DailyAttendanceScreen(),
+    ),
   ],
 );

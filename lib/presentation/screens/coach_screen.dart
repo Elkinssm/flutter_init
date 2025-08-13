@@ -1,5 +1,6 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CoachScreen extends StatelessWidget {
   static const String name = '/coach_screen';
@@ -48,6 +49,7 @@ class _CoachView extends StatelessWidget {
                     subtitleText: '20',
                     titleTextSize: 22,
                     subtitleTextSize: 24,
+                    onTap: () => context.push('/category_screen'),
                   ),
                 ],
               ),
