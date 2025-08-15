@@ -4,6 +4,7 @@ export 'package:coach_app/presentation/widgets/buttons/onboarding_next_button.da
 export 'package:coach_app/presentation/widgets/cards/category_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_button_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_cards.dart';
+export 'package:coach_app/presentation/widgets/cards/custom_icon_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_info_card.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_support_stats.dart';
 export 'package:coach_app/presentation/widgets/cards/exercise_card.dart';
@@ -15,6 +16,7 @@ export 'package:coach_app/presentation/widgets/graphics/assistance_bar_chart.dar
 export 'package:coach_app/presentation/widgets/graphics/bar_chart.dart';
 export 'package:coach_app/presentation/widgets/graphics/line_chart.dart';
 export 'package:coach_app/presentation/widgets/inputs/custom_text_from_field.dart';
+export 'package:coach_app/presentation/widgets/ListView/listview_student.dart';
 export 'package:coach_app/presentation/widgets/table/table_stats.dart';
 export 'package:coach_app/presentation/widgets/texts/custom_subtitle_text.dart';
 export 'package:coach_app/presentation/widgets/texts/custom_text.dart';

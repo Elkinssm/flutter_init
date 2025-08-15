@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 
 class SelectedCategoryScreen extends StatelessWidget {
   static const String name = '/selected_category_screen';
-  const SelectedCategoryScreen({super.key});
+  final int year;
+  const SelectedCategoryScreen({super.key, required this.year});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'Categoria seleccionada'),
+      appBar: CustomAppbar(title: 'Categoria $year'),
       bottomNavigationBar: CustomBottomAppbar(),
       floatingActionButton: CustomFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -23,6 +24,119 @@ class _SelectedCategoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              CustomButtonCard(
+                width: 110,
+                height: 110,
+                titleText: 'Asistencia\nPromedio',
+                subtitleText: '87%',
+                titleTextSize: 17,
+                subtitleTextSize: 22,
+                spacing: 10,
+              ),
+              CustomButtonCard(
+                width: 110,
+                height: 110,
+                titleText: 'Promedio\nfísico',
+                subtitleText: '38kg',
+                titleTextSize: 17,
+                subtitleTextSize: 22,
+                spacing: 10,
+              ),
+              CustomButtonCard(
+                width: 110,
+                height: 110,
+                titleText: 'Torneos\nactivos',
+                subtitleText: '2',
+                titleTextSize: 17,
+                subtitleTextSize: 22,
+                spacing: 10,
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              spacing: 4,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomIconCard(
+                  width: 82,
+                  height: 96,
+                  titleText: 'Ver\nestadísticas',
+                  titleTextSize: 12,
+                  spacing: 4,
+                  imagePath: 'assets/images/bar-chart-icon.png',
+                  imageSize: 24,
+                ),
+                CustomIconCard(
+                  width: 82,
+                  height: 96,
+                  titleText: 'Ver\ntorneos',
+                  titleTextSize: 12,
+                  spacing: 4,
+                  imagePath: 'assets/images/tournaments-icon.png',
+                  imageSize: 24,
+                ),
+                CustomIconCard(
+                  width: 82,
+                  height: 96,
+                  titleText: 'Ver\nasistencias',
+                  titleTextSize: 12,
+                  spacing: 4,
+                  imagePath: 'assets/images/check-list-icon.png',
+                  imageSize: 24,
+                ),
+                CustomIconCard(
+                  width: 82,
+                  height: 96,
+                  titleText: 'Ingresar\ndatos',
+                  titleTextSize: 12,
+                  spacing: 4,
+                  imagePath: 'assets/images/plus-icon.png',
+                  imageSize: 24,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 15),
+            decoration: BoxDecoration(
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 4,
+                  offset: Offset(3, 4),
+                ),
+              ],
+              color: Colors.black,
+            ),
+            height: 3,
+          ),
+          const SizedBox(height: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: CustomText(
+                text: 'Estudiantes',
+                fontWeight: FontWeight.bold,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          ListViewStudent(),
+        ],
+      ),
+    );
   }
 }

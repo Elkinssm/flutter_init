@@ -49,6 +49,7 @@ class _CoachView extends StatelessWidget {
                     subtitleText: '20',
                     titleTextSize: 22,
                     subtitleTextSize: 24,
+                    spacing: 19,
                     onTap: () => context.push('/category_screen'),
                   ),
                 ],
@@ -94,15 +95,21 @@ class _CoachView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 15),
-        SizedBox(
-          height: 5,
-          child: Divider(
-            indent: 20,
-            endIndent: 20,
-            color: Colors.black,
-            thickness: 3,
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black54,
+                blurRadius: 4,
+                offset: Offset(3, 4),
+              ),
+            ],
+            color: Colors.black, // color del divider
           ),
+          height: 3, // grosor del divider
         ),
+        const SizedBox(height: 2),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Align(

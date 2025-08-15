@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/screens/selected_category_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +61,7 @@ class _CategoryViewState extends State<_CategoryView> {
               isSelected: isSelected,
               onTapCard: () {
                 setState(() => selectedIndex = index);
-                context.push('/selected_category_screen');
+                context.pushNamed(SelectedCategoryScreen.name, extra: c.year);
               },
               onTapAssistance: () {
                 context.push('/daily_attendance_screen');

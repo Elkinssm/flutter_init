@@ -57,7 +57,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/selected_category_screen',
       name: SelectedCategoryScreen.name,
-      builder: (context, state) => const SelectedCategoryScreen(),
+      builder: (context, state) {
+        final year = state.extra as int;
+        return SelectedCategoryScreen(year: year);
+      },//=> const SelectedCategoryScreen(),
     ),
     GoRoute(
       path: '/daily_attendance_screen',

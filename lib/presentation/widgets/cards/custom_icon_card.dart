@@ -1,32 +1,32 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
-class CustomButtonCard extends StatefulWidget {
+class CustomIconCard extends StatefulWidget {
   final double width;
   final double height;
   final String titleText;
-  final String subtitleText;
   final double titleTextSize;
-  final double subtitleTextSize;
+  final String imagePath;
+  final double imageSize;
   final double spacing;
   final VoidCallback? onTap;
-  const CustomButtonCard({
+  const CustomIconCard({
     super.key,
     required this.width,
     required this.height,
     required this.titleText,
-    required this.subtitleText,
     required this.titleTextSize,
-    required this.subtitleTextSize,
-    this.onTap,
     required this.spacing,
+    this.onTap,
+    required this.imagePath,
+    required this.imageSize,
   });
 
   @override
-  State<CustomButtonCard> createState() => _CustomButtonCardState();
+  State<CustomIconCard> createState() => _CustomIconCardState();
 }
 
-class _CustomButtonCardState extends State<CustomButtonCard> {
+class _CustomIconCardState extends State<CustomIconCard> {
   bool _isPressed = false;
 
   void _onTapDown(TapDownDetails details) {
@@ -53,7 +53,7 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
         height: widget.height,
         width: widget.width,
         decoration: BoxDecoration(
-          color: const Color.fromRGBO(229, 240, 246, 1),
+          color: const Color.fromRGBO(245, 240, 230, 1),
           borderRadius: BorderRadius.circular(12),
           boxShadow:
               _isPressed
@@ -74,17 +74,12 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CustomTitleText(
-                  text: widget.titleText,
-                  size: widget.titleTextSize,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromRGBO(11, 25, 38, 1),
-                ),
+                Image.asset(widget.imagePath, width: widget.imageSize),
                 SizedBox(height: widget.spacing), //17
                 CustomText(
-                  text: widget.subtitleText,
-                  size: widget.subtitleTextSize,
-                  fontWeight: FontWeight.bold,
+                  text: widget.titleText,
+                  size: widget.titleTextSize,
+                  fontWeight: FontWeight.w400,
                 ),
               ],
             ),
