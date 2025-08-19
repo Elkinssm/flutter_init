@@ -47,6 +47,7 @@ class _PlayerScreen extends StatelessWidget {
                       size: 28,
                       font: 'Inter',
                       color: Color.fromRGBO(11, 25, 38, 1),
+                      spacingText: 0.9,
                     ),
                   ),
                   Image.asset('assets/images/player.png', width: 160),
@@ -80,7 +81,7 @@ class _PlayerScreen extends StatelessWidget {
         ),
         SizedBox(height: 5),
         CustomSupportStats(),
-        SizedBox(height: 5),
+        SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 3,
@@ -103,7 +104,7 @@ class _PlayerScreen extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 5),
+        SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 3,

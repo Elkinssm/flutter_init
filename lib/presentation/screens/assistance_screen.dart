@@ -41,6 +41,7 @@ class _AssitanceView extends ConsumerWidget {
               text: 'David\nBallesteros',
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
+              spacingText: 0.9,
             ),
           ),
         ),
@@ -73,7 +74,7 @@ class _AssitanceView extends ConsumerWidget {
                           size: 18,
                           color: const Color.fromRGBO(11, 25, 38, 1),
                         ),
-                        const SizedBox(height: 9),
+                        const SizedBox(height: 12),
                         const CustomText(
                           text: '90%',
                           size: 24,

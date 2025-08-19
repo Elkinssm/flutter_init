@@ -134,7 +134,7 @@ class StudentTile extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 2),
+                  padding: const EdgeInsets.only(top: 3),
                   child: Image.asset(s.image, fit: BoxFit.cover),
                 ),
               ),

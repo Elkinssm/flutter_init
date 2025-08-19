@@ -61,7 +61,10 @@ class _CategoryViewState extends State<_CategoryView> {
               isSelected: isSelected,
               onTapCard: () {
                 setState(() => selectedIndex = index);
-                context.pushNamed(SelectedCategoryScreen.name, extra: c.year);
+                Future.delayed(const Duration(milliseconds: 120), () {
+                  // ignore: use_build_context_synchronously
+                  context.pushNamed(SelectedCategoryScreen.name, extra: c.year);
+                });
               },
               onTapAssistance: () {
                 context.push('/daily_attendance_screen');

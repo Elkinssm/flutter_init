@@ -1,6 +1,8 @@
 import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 
+import 'transitions_config/custom_transition.dart';
+
 final appRouter = GoRouter(
   initialLocation: '/loading_screen',
   routes: [
@@ -12,7 +14,8 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/welcome_screen',
       name: WelcomeScreen.name,
-      builder: (context, state) => const WelcomeScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const WelcomeScreen()),
+      // builder: (context, state) => const WelcomeScreen(),
     ),
     GoRoute(
       path: '/login_screen',
@@ -22,12 +25,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/register_screen',
       name: RegisterScreen.name,
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const RegisterScreen()),
+      // builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/player_screen',
       name: PlayerScreen.name,
-      builder: (context, state) => const PlayerScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const PlayerScreen()),
     ),
     GoRoute(
       path: '/assistance_screen',

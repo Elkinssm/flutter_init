@@ -4,6 +4,7 @@ class CustomTitleText extends StatelessWidget {
   final String text;
   final String? font;
   final double size;
+  final double spacingText;
   final Color? color;
   final FontWeight? fontWeight;
   const CustomTitleText({
@@ -11,8 +12,9 @@ class CustomTitleText extends StatelessWidget {
     required this.text,
     required this.size,
     this.color = Colors.white,
-    this.font = 'Be Vietnam Pro', 
+    this.font = 'Be Vietnam Pro',
     this.fontWeight = FontWeight.w900,
+    this.spacingText = 1.2,
   });
 
   @override
@@ -25,6 +27,7 @@ class CustomTitleText extends StatelessWidget {
         fontWeight: fontWeight,
         fontFamily: font,
         color: color,
+        height: spacingText,
       ),
     );
   }

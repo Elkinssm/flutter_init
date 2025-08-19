@@ -36,17 +36,24 @@ class CustomCards extends StatelessWidget {
                   size: 19,
                   color: Color.fromRGBO(11, 25, 38, 1),
                 ),
-                SizedBox(height: 3),
+                SizedBox(height: 8),
                 CustomText(
                   text: subtitle,
                   size: 12,
                   fontWeight: FontWeight.normal,
                 ),
-                SizedBox(height: 3),
+                SizedBox(height: 2),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: action,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          6,
+                        ), // 👈 aquí controlas qué tan circular es
+                      ),
+                    ),
                     child: CustomText(
                       color: Color.fromRGBO(27, 71, 56, 1),
                       text: textButton,

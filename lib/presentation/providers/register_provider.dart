@@ -28,11 +28,7 @@ Widget _buildField(String? label) {
     children: [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: LabelText(
-          label: label!,
-          colorIndex: 1,
-          fontWeight: FontWeight.w700,
-        ),
+        child: CustomText(text: label!, fontWeight: FontWeight.w600, size: 16),
       ),
       const SizedBox(height: 10),
       CustomTextFormField(hintText: label),

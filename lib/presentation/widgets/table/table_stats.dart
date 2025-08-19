@@ -12,6 +12,14 @@ class TableStats extends StatelessWidget {
           color: const Color.fromRGBO(250, 244, 234, 1),
           border: Border.all(color: const Color.fromRGBO(212, 175, 55, 1)),
           borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              offset: const Offset(0, 4),
+              blurRadius: 8,
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           children: const [

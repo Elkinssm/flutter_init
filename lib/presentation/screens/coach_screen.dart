@@ -73,24 +73,16 @@ class _CoachView extends StatelessWidget {
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 0,
-                bottom: 5,
-                right: 5,
-                left: 5,
-              ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 3),
-                  CustomText(
-                    text: 'Asistencia',
-                    fontWeight: FontWeight.bold,
-                    size: 18,
-                  ),
-                  SizedBox(height: 120, child: AssistanceBarChart()),
-                ],
-              ),
+            child: Column(
+              children: [
+                const SizedBox(height: 3),
+                CustomText(
+                  text: 'Asistencia',
+                  fontWeight: FontWeight.bold,
+                  size: 18,
+                ),
+                SizedBox(height: 100, child: AssistanceBarChart()),
+              ],
             ),
           ),
         ),

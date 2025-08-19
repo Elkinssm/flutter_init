@@ -43,7 +43,7 @@ class MonthlySummaary extends StatelessWidget {
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
                   offset: const Offset(0, 4),
-                  blurRadius: 6,
+                  blurRadius: 8,
                   spreadRadius: 0,
                 ),
               ],

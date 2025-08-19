@@ -30,6 +30,8 @@ class DataSelector extends ConsumerWidget {
             ),
             child: DropdownButtonFormField<String>(
               value: selectedValue,
+              menuMaxHeight: 150,
+              itemHeight: null,
               hint: const CustomText(
                 text: 'Seleccionar',
                 size: 12,
@@ -89,14 +91,18 @@ DropdownMenuItem<String> _buildDropdownItem(String value) {
   return DropdownMenuItem<String>(
     value: value,
     child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(0),
-          child: CustomText(
-            text: value,
-            size: 12,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+        SizedBox(
+          height: 35,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: CustomText(
+              text: value,
+              size: 12,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const Divider(color: Color.fromRGBO(217, 73, 41, 1)),

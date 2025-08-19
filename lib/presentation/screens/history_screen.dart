@@ -36,10 +36,11 @@ class _HistoryView extends StatelessWidget {
               text: 'David\nBallesteros',
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
+              spacingText: 0.9,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 25),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Card(

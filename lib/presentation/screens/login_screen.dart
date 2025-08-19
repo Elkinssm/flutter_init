@@ -33,36 +33,7 @@ class _LoginView extends ConsumerWidget {
         builder: (context, constraints) {
           return Stack(
             children: [
-              SizedBox(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: RepaintBoundary(
-                        child: Image.asset(
-                          'assets/images/image8.png',
-                          fit: BoxFit.cover,
-                          cacheWidth: MediaQuery.of(context).size.width.toInt(),
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color.fromRGBO(0, 0, 0, 0),
-                              Color.fromRGBO(217, 73, 41, 1),
-                            ],
-                            stops: [0.0, 1.8],
-                            begin: Alignment.center,
-                            end: Alignment.topCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _Background(),
               SingleChildScrollView(
                 physics: ClampingScrollPhysics(),
                 child: ConstrainedBox(
@@ -71,13 +42,13 @@ class _LoginView extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 25),
-                        Image.asset('assets/images/group6.png'),
-                        const SizedBox(height: 30),
-                        CustomTitleText(text: 'Descubrir más', size: 48),
+                        const SizedBox(height: 40),
+                        Image.asset('assets/images/group6.png', height: 72),
+                        const SizedBox(height: 55),
+                        CustomTitleText(text: 'Descubrir más', size: 43),
                         const SizedBox(height: 70),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
                           child: Column(
                             children: [
                               LabelText(
@@ -91,8 +62,9 @@ class _LoginView extends ConsumerWidget {
                               const SizedBox(height: 25),
                               LabelText(label: 'Contraseña', colorIndex: 0),
                               CustomTextFormField(
-                                hintText: '********',
+                                hintText: '****',
                                 obscureText: true,
+                                isPassword: true,
                               ),
                             ],
                           ),
@@ -102,9 +74,12 @@ class _LoginView extends ConsumerWidget {
                             : const Spacer(),
                         OnboardingNextButton(
                           text: 'Continuar',
-                          action: () => context.push('/coach_screen'),
+                          action: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            context.push('/coach_screen');
+                          },
                         ),
-                        const SizedBox(height: 70),
+                        const SizedBox(height: 43),
                         Row(
                           spacing: 5,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -114,7 +89,10 @@ class _LoginView extends ConsumerWidget {
                               color: 0,
                             ),
                             TextButton(
-                              onPressed: () => context.push('/register_screen'),
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                context.push('/register_screen');
+                              },
                               child: CustomSubtitleText(
                                 text: 'Regístrate aquí',
                                 color: 1,
@@ -131,6 +109,44 @@ class _LoginView extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _Background extends StatelessWidget {
+  const _Background();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: RepaintBoundary(
+              child: Image.asset(
+                'assets/images/image8.png',
+                fit: BoxFit.cover,
+                cacheWidth: MediaQuery.of(context).size.width.toInt(),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(0, 0, 0, 0),
+                    Color.fromRGBO(217, 73, 41, 1),
+                  ],
+                  stops: [0.0, 1.8],
+                  begin: Alignment.center,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

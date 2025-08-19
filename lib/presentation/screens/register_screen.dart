@@ -33,7 +33,7 @@ class _RegisterView extends ConsumerWidget {
             const SizedBox(height: 20),
             CustomTitleText(
               text: 'Regístrate gratis',
-              size: 32,
+              size: 28,
               color: Colors.black,
             ),
             const SizedBox(height: 15),
@@ -47,7 +47,10 @@ class _RegisterView extends ConsumerWidget {
             const SizedBox(height: 25),
             OnboardingNextButton(
               text: 'Registrate',
-              action: () => context.push('/player_screen'),
+              action: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                context.push('/player_screen');
+              },
             ),
             const SizedBox(height: 25),
           ],

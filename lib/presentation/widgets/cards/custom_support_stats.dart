@@ -27,7 +27,7 @@ class _CustomSupportStatsState extends State<CustomSupportStats> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GestureDetector(
         onTap: () => context.push('/assistance_screen'),
         onTapDown: _onTapDown,
