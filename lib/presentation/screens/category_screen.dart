@@ -28,7 +28,7 @@ class _CategoryView extends StatefulWidget {
 }
 
 class _CategoryViewState extends State<_CategoryView> {
-  int? selectedIndex;
+  int? selectedIndex = 1;
 
   final categories = <Category>[
     Category(2015, 32),

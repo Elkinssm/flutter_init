@@ -1,29 +1,34 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const CustomAppbar({super.key, required this.title});
+  final Color? backgroundColor;
+  const  CustomAppbar({
+    super.key,
+    required this.title,
+    this.backgroundColor = const Color.fromRGBO(249, 248, 247, 1),
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+      backgroundColor: backgroundColor,
       leadingWidth: 40,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: Padding(
         padding: const EdgeInsets.all(0),
         child: IconButton(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
           onPressed: () => context.pop(),
           icon: Icon(Icons.arrow_back_outlined),
         ),
       ),
       titleSpacing: 0,
-      title: Text(
-        title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-      ),
+      title: CustomText(text: title, size: 20, fontWeight: FontWeight.w600),
       centerTitle: false,
       actions: [
         Padding(

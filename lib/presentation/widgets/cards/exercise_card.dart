@@ -1,15 +1,14 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class ExerciseCard extends StatefulWidget {
   final String title;
-  final IconData? icon;
-  final String? assetImage;
+  final String assetImage;
   final VoidCallback? onTap;
   const ExerciseCard({
     super.key,
     required this.title,
-    this.icon,
-    this.assetImage,
+    required this.assetImage,
     this.onTap,
   });
 
@@ -53,33 +52,22 @@ class _ExerciseCardState extends State<ExerciseCard> {
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 4,
-                      offset: Offset(2, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
         ),
         margin: EdgeInsets.only(top: _isPressed ? 1 : 0),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.zero,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Expanded(
-                child: Text(
-                  widget.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              CustomText(
+                text: widget.title,
+                fontWeight: FontWeight.w600,
+                size: 16,
               ),
-              const SizedBox(width: 8),
-              if (widget.assetImage != null)
-                Image.asset(widget.assetImage!, width: 28, height: 28)
-              else if (widget.icon != null)
-                Icon(widget.icon, size: 30),
+              Image.asset(widget.assetImage, width: 35, height: 35),
             ],
           ),
         ),

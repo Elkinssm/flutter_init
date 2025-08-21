@@ -45,7 +45,11 @@ class _LoginView extends ConsumerWidget {
                         const SizedBox(height: 40),
                         Image.asset('assets/images/group6.png', height: 72),
                         const SizedBox(height: 55),
-                        CustomTitleText(text: 'Descubrir más', size: 43),
+                        CustomTitleText(
+                          text: 'Descubrir más',
+                          size: 40,
+                          fontWeight: FontWeight.w700,
+                        ),
                         const SizedBox(height: 70),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -56,13 +60,13 @@ class _LoginView extends ConsumerWidget {
                                 colorIndex: 0,
                               ),
                               CustomTextFormField(
-                                hintText: 'subject@example.com',
+                                hintText: 'test@gmail.com',
                                 icon: Icons.mail_outline_sharp,
                               ),
                               const SizedBox(height: 25),
                               LabelText(label: 'Contraseña', colorIndex: 0),
                               CustomTextFormField(
-                                hintText: '****',
+                                hintText: '**********',
                                 obscureText: true,
                                 isPassword: true,
                               ),
@@ -81,7 +85,6 @@ class _LoginView extends ConsumerWidget {
                         ),
                         const SizedBox(height: 43),
                         Row(
-                          spacing: 5,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomSubtitleText(

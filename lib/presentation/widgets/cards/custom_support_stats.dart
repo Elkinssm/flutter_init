@@ -64,8 +64,8 @@ class _CustomSupportStatsState extends State<CustomSupportStats> {
                       ),
                       child: CustomText(
                         text: 'Asistencia',
-                        fontWeight: FontWeight.bold,
-                        size: 18,
+                        fontWeight: FontWeight.w600,
+                        size: 16,
                       ),
                     ),
                   ),
@@ -81,14 +81,13 @@ class _CustomSupportStatsState extends State<CustomSupportStats> {
                         ),
                       ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CustomText(
                             text: 'Total',
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             size: 16,
                           ),
-                          const SizedBox(height: 6),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 5),
                             child: Container(
@@ -120,7 +119,7 @@ class _CustomSupportStatsState extends State<CustomSupportStats> {
                       alignment: Alignment.center,
                       child: CustomText(
                         text: '90%',
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                         size: 18,
                       ),
                     ),

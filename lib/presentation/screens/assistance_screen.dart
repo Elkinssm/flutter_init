@@ -3,6 +3,7 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -34,6 +35,7 @@ class _AssitanceView extends ConsumerWidget {
 
     return Column(
       children: [
+        const SizedBox(height: 15),
         Center(
           child: Padding(
             padding: EdgeInsets.only(top: size.height * 0.02),
@@ -41,11 +43,12 @@ class _AssitanceView extends ConsumerWidget {
               text: 'David\nBallesteros',
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
+              fontWeight: FontWeight.w800,
               spacingText: 0.9,
             ),
           ),
         ),
-        const SizedBox(height: 30),
+        const SizedBox(height: 50),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 8,
@@ -55,7 +58,7 @@ class _AssitanceView extends ConsumerWidget {
               title: 'Categoría',
               subtitle: '2012',
               textButton: 'Ver historico',
-              sizeTextButton: 14,
+              sizeTextButton: 16,
             ),
             SizedBox(
               height: 120,
@@ -68,13 +71,15 @@ class _AssitanceView extends ConsumerWidget {
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        CustomTitleText(
+                        CustomText(
                           text: 'Total\nAsistencia',
                           size: 18,
+                          fontWeight: FontWeight.w700,
                           color: const Color.fromRGBO(11, 25, 38, 1),
+                          spacingText: 1.0,
                         ),
-                        const SizedBox(height: 12),
                         const CustomText(
                           text: '90%',
                           size: 24,
@@ -88,7 +93,7 @@ class _AssitanceView extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 45),
         _Calendar(
           assistanceState: assistanceState,
           assistanceNotifier: assistanceNotifier,
@@ -132,7 +137,7 @@ class _Calendar extends StatelessWidget {
             padding: const EdgeInsets.only(left: 10, top: 10),
             child: CustomText(
               text: 'Asistencia',
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
               size: 18,
             ),
           ),
@@ -160,25 +165,25 @@ class _Calendar extends StatelessWidget {
                 Icons.chevron_right,
                 color: Colors.black,
               ),
-              titleTextStyle: const TextStyle(
+              titleTextStyle: GoogleFonts.inter(
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0B1926),
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
               ),
               titleTextFormatter:
                   (date, locale) =>
                       '${toBeginningOfSentenceCase(DateFormat.MMMM(locale).format(date))} ${date.year}',
             ),
-            calendarStyle: const CalendarStyle(
+            calendarStyle: CalendarStyle(
               outsideDaysVisible: false,
-              defaultTextStyle: TextStyle(
+              defaultTextStyle: GoogleFonts.inter(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
                 color: Color(0xFF0B1926),
               ),
-              weekendTextStyle: TextStyle(
+              weekendTextStyle: GoogleFonts.inter(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
                 color: Color(0xFF0B1926),
               ),
               todayDecoration: BoxDecoration(

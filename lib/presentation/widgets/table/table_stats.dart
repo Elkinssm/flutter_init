@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class TableStats extends StatelessWidget {
@@ -15,8 +16,8 @@ class TableStats extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4,
               offset: const Offset(0, 4),
-              blurRadius: 8,
               spreadRadius: 0,
             ),
           ],
@@ -62,14 +63,8 @@ class _TotalRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          CustomText(text: label, size: 16, fontWeight: FontWeight.w600),
+          CustomText(text: value, size: 16, fontWeight: FontWeight.w600),
         ],
       ),
     );

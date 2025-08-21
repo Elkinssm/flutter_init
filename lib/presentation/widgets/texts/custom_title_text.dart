@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomTitleText extends StatelessWidget {
   final String text;
-  final String? font;
   final double size;
   final double spacingText;
   final Color? color;
@@ -12,8 +12,7 @@ class CustomTitleText extends StatelessWidget {
     required this.text,
     required this.size,
     this.color = Colors.white,
-    this.font = 'Be Vietnam Pro',
-    this.fontWeight = FontWeight.w900,
+    this.fontWeight = FontWeight.w700,
     this.spacingText = 1.2,
   });
 
@@ -22,10 +21,9 @@ class CustomTitleText extends StatelessWidget {
     return Text(
       text,
       textAlign: TextAlign.center,
-      style: TextStyle(
+      style: GoogleFonts.beVietnamPro(
         fontSize: size,
         fontWeight: fontWeight,
-        fontFamily: font,
         color: color,
         height: spacingText,
       ),

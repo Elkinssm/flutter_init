@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomActionButton extends StatefulWidget {
   final String image;
@@ -63,8 +64,9 @@ class _CustomActionButtonState extends State<CustomActionButton> {
             const SizedBox(height: 8),
             Text(
               widget.text,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16,
+                height: 0.9,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),

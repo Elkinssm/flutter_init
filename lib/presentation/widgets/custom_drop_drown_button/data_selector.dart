@@ -16,7 +16,7 @@ class DataSelector extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Container(
-            height: 25,
+            height: 32,
             width: 125,
             decoration: const BoxDecoration(
               boxShadow: [

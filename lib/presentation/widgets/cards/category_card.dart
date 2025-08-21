@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class CategoryCard extends StatelessWidget {
@@ -11,7 +12,8 @@ class CategoryCard extends StatelessWidget {
     required this.year,
     required this.members,
     required this.isSelected,
-    this.onTapCard, this.onTapAssistance,
+    this.onTapCard,
+    this.onTapAssistance,
   });
 
   @override
@@ -72,18 +74,17 @@ class CategoryCard extends StatelessWidget {
                     height: 25,
                   ),
                   Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text(
-                        '$year',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      CustomText(
+                        text: '$year',
+                        size: 22,
+                        fontWeight: FontWeight.w800,
                       ),
-                      Text(
-                        '$members Miembros',
-                        style: TextStyle(fontSize: 13, color: Colors.black87),
+                      CustomText(
+                        text: '$members Miembros',
+                        size: 13,
+                        fontWeight: FontWeight.w400,
                       ),
                     ],
                   ),
@@ -117,10 +118,12 @@ class _AssistanceTag extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Asistencia',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            CustomText(
+              text: 'Asistencia',
+              size: 13,
+              fontWeight: FontWeight.w400,
             ),
+            const SizedBox(height: 5),
             Image.asset(
               'assets/images/asistance-icon.png',
               width: 45,

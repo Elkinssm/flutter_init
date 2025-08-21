@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final String hintText;
@@ -49,14 +50,21 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           fillColor: Colors.white,
           focusedBorder: border,
           hintText: widget.hintText,
-          hintStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+          hintStyle: GoogleFonts.inter(
+            fontSize: 16,
+            color: Colors.grey,
+            fontWeight: FontWeight.w400,
+          ),
           prefixIcon: widget.icon != null ? Icon(widget.icon) : null,
           suffixIcon:
               widget.isPassword
                   ? IconButton(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
                     icon: Icon(
                       _obscure ? Icons.visibility_off : Icons.visibility,
                     ),
+                    color: _obscure ? Color.fromRGBO(138, 149, 151, 1) : null,
                     onPressed: () => setState(() => _obscure = !_obscure),
                   )
                   : null,

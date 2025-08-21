@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 const selectedColors = <Color>[
   Color.fromRGBO(255, 255, 255, 1),
@@ -14,7 +15,7 @@ class LabelText extends StatelessWidget {
     super.key,
     required this.label,
     required this.colorIndex,
-    this.fontWeight = FontWeight.bold,
+    this.fontWeight = FontWeight.w700,
   });
 
   @override
@@ -26,10 +27,9 @@ class LabelText extends StatelessWidget {
       child: Text(
         label,
         textAlign: TextAlign.start,
-        style: TextStyle(
+        style: GoogleFonts.inter(
           color: color,
           fontSize: 16,
-          fontFamily: 'Input',
           fontWeight: fontWeight,
         ),
       ),

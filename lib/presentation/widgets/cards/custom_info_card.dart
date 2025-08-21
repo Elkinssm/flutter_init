@@ -1,10 +1,13 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class CustomInfoCard extends StatefulWidget {
   final IconData? icon;
   final String title;
   final List<String>? data;
-  final String? assetImage;
+  final int cacheHeight;
+  final int cacheWidth;
+  final String assetImage;
   final VoidCallback? onTap;
 
   const CustomInfoCard({
@@ -12,8 +15,10 @@ class CustomInfoCard extends StatefulWidget {
     this.icon,
     required this.title,
     this.data,
-    this.assetImage,
+    required this.assetImage,
     this.onTap,
+    required this.cacheHeight,
+    required this.cacheWidth,
   });
 
   @override
@@ -69,22 +74,16 @@ class _CustomInfoCardState extends State<CustomInfoCard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (widget.assetImage != null)
-                    Image.asset(
-                      widget.assetImage!,
-                      cacheWidth: 24,
-                      cacheHeight: 24,
-                    )
-                  else if (widget.icon != null)
-                    Icon(widget.icon, size: 20),
+                  Image.asset(
+                    widget.assetImage,
+                    cacheWidth: widget.cacheWidth,
+                    cacheHeight: widget.cacheHeight,
+                  ),
                   const SizedBox(width: 6),
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                  CustomText(
+                    text: widget.title,
+                    fontWeight: FontWeight.w700,
+                    size: 14,
                   ),
                 ],
               ),
@@ -97,11 +96,11 @@ class _CustomInfoCardState extends State<CustomInfoCard> {
                     children:
                         widget.data!
                             .map(
-                              (item) => Text(
-                                item,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 13),
-                                overflow: TextOverflow.ellipsis,
+                              (item) => CustomText(
+                                text: item,
+                                size: 13,
+                                fontWeight: FontWeight.w400,
+                                spacingText: 1.4,
                               ),
                             )
                             .toList(),

@@ -40,7 +40,7 @@ class _OnboardingNextButtonState extends State<OnboardingNextButton> {
             child: CustomTitleText(
               text: widget.text,
               size: 13.5,
-              font: 'Inter',
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

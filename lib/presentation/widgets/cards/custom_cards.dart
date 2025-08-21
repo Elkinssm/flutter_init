@@ -30,29 +30,30 @@ class CustomCards extends StatelessWidget {
           child: Align(
             alignment: Alignment.topCenter,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                CustomTitleText(
+                CustomText(
                   text: title,
-                  size: 19,
+                  size: 20,
+                  fontWeight: FontWeight.w800,
                   color: Color.fromRGBO(11, 25, 38, 1),
                 ),
-                SizedBox(height: 8),
                 CustomText(
                   text: subtitle,
                   size: 12,
-                  fontWeight: FontWeight.normal,
+                  fontWeight: FontWeight.w400,
                 ),
-                SizedBox(height: 2),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: action,
                     style: ElevatedButton.styleFrom(
+                      splashFactory: NoSplash.splashFactory,
+                      overlayColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          6,
-                        ), // 👈 aquí controlas qué tan circular es
+                        borderRadius: BorderRadius.circular(6),
                       ),
+                      padding: EdgeInsets.zero,
                     ),
                     child: CustomText(
                       color: Color.fromRGBO(27, 71, 56, 1),

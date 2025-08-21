@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
 
 // local model Students
@@ -42,8 +43,8 @@ class ListViewStudent extends StatelessWidget {
                   boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
-                      blurRadius: 2,
-                      offset: Offset(0, 1),
+                      blurRadius: 4,
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
@@ -115,29 +116,40 @@ class StudentTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       child: SizedBox(
-        height: 75,
+        height: 70.5,
         child: Row(
           children: [
-            Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.green.shade600, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 1,
-                    offset: const Offset(0, 3),
-                    color: Colors.black12,
+            Stack(
+              children: [
+                Container(
+                  width: 64,
+                  height: 67,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Color.fromRGBO(27, 71, 56, 1),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 1,
+                        offset: const Offset(0, 3),
+                        color: Colors.black12,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: ClipOval(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 3),
-                  child: Image.asset(s.image, fit: BoxFit.cover),
                 ),
-              ),
+                SizedBox(
+                  width: 64,
+                  height: 70,
+                  child: ClipOval(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 1),
+                      child: Image.asset(s.image, fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -145,30 +157,42 @@ class StudentTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    s.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                  CustomText(
+                    text: s.name,
+                    size: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _StatChip(text: '${s.number}'),
+                      _StatChip(
+                        text: '${s.number}',
+                        color: Color.fromRGBO(79, 166, 38, 1),
+                        kind: StatChipKind.circle,
+                        size: 24,
+                      ),
                       const SizedBox(width: 6),
-                      _StatChip(text: s.position),
+                      _StatChip(
+                        text: s.position,
+                        color: Color.fromRGBO(173, 111, 57, 1),
+                        kind: StatChipKind.circle,
+                        size: 24,
+                      ),
                       const SizedBox(width: 6),
-                      _StatChip(text: s.weight, highlighted: true),
+                      _StatChip(
+                        text: s.weight,
+                        color: Color.fromRGBO(212, 175, 55, 1),
+                        kind: StatChipKind.pill,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-            Text(
-              '${s.percent}%',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            CustomText(
+              text: '${s.percent}%',
+              size: 20,
+              fontWeight: FontWeight.w700,
             ),
           ],
         ),
@@ -177,33 +201,65 @@ class StudentTile extends StatelessWidget {
   }
 }
 
+enum StatChipKind { circle, pill }
+
 class _StatChip extends StatelessWidget {
   final String text;
-  final bool highlighted;
-  const _StatChip({required this.text, this.highlighted = false});
+  final Color color;
+  final StatChipKind kind;
+  final double? size;
+
+  const _StatChip({
+    required this.text,
+    required this.color,
+    required this.kind,
+    this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bg = highlighted ? const Color(0xFFFFF4DF) : const Color(0xFFE9F1F5);
-    final border =
-        highlighted ? const Color(0xFFFFC773) : const Color(0xFFD4E1E8);
+    const bg = Color(0xFFD5E5F4);
+
+    if (kind == StatChipKind.circle) {
+      return Container(
+        padding: EdgeInsets.zero,
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: bg,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: CustomText(
+          text: text,
+          size: 13.5,
+          fontWeight: FontWeight.w400,
+          color: color,
+        ),
+      );
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.2),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 1,
-            offset: const Offset(0, 3),
-            color: Colors.black12,
-          ),
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 4)),
         ],
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      child: CustomText(
+        text: text,
+        size: 13.5,
+        fontWeight: FontWeight.w400,
+        color: color,
       ),
     );
   }

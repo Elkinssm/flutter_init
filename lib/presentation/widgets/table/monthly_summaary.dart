@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class MonthlySummaary extends StatelessWidget {
@@ -25,9 +26,10 @@ class MonthlySummaary extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(10),
             child: const Center(
-              child: Text(
-                'Resumen Mensual',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child: CustomText(
+                text: 'Resumen Mensual',
+                size: 18,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -103,9 +105,8 @@ TableRow _buildMonthRow({
 }) {
   return TableRow(
     children: [
-      /// Columna Mes
       ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 60), // altura mínima
+        constraints: const BoxConstraints(minHeight: 60),
         child: Container(
           margin: const EdgeInsets.all(8),
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -117,66 +118,54 @@ TableRow _buildMonthRow({
                   )
                   : null,
           child: Center(
-            child: Text(
-              month,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            child: CustomText(
+              text: month,
+              size: 20,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
       ),
-
-      /// Columna combinada (Textos + Valores)
       ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 60), // altura mínima igual
+        constraints: const BoxConstraints(minHeight: 60),
         child: Padding(
           padding: const EdgeInsets.all(9),
           child: Row(
             children: [
-              /// Textos
               Expanded(
                 flex: 3,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text(
-                      'Jornadas',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    CustomText(
+                      text: 'Jornadas',
+                      size: 15,
+                      fontWeight: FontWeight.w700,
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Asistencia',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    SizedBox(height: 8),
+                    CustomText(
+                      text: 'Asistencia',
+                      size: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ],
                 ),
               ),
-
-              /// Valores
               Expanded(
                 flex: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      jornadas,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    CustomText(
+                      text: jornadas,
+                      size: 15,
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      asistencia,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    const SizedBox(height: 8),
+                    CustomText(
+                      text: asistencia,
+                      size: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ],
                 ),

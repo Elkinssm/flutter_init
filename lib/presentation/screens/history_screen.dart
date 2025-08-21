@@ -29,6 +29,7 @@ class _HistoryView extends StatelessWidget {
 
     return Column(
       children: [
+        const SizedBox(height: 18),
         Center(
           child: Padding(
             padding: EdgeInsets.only(top: size.height * 0.02),
@@ -36,11 +37,12 @@ class _HistoryView extends StatelessWidget {
               text: 'David\nBallesteros',
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
+              fontWeight: FontWeight.w800,
               spacingText: 0.9,
             ),
           ),
         ),
-        const SizedBox(height: 25),
+        const SizedBox(height: 48),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Card(
@@ -70,14 +72,13 @@ class _HistoryView extends StatelessWidget {
                         ),
                       ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CustomText(
                             text: 'Asistencia',
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),
-                          const SizedBox(height: 4),
                           CustomText(
                             text: '90%',
                             fontWeight: FontWeight.bold,
@@ -91,14 +92,13 @@ class _HistoryView extends StatelessWidget {
                     child: Container(
                       alignment: Alignment.center,
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CustomText(
                             text: 'Año',
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),
-                          const SizedBox(height: 4),
                           CustomText(
                             text: '2024',
                             fontWeight: FontWeight.bold,
@@ -113,9 +113,9 @@ class _HistoryView extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 28),
         MonthlySummaary(),
-        const SizedBox(height: 16),
+        const SizedBox(height: 28),
         TableStats(),
       ],
     );

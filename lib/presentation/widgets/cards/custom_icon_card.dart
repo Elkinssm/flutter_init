@@ -68,7 +68,7 @@ class _CustomIconCardState extends State<CustomIconCard> {
         ),
         margin: EdgeInsets.only(top: _isPressed ? 1 : 0),
         child: Padding(
-          padding: const EdgeInsets.all(7),
+          padding: EdgeInsets.zero,
           child: Align(
             alignment: Alignment.topCenter,
             child: Column(
@@ -79,7 +79,7 @@ class _CustomIconCardState extends State<CustomIconCard> {
                 CustomText(
                   text: widget.titleText,
                   size: widget.titleTextSize,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w300,
                 ),
               ],
             ),

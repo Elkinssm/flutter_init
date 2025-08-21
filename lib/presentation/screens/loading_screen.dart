@@ -52,7 +52,10 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const PrimaryTitleText(text: 'Cargando\ntu experiencia . . . '),
+              const PrimaryTitleText(
+                text: 'Cargando\ntu experiencia... ',
+                spacingText: 1,
+              ),
             ],
           ),
         ),

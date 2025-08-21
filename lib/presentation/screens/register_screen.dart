@@ -30,13 +30,14 @@ class _RegisterView extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            CustomTitleText(
+            const SizedBox(height: 26),
+            CustomText(
               text: 'Regístrate gratis',
-              size: 28,
+              size: 32,
+              fontWeight: FontWeight.w800,
               color: Colors.black,
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 36),
             Flexible(
               child: ListView.builder(
                 physics: const ClampingScrollPhysics(),

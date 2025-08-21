@@ -67,27 +67,26 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                   ],
         ),
         margin: EdgeInsets.only(top: _isPressed ? 1 : 0),
-        child: Padding(
-          padding: const EdgeInsets.all(7),
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CustomTitleText(
-                  text: widget.titleText,
-                  size: widget.titleTextSize,
-                  fontWeight: FontWeight.bold,
-                  color: const Color.fromRGBO(11, 25, 38, 1),
-                ),
-                SizedBox(height: widget.spacing), //17
-                CustomText(
-                  text: widget.subtitleText,
-                  size: widget.subtitleTextSize,
-                  fontWeight: FontWeight.bold,
-                ),
-              ],
-            ),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 5,
+            children: [
+              CustomText(
+                text: widget.titleText,
+                size: widget.titleTextSize,
+                fontWeight: FontWeight.w600,
+                color: const Color.fromRGBO(11, 25, 38, 1),
+                spacingText: 1.0,
+              ),
+              SizedBox(height: widget.spacing), //17
+              CustomText(
+                text: widget.subtitleText,
+                size: widget.subtitleTextSize,
+                fontWeight: FontWeight.w700,
+              ),
+            ],
           ),
         ),
       ),

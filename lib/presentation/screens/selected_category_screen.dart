@@ -28,6 +28,7 @@ class _SelectedCategoryView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         children: [
+          const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -60,7 +61,7 @@ class _SelectedCategoryView extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 22),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
@@ -106,7 +107,7 @@ class _SelectedCategoryView extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
@@ -121,14 +122,14 @@ class _SelectedCategoryView extends StatelessWidget {
             ),
             height: 3,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: Align(
               alignment: Alignment.centerLeft,
               child: CustomText(
                 text: 'Estudiantes',
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
                 size: 20,
               ),
             ),

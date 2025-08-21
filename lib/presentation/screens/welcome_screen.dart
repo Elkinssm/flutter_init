@@ -3,6 +3,7 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WelcomeScreen extends StatelessWidget {
   static const String name = 'tutorial_screen';
@@ -46,7 +47,10 @@ class _WelcomeView extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset('assets/images/group5.png', width: 155),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5),
+                    child: Image.asset('assets/images/group5.png', width: 155),
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 10, 15, 0),
                     child: TextButton(
@@ -58,21 +62,21 @@ class _WelcomeView extends ConsumerWidget {
                         minimumSize: Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Omitir',
-                        style: TextStyle(color: Colors.white),
+                        style: GoogleFonts.beVietnamPro(color: Colors.white),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 75),
-              Center(child: CustomTitleText(text: 'Bienvenido', size: 55)),
+              const SizedBox(height: 85),
+              Center(child: CustomTitleText(text: 'Bienvenido', size: 50)),
               Spacer(),
               Center(
                 child: CustomTitleText(
-                  text: 'Toda la informacion\n en un solo lugar',
-                  size: 34,
+                  text: 'Toda la información\n en un solo lugar',
+                  size: 30,
                 ),
               ),
               const SizedBox(height: 20),
@@ -105,150 +109,3 @@ class _WelcomeView extends ConsumerWidget {
     );
   }
 }
-
-//******************************************************************************** */
-          // child: Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          //   child: Column(
-          //     crossAxisAlignment: CrossAxisAlignment.stretch,
-          //     children: [
-          //       Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //         children: [
-          //           Image.asset('assets/images/group5.png', height: 26),
-          //           TextButton(
-          //             onPressed: () => context.push('/login_screen'),
-          //             style: TextButton.styleFrom(
-          //               padding: EdgeInsets.zero,
-          //               minimumSize: Size.zero,
-          //               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          //             ),
-          //             child: const Text(
-          //               'Omitir',
-          //               style: TextStyle(color: Colors.white),
-          //             ),
-          //           ),
-          //         ],
-          //       ),
-          //       const Spacer(),
-          //       const Text(
-          //         'Bienvenido',
-          //         textAlign: TextAlign.center,
-          //         style: TextStyle(
-          //           color: Colors.white,
-          //           fontSize: 48,
-          //           fontWeight: FontWeight.w800,
-          //         ),
-          //       ),
-          //       const SizedBox(height: 12),
-          //       const Text(
-          //         'Toda la información\nen un solo lugar',
-          //         textAlign: TextAlign.center,
-          //         style: TextStyle(
-          //           color: Colors.white,
-          //           fontSize: 24,
-          //           fontWeight: FontWeight.w700,
-          //         ),
-          //       ),
-          //       const SizedBox(height: 24),
-
-          //       // Indicador (pastilla + puntos)
-          //       Row(
-          //         mainAxisAlignment: MainAxisAlignment.center,
-          //         children: List.generate(images.length, (i) {
-          //           final active = i == page;
-          //           return AnimatedContainer(
-          //             duration: const Duration(milliseconds: 250),
-          //             margin: const EdgeInsets.symmetric(horizontal: 6),
-          //             width: active ? 42 : 10,
-          //             height: 10,
-          //             decoration: BoxDecoration(
-          //               color: indicatorColor,
-          //               borderRadius: BorderRadius.circular(20),
-          //             ),
-          //           );
-          //         }),
-          //       ),
-
-          //       const SizedBox(height: 16),
-          //       Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 20),
-          //         child: SizedBox(
-          //           height: 48,
-          //           child: ElevatedButton(
-          //             onPressed: nextOrFinish,
-          //             style: ElevatedButton.styleFrom(
-          //               backgroundColor: indicatorColor,
-          //               shape: RoundedRectangleBorder(
-          //                 borderRadius: BorderRadius.circular(12),
-          //               ),
-          //             ),
-          //             child: Text(
-          //               page == images.length - 1 ? 'Continuar' : 'Siguiente',
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //       const SizedBox(height: 20),
-          //     ],
-          //   ),
-          // ),
-
-
-
-// ****************************************************************************************
-    // return Container(
-    //   decoration: const BoxDecoration(
-    //     image: DecorationImage(
-    //       image: AssetImage('assets/images/image7.png'),
-    //       fit: BoxFit.cover,
-    //     ),
-    //   ),
-    //   child: Column(
-    //     crossAxisAlignment: CrossAxisAlignment.stretch,
-    //     children: [
-    //       SizedBox(height: 10),
-    //       Padding(
-    //         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 35),
-    //         child: Row(
-    //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //           children: [
-    //             Image.asset('assets/images/group5.png'),
-    //             Padding(
-    //               padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-    //               child: TextButton(
-    //                 onPressed: () {
-    //                   context.push('/login_screen');
-    //                 },
-    //                 style: TextButton.styleFrom(
-    //                   padding: EdgeInsets.zero,
-    //                   minimumSize: Size(0, 0),
-    //                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    //                 ),
-    //                 child: const Text(
-    //                   'Omitir',
-    //                   style: TextStyle(color: Colors.white),
-    //                 ),
-    //               ),
-    //             ),
-    //           ],
-    //         ),
-    //       ),
-    //       SizedBox(height: 40),
-    //       Center(child: CustomTitleText(text: 'Bienvenido', size: 64)),
-    //       Spacer(),
-    //       Center(
-    //         child: CustomTitleText(
-    //           text: 'Toda la informacion\n en un solo lugar',
-    //           size: 36,
-    //         ),
-    //       ),
-    //       SizedBox(height: 20),
-    //       OnboardingNextButton(
-    //         action: () => context.push('/login_screen'),
-    //         text: 'Continuar',
-    //       ),
-    //       SizedBox(height: 40),
-    //     ],
-    //   ),
-    // );

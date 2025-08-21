@@ -34,21 +34,21 @@ class _CoachView extends StatelessWidget {
             children: [
               Image.asset('assets/images/coach.png', width: 160),
               Column(
-                spacing: 10,
+                spacing: 18,
                 children: [
-                  CustomTitleText(
+                  CustomText(
                     text: 'Jerome Bell',
                     size: 25,
-                    font: 'Inter',
+                    fontWeight: FontWeight.w900,
                     color: Color.fromRGBO(11, 25, 38, 1),
                   ),
                   CustomButtonCard(
-                    width: 150,
+                    width: 160,
                     height: 120,
                     titleText: 'Estudiantes',
                     subtitleText: '20',
-                    titleTextSize: 22,
-                    subtitleTextSize: 24,
+                    titleTextSize: 24,
+                    subtitleTextSize: 20,
                     spacing: 19,
                     onTap: () => context.push('/category_screen'),
                   ),
@@ -57,9 +57,9 @@ class _CoachView extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
@@ -78,8 +78,8 @@ class _CoachView extends StatelessWidget {
                 const SizedBox(height: 3),
                 CustomText(
                   text: 'Asistencia',
-                  fontWeight: FontWeight.bold,
-                  size: 18,
+                  fontWeight: FontWeight.w900,
+                  size: 25,
                 ),
                 SizedBox(height: 100, child: AssistanceBarChart()),
               ],
@@ -88,7 +88,7 @@ class _CoachView extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 15),
+          margin: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
             boxShadow: const [
               BoxShadow(
@@ -101,19 +101,19 @@ class _CoachView extends StatelessWidget {
           ),
           height: 3, // grosor del divider
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Align(
             alignment: Alignment.centerLeft,
             child: CustomText(
               text: 'Acciones rapidas',
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
               size: 20,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -127,21 +127,17 @@ class _CoachView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 15),
-        Stack(
+        const SizedBox(height: 25),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                CustomActionButton(
-                  image: 'assets/images/calendar-icon.png',
-                  text: 'Programar\nPartido',
-                ),
-                CustomActionButton(
-                  image: 'assets/images/cup-icon.png',
-                  text: 'Torneos',
-                ),
-              ],
+            CustomActionButton(
+              image: 'assets/images/calendar-icon.png',
+              text: 'Programar\nPartido',
+            ),
+            CustomActionButton(
+              image: 'assets/images/cup-icon.png',
+              text: 'Torneos',
             ),
           ],
         ),

@@ -9,8 +9,12 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'Jugador'),
+      appBar: CustomAppbar(
+        title: 'Jugador',
+        backgroundColor: Colors.transparent,
+      ),
       bottomNavigationBar: CustomBottomAppbar(),
       floatingActionButton: CustomFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -31,31 +35,30 @@ class _PlayerScreen extends StatelessWidget {
         Stack(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.only(
+                right: 20,
+                left: 20,
+                top: screenHeigth * 0.065,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 5,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      right: 25,
-                      bottom: 60,
-                      left: 5,
-                    ),
-                    child: CustomTitleText(
+                    padding: const EdgeInsets.only(bottom: 65),
+                    child: CustomText(
                       text: 'David\nBallesteros',
                       size: 28,
-                      font: 'Inter',
                       color: Color.fromRGBO(11, 25, 38, 1),
+                      fontWeight: FontWeight.w800,
                       spacingText: 0.9,
                     ),
                   ),
-                  Image.asset('assets/images/player.png', width: 160),
+                  Image.asset('assets/images/player.png', width: 175),
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: screenHeigth * 0.22),
+              padding: EdgeInsets.only(top: screenHeigth * 0.28),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 9.5,
@@ -65,35 +68,39 @@ class _PlayerScreen extends StatelessWidget {
                     title: 'Categoría',
                     subtitle: '2012',
                     textButton: 'Ver mi categoría',
-                    sizeTextButton: 14,
+                    sizeTextButton: 16,
                   ),
                   CustomCards(
                     action: () => context.push('/history_screen'),
                     title: 'Los Tigres',
                     subtitle: '6 categorías',
                     textButton: 'Ver resumen',
-                    sizeTextButton: 14,
+                    sizeTextButton: 16,
                   ),
                 ],
               ),
             ),
           ],
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 15),
         CustomSupportStats(),
-        SizedBox(height: 10),
+        const SizedBox(height: 18),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 3,
           children: [
             CustomInfoCard(
+              cacheHeight: 24,
+              cacheWidth: 24,
               assetImage: 'assets/images/group14.png',
               title: "Próximo Partido",
               data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
             ),
             const SizedBox(width: 12),
             CustomInfoCard(
-              icon: Icons.speed,
+              cacheHeight: 20,
+              cacheWidth: 22,
+              assetImage: 'assets/images/performance-icon.png',
               title: "Desempeño",
               data: [
                 "Velocidad: 8.4 km/h",
@@ -104,19 +111,19 @@ class _PlayerScreen extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 18),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 3,
           children: [
             ExerciseCard(
               title: 'Ejercicios\nde fuerza',
-              icon: Icons.fitness_center,
+              assetImage: 'assets/images/strong-icon.png',
             ),
             const SizedBox(width: 12),
             ExerciseCard(
               title: 'Ejercicios\nde velocidad',
-              icon: Icons.directions_run,
+              assetImage: 'assets/images/person-icon.png',
             ),
           ],
         ),
