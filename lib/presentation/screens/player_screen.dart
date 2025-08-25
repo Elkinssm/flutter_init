@@ -8,17 +8,20 @@ class PlayerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(
-        title: 'Jugador',
-        backgroundColor: Colors.transparent,
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(
+          title: 'Jugador',
+          backgroundColor: Colors.transparent,
+        ),
+        bottomNavigationBar: CustomBottomAppbar(),
+        floatingActionButton: CustomFloatingActionButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        body: _PlayerScreen(), // Tu contenido aquí
       ),
-      bottomNavigationBar: CustomBottomAppbar(),
-      floatingActionButton: CustomFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: _PlayerScreen(), // Tu contenido aquí
     );
   }
 }

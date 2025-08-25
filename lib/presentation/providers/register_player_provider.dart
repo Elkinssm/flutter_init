@@ -2,21 +2,20 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final formFieldsProvider = Provider<List<Widget>>((ref) {
+final formFieldsRegisterPlayerProvider = Provider<List<Widget>>((ref) {
   List<Widget> fields = [
-    _buildField('Nombre'),
-    _buildField('Apellido'),
-    _buildField('Fecha Nacimiento'),
-    _buildField('EFD → Select'),
-    _buildField('Año vinculación a EFD'),
-    _buildField('Lateralidad'),
-    _buildField('Lugar de nacimiento'),
-    _buildField('Ciudad de residencia'),
+    _buildField('Nombre Completo'),
+    _buildField('Número de camiseta'),
+    _buildField('Fecha de nacimiento'),
+    _buildField('Posicion'),
+    _buildField('Altura y peso'),
+    _buildField('Categoría'),
+    _buildField('Pierna hábil'),
+    _buildField('Teléfono de contacto'),
     _buildField('Correo electrónico'),
-    _buildField('Correo Teléfono de contacto'),
-    _buildField('Nombre Acudiente 1'),
-    _buildField('Nombre Acudiente 2'),
-    _buildField('Teléfono contacto acudiente'),
+    _buildField('Estado de salud / Lesiones actuales.'),
+    _buildField('Equipo'),
+    _buildField('Foto'),
   ];
 
   return withVerticalSpacing(fields, 10);
@@ -30,8 +29,8 @@ Widget _buildField(String? label) {
         padding: const EdgeInsets.symmetric(horizontal: 5),
         child: CustomText(text: label!, fontWeight: FontWeight.w700, size: 16),
       ),
-      const SizedBox(height: 10),
-      CustomTextFormField(hintText: 'test'),
+      const SizedBox(height: 15),
+      CustomTextFormField(hintText: 'Escriba un texto'),
     ],
   );
 }

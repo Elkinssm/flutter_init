@@ -1,6 +1,7 @@
 import 'package:coach_app/presentation/providers/calendar_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
-import 'package:coach_app/presentation/providers/register_provider.dart';
+import 'package:coach_app/presentation/providers/register_player_provider.dart';
+import 'package:coach_app/presentation/providers/register_user_provider.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:coach_app/presentation/providers/selected_value_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +60,9 @@ class LoadingNotifier extends StateNotifier<double> {
       'assets/images/check-list-icon.png',
       'assets/images/tournaments-icon.png',
       'assets/images/plus-icon.png',
+      'assets/images/tshirt-icon-blue.png',
+      'assets/images/tshirt-icon-green.png',
+      'assets/images/tshirt-icon-yellow.png',
       'assets/images/student-eg1-icon.png',
       'assets/images/student-eg2-icon.png',
       'assets/images/student-eg3-icon.png',
@@ -75,9 +79,9 @@ class LoadingNotifier extends StateNotifier<double> {
   Future<void> _initializeProviders() async {
     ref.read(keyboardVisibilityProvider.notifier);
     ref.read(selectedIconProvider.notifier);
-    ref.read(formFieldsProvider);
+    ref.read(formRegisterUserFieldsProvider);
     ref.read(assistanceProvider.notifier);
-    ref.read(formFieldsProvider);
+    ref.read(formFieldsRegisterPlayerProvider);
     ref.read(selectedValueLineChartProvider);
     ref.read(selectedValueBarChartProvider);
     await Future.delayed(const Duration(milliseconds: 100));

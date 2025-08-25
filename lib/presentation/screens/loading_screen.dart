@@ -36,27 +36,30 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
     final effectiveProgress =
         (progress < _controller.value) ? _controller.value : progress;
 
-    return Scaffold(
-      body: Center(
-        child: Container(
-          color: const Color.fromRGBO(255, 255, 255, 1),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/images/subtract.png', cacheHeight: 280),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _CustomLinearProgressIndicator(
-                  progressValue: effectiveProgress,
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        body: Center(
+          child: Container(
+            color: const Color.fromRGBO(255, 255, 255, 1),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/subtract.png', cacheHeight: 280),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _CustomLinearProgressIndicator(
+                    progressValue: effectiveProgress,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              const PrimaryTitleText(
-                text: 'Cargando\ntu experiencia... ',
-                spacingText: 1,
-              ),
-            ],
+                const SizedBox(height: 20),
+                const PrimaryTitleText(
+                  text: 'Cargando\ntu experiencia... ',
+                  spacingText: 1,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -81,7 +84,7 @@ class _CustomLinearProgressIndicator extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         color: const Color.fromRGBO(255, 255, 255, 1),
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color.fromRGBO(11, 25, 38, 1)),
       ),
       padding: const EdgeInsets.all(1),
@@ -89,7 +92,7 @@ class _CustomLinearProgressIndicator extends StatelessWidget {
         value: progressValue,
         color: const Color.fromRGBO(11, 25, 38, 1),
         backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }

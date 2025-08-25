@@ -8,13 +8,16 @@ class CoachScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'Coach Dashboard'),
-      bottomNavigationBar: CustomBottomAppbar(),
-      floatingActionButton: CustomFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: const _CoachView(),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(title: 'Coach Dashboard'),
+        bottomNavigationBar: CustomBottomAppbar(),
+        floatingActionButton: CustomFloatingActionButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        body: const _CoachView(),
+      ),
     );
   }
 }
@@ -120,6 +123,7 @@ class _CoachView extends StatelessWidget {
             CustomActionButton(
               image: 'assets/images/student-icon.png',
               text: 'Crear\nEstudiante',
+              onTap: () => context.push('/newPlayerScreen'),
             ),
             CustomActionButton(
               image: 'assets/images/edit-icon.png',

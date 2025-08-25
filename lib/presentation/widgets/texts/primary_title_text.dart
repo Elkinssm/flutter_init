@@ -5,11 +5,15 @@ class PrimaryTitleText extends StatelessWidget {
   final String text;
   final double? spacingText;
   final FontWeight? fontWeight;
+  final Color color;
+  final double size;
   const PrimaryTitleText({
     super.key,
     required this.text,
     this.spacingText = 1.2,
-    this.fontWeight = FontWeight.w700,
+    this.fontWeight = FontWeight.w700, 
+    this.color = const Color.fromRGBO(13, 13, 13, 1), 
+    this.size = 32,
   });
 
   @override
@@ -18,8 +22,8 @@ class PrimaryTitleText extends StatelessWidget {
       text,
       textAlign: TextAlign.center,
       style: GoogleFonts.beVietnamPro(
-        color: Color.fromRGBO(13, 13, 13, 1),
-        fontSize: 32,
+        color: color,
+        fontSize: size,
         fontWeight: fontWeight,
         height: spacingText,
       ),

@@ -9,13 +9,16 @@ class PerformanceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'User'),
-      bottomNavigationBar: CustomBottomAppbar(),
-      floatingActionButton: CustomFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: const _PerformanceView(),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(title: 'User'),
+        bottomNavigationBar: CustomBottomAppbar(),
+        floatingActionButton: CustomFloatingActionButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        body: const _PerformanceView(),
+      ),
     );
   }
 }

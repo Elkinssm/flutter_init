@@ -31,10 +31,9 @@ class _OnboardingNextButtonState extends State<OnboardingNextButton> {
             style: ButtonStyle(
               animationDuration: const Duration(milliseconds: 150),
               backgroundColor: WidgetStateProperty.all(_bg),
-              // foregroundColor: WidgetStateProperty.all(Colors.white),
-              minimumSize: WidgetStateProperty.all(const Size(175, 39)),
+              minimumSize: WidgetStateProperty.all(Size(200, 45)),
               shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               ),
             ),
             child: CustomTitleText(

@@ -15,6 +15,7 @@ export 'package:coach_app/presentation/widgets/custom_navigation_bottom_appbar/c
 export 'package:coach_app/presentation/widgets/graphics/assistance_bar_chart.dart';
 export 'package:coach_app/presentation/widgets/graphics/bar_chart.dart';
 export 'package:coach_app/presentation/widgets/graphics/line_chart.dart';
+export 'package:coach_app/presentation/widgets/icons/custom_tshirt_icon.dart';
 export 'package:coach_app/presentation/widgets/inputs/custom_text_from_field.dart';
 export 'package:coach_app/presentation/widgets/ListView/listview_student.dart';
 export 'package:coach_app/presentation/widgets/table/table_stats.dart';

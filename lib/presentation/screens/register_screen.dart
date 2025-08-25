@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/providers/register_provider.dart';
+import 'package:coach_app/presentation/providers/register_user_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,10 +10,13 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'Registro jugador'),
-      body: _RegisterView(),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(title: 'Registro jugador'),
+        body: _RegisterView(),
+      ),
     );
   }
 }
@@ -23,7 +26,7 @@ class _RegisterView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formFields = ref.watch(formFieldsProvider);
+    final formFields = ref.watch(formRegisterUserFieldsProvider);
 
     return SafeArea(
       child: Padding(

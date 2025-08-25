@@ -8,13 +8,16 @@ class SelectedCategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-      appBar: CustomAppbar(title: 'Categoria $year'),
-      bottomNavigationBar: CustomBottomAppbar(),
-      floatingActionButton: CustomFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: _SelectedCategoryView(),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(title: 'Categoria $year'),
+        bottomNavigationBar: CustomBottomAppbar(),
+        floatingActionButton: CustomFloatingActionButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        body: _SelectedCategoryView(),
+      ),
     );
   }
 }

@@ -3,7 +3,6 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class WelcomeScreen extends StatelessWidget {
   static const String name = 'tutorial_screen';
@@ -29,21 +28,23 @@ class _WelcomeView extends ConsumerWidget {
       'assets/images/image7.png',
     ];
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        PageView.builder(
-          controller: controller,
-          physics: const ClampingScrollPhysics(),
-          itemCount: images.length,
-          onPageChanged: (i) => ref.read(pageIndexProvider.notifier).state = i,
-          itemBuilder: (_, i) => Image.asset(images[i], fit: BoxFit.cover),
-        ),
-        SafeArea(
-          child: Column(
+    return SafeArea(
+      top: false,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          PageView.builder(
+            controller: controller,
+            physics: const ClampingScrollPhysics(),
+            itemCount: images.length,
+            onPageChanged:
+                (i) => ref.read(pageIndexProvider.notifier).state = i,
+            itemBuilder: (_, i) => Image.asset(images[i], fit: BoxFit.cover),
+          ),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 47),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -62,9 +63,11 @@ class _WelcomeView extends ConsumerWidget {
                         minimumSize: Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: Text(
-                        'Omitir',
-                        style: GoogleFonts.beVietnamPro(color: Colors.white),
+                      child: PrimaryTitleText(
+                        text: 'Omitir',
+                        size: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -104,8 +107,8 @@ class _WelcomeView extends ConsumerWidget {
               const SizedBox(height: 25),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
