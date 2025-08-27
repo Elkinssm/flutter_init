@@ -3,6 +3,7 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class LoadingScreen extends ConsumerStatefulWidget {
   static const String name = 'loading_screen';
@@ -36,29 +37,64 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
     final effectiveProgress =
         (progress < _controller.value) ? _controller.value : progress;
 
+    final sidePad = wp(context, isPhone(context) ? 0.06 : 0.08);
+    final spaceTop = hp(context, 0.04);
+    final spaceMid = hp(context, 0.025);
+    final spaceBottom = hp(context, 0.035);
+    final logoW = isPhone(context) ? wp(context, 0.55) : wp(context, 0.40);
+    final logoH = logoW * (280 / 280);
+    final barHeight = isPhone(context) ? 16.0 : 20.0;
+    final barRadius = isPhone(context) ? 8.0 : 10.0;
+    final titleSize = ts(context, 28);
+
+
     return SafeArea(
       top: false,
       child: Scaffold(
         body: Center(
           child: Container(
             color: const Color.fromRGBO(255, 255, 255, 1),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/subtract.png', cacheHeight: 280),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _CustomLinearProgressIndicator(
-                    progressValue: effectiveProgress,
-                  ),
+            child: maxWidthCenter(
+              context: context,
+              max: 720, // para que no “explote” en tablets grandes
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: sidePad),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: spaceTop),
+
+                    // Logo responsivo
+                    SizedBox(
+                      width: logoW,
+                      height: logoH,
+                      child: Image.asset(
+                        'assets/images/subtract.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+
+                    SizedBox(height: spaceMid),
+
+                    // Progress responsivo
+                    _CustomLinearProgressIndicator(
+                      progressValue: effectiveProgress,
+                      height: barHeight,
+                      radius: barRadius,
+                    ),
+
+                    SizedBox(height: spaceBottom),
+
+                    // Texto responsivo
+                    PrimaryTitleText(
+                      text: 'Cargando\ntu experiencia... ',
+                      spacingText: 1,
+                      size: titleSize,
+                      // color y weight se mantienen por defecto
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                const PrimaryTitleText(
-                  text: 'Cargando\ntu experiencia... ',
-                  spacingText: 1,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -74,25 +110,33 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
 }
 
 class _CustomLinearProgressIndicator extends StatelessWidget {
-  const _CustomLinearProgressIndicator({required this.progressValue});
+  const _CustomLinearProgressIndicator({
+    required this.progressValue, 
+    required this.height, 
+    required this.radius
+  });
 
   final double progressValue;
+  final double height;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 20,
+      height: height,
       decoration: BoxDecoration(
         color: const Color.fromRGBO(255, 255, 255, 1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: const Color.fromRGBO(11, 25, 38, 1)),
       ),
       padding: const EdgeInsets.all(1),
-      child: LinearProgressIndicator(
-        value: progressValue,
-        color: const Color.fromRGBO(11, 25, 38, 1),
-        backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-        borderRadius: BorderRadius.circular(8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius - 1),
+        child: LinearProgressIndicator(
+          value: progressValue,
+          color: const Color.fromRGBO(11, 25, 38, 1),
+          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+        ),
       ),
     );
   }

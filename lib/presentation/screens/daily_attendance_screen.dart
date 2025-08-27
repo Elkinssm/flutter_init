@@ -164,7 +164,7 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                 Center(
                   child: OnboardingNextButton(
                     text: 'Registrar Asistencia',
-                    action: () => context.push('/newPlayerScreen'),
+                    action: () => context.push('/new_player_screen'),
                   ),
                 ),
               ],

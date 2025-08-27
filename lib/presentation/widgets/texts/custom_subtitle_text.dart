@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 
 final colors = <Color>[
   Color.fromRGBO(0, 0, 0, 1),
@@ -15,6 +16,7 @@ class CustomSubtitleText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color selectedColor = colors[color];
+    final fs = ts(context, 16);
 
     return Center(
       child: Text(
@@ -22,7 +24,7 @@ class CustomSubtitleText extends StatelessWidget {
         style: GoogleFonts.inter(
           color: selectedColor,
           fontWeight: FontWeight.w600,
-          fontSize: 17,
+          fontSize: fs,
         ),
       ),
     );

@@ -72,9 +72,14 @@ final appRouter = GoRouter(
       builder: (context, state) => const DailyAttendanceScreen(),
     ),
     GoRoute(
-      path: '/newPlayerScreen',
+      path: '/new_player_screen',
       name: NewPlayerScreen.name,
       builder: (context, state) => const NewPlayerScreen(),
+    ),
+    GoRoute(
+      path: '/player_details_screen',
+      name: PlayerDetailsScreen.name,
+      builder: (context, state) => const PlayerDetailsScreen(),
     ),
   ],
 );

@@ -1,5 +1,6 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class OnboardingNextButton extends StatefulWidget {
   final String text;
@@ -20,27 +21,29 @@ class _OnboardingNextButtonState extends State<OnboardingNextButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: MouseRegion(
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _isPressed = true),
-          onTapUp: (_) => setState(() => _isPressed = false),
-          onTapCancel: () => setState(() => _isPressed = false),
-          child: FilledButton(
-            onPressed: widget.action,
-            style: ButtonStyle(
-              animationDuration: const Duration(milliseconds: 150),
-              backgroundColor: WidgetStateProperty.all(_bg),
-              minimumSize: WidgetStateProperty.all(Size(200, 45)),
-              shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              ),
+    // Tamaño táctil mínimo 48dp, pero lo controlas desde el SizedBox padre.
+    final radius = isPhone(context) ? 15.0 : 18.0;
+    final textSize = ts(context, 13.5);
+
+    return MouseRegion(
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: FilledButton(
+          onPressed: widget.action,
+          style: ButtonStyle(
+            animationDuration: const Duration(milliseconds: 150),
+            backgroundColor: WidgetStateProperty.all(_bg),
+            // minimumSize lo maneja el SizedBox contenedor en la pantalla
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
             ),
-            child: CustomTitleText(
-              text: widget.text,
-              size: 13.5,
-              fontWeight: FontWeight.w700,
-            ),
+          ),
+          child: CustomTitleText(
+            text: widget.text,
+            size: textSize,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

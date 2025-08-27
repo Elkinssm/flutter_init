@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 
 const selectedColors = <Color>[
   Color.fromRGBO(255, 255, 255, 1),
@@ -21,6 +22,7 @@ class LabelText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color = selectedColors[colorIndex];
+    final fs = ts(context, 16);
 
     return Align(
       alignment: Alignment.topLeft,
@@ -29,7 +31,7 @@ class LabelText extends StatelessWidget {
         textAlign: TextAlign.start,
         style: GoogleFonts.inter(
           color: color,
-          fontSize: 16,
+          fontSize: fs,
           fontWeight: fontWeight,
         ),
       ),

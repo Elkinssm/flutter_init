@@ -1,4 +1,5 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:flutter/material.dart';
 
 class CustomButtonCard extends StatefulWidget {
@@ -18,8 +19,8 @@ class CustomButtonCard extends StatefulWidget {
     required this.subtitleText,
     required this.titleTextSize,
     required this.subtitleTextSize,
-    this.onTap,
     required this.spacing,
+    this.onTap,
   });
 
   @override
@@ -43,6 +44,8 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
 
   @override
   Widget build(BuildContext context) {
+    final radius = isPhone(context) ? 12.0 : 14.0;
+
     return GestureDetector(
       onTap: widget.onTap,
       onTapDown: _onTapDown,
@@ -54,7 +57,7 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
         width: widget.width,
         decoration: BoxDecoration(
           color: const Color.fromRGBO(229, 240, 246, 1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(radius),
           boxShadow:
               _isPressed
                   ? []
@@ -67,27 +70,24 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                   ],
         ),
         margin: EdgeInsets.only(top: _isPressed ? 1 : 0),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 5,
-            children: [
-              CustomText(
-                text: widget.titleText,
-                size: widget.titleTextSize,
-                fontWeight: FontWeight.w600,
-                color: const Color.fromRGBO(11, 25, 38, 1),
-                spacingText: 1.0,
-              ),
-              SizedBox(height: widget.spacing), //17
-              CustomText(
-                text: widget.subtitleText,
-                size: widget.subtitleTextSize,
-                fontWeight: FontWeight.w700,
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(height: isPhone(context) ? 8 : 2),
+            CustomText(
+              text: widget.titleText,
+              size: widget.titleTextSize,
+              fontWeight: FontWeight.w800,
+              color: const Color.fromRGBO(11, 25, 38, 1),
+              spacingText: 1.0,
+            ),
+            SizedBox(height: widget.spacing),
+            CustomText(
+              text: widget.subtitleText,
+              size: widget.subtitleTextSize,
+              fontWeight: FontWeight.w700,
+            ),
+          ],
         ),
       ),
     );

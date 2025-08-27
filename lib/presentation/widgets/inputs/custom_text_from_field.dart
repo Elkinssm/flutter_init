@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class CustomTextFormField extends StatefulWidget {
   final String hintText;
@@ -30,45 +31,47 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(17),
-      borderSide: BorderSide(color: Colors.transparent),
+      borderRadius: BorderRadius.circular(isPhone(context) ? 17 : 18),
+      borderSide: const BorderSide(color: Colors.transparent),
     );
 
-    return SizedBox(
-      height: 43,
-      width: double.infinity,
-      child: TextFormField(
-        onTapOutside: (event) => FocusNode().unfocus(),
-        obscureText: _obscure,
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 5,
-          ),
-          enabledBorder: border,
-          filled: true,
-          fillColor: Colors.white,
-          focusedBorder: border,
-          hintText: widget.hintText,
-          hintStyle: GoogleFonts.inter(
-            fontSize: 16,
-            color: Colors.grey,
-            fontWeight: FontWeight.w400,
-          ),
-          prefixIcon: widget.icon != null ? Icon(widget.icon) : null,
-          suffixIcon:
-              widget.isPassword
-                  ? IconButton(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    icon: Icon(
-                      _obscure ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    color: _obscure ? Color.fromRGBO(138, 149, 151, 1) : null,
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  )
-                  : null,
+    final hintFs = ts(context, 16);
+    final iconSize = ts(context, 20);
+
+    return TextFormField(
+      onTapOutside: (event) => FocusNode().unfocus(),
+      obscureText: _obscure,
+      style: GoogleFonts.inter(fontSize: ts(context, 16)),
+      decoration: InputDecoration(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: isPhone(context) ? 15 : 18,
+          vertical: isPhone(context) ? 8 : 10,
         ),
+        enabledBorder: border,
+        filled: true,
+        fillColor: Colors.white,
+        focusedBorder: border,
+        hintText: widget.hintText,
+        hintStyle: GoogleFonts.inter(
+          fontSize: hintFs,
+          color: Colors.grey,
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: widget.icon != null
+            ? Icon(widget.icon, size: iconSize)
+            : null,
+        suffixIcon: widget.isPassword
+            ? IconButton(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                icon: Icon(
+                  _obscure ? Icons.visibility_off : Icons.visibility,
+                  size: iconSize,
+                ),
+                color: _obscure ? const Color.fromRGBO(138, 149, 151, 1) : null,
+                onPressed: () => setState(() => _obscure = !_obscure),
+              )
+            : null,
       ),
     );
   }

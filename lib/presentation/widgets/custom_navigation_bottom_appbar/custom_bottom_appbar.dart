@@ -8,9 +8,10 @@ class CustomBottomAppbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedIndex = ref.watch(selectedIconProvider); // Observa el estado
+    final selectedIndex = ref.watch(selectedIconProvider);
 
-    return SizedBox(
+    return Container(
+      color: Colors.transparent,
       height: 91,
       child: Stack(
         alignment: Alignment.bottomCenter,
@@ -50,17 +51,15 @@ class CustomBottomAppbar extends ConsumerWidget {
     );
   }
 
-  /// Método que construye cada icono dinámicamente
   Widget _buildIcon(WidgetRef ref, int index, int selectedIndex, String name) {
     final isSelected = selectedIndex == index;
     final imagePath =
         isSelected
             ? 'assets/images/$name-100.png'
             : 'assets/images/$name-black-100.png';
-
     return InkWell(
       onTap: () {
-        ref.read(selectedIconProvider.notifier).state = index; // Cambia estado
+        ref.read(selectedIconProvider.notifier).state = index;
       },
       child: Image.asset(imagePath, height: 26, width: 26),
     );

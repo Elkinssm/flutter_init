@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:go_router/go_router.dart';
 
 class NewPlayerScreen extends StatelessWidget {
-  static const String name = '/newPlayerScreen';
+  static const String name = '/new_player_screen';
   const NewPlayerScreen({super.key});
 
   @override
