@@ -23,3 +23,7 @@ export 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 export 'package:coach_app/presentation/widgets/texts/custom_title_text.dart';
 export 'package:coach_app/presentation/widgets/texts/label_text.dart';
 export 'package:coach_app/presentation/widgets/texts/primary_title_text.dart';
+export 'package:coach_app/presentation/widgets/players/player_maker.dart';
+export 'package:coach_app/presentation/widgets/players/player_photo_marker.dart';
+export 'package:coach_app/presentation/widgets/players/coach_card.dart';
+export 'package:coach_app/presentation/widgets/players/player_list_item.dart';

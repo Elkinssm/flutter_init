@@ -2,7 +2,7 @@ import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/loading_screen',
+  initialLocation: '/test_screen',
   routes: [
     GoRoute(
       path: '/loading_screen',
@@ -60,12 +60,17 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final year = state.extra as int;
         return SelectedCategoryScreen(year: year);
-      },//=> const SelectedCategoryScreen(),
+      }, //=> const SelectedCategoryScreen(),
     ),
     GoRoute(
       path: '/daily_attendance_screen',
       name: DailyAttendanceScreen.name,
       builder: (context, state) => const DailyAttendanceScreen(),
+    ),
+    GoRoute(
+      path: '/test_screen',
+      name: TestScreen.name,
+      builder: (context, state) => const TestScreen(),
     ),
   ],
 );

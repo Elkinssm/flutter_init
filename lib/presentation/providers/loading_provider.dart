@@ -62,6 +62,7 @@ class LoadingNotifier extends StateNotifier<double> {
       'assets/images/student-eg4-icon.png',
       'assets/images/student-eg5-icon.png',
       'assets/images/student-eg6-icon.png',
+      'assets/images/campo_futbol.png',
     ];
 
     for (final img in images) {
