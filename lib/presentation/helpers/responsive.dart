@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 bool isPhone(BuildContext c) => MediaQuery.of(c).size.shortestSide < 600;
+bool isSmallPhone(BuildContext c) => MediaQuery.of(c).size.shortestSide <= 320;
 bool isSmallTablet(BuildContext c) {
   final s = MediaQuery.of(c).size.shortestSide;
   return s >= 600 && s < 840;

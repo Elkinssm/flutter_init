@@ -47,7 +47,6 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
     final barRadius = isPhone(context) ? 8.0 : 10.0;
     final titleSize = ts(context, 28);
 
-
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -56,15 +55,13 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
             color: const Color.fromRGBO(255, 255, 255, 1),
             child: maxWidthCenter(
               context: context,
-              max: 720, // para que no “explote” en tablets grandes
+              max: 720,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: sidePad),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: spaceTop),
-
-                    // Logo responsivo
                     SizedBox(
                       width: logoW,
                       height: logoH,
@@ -73,24 +70,17 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
                         fit: BoxFit.contain,
                       ),
                     ),
-
                     SizedBox(height: spaceMid),
-
-                    // Progress responsivo
                     _CustomLinearProgressIndicator(
                       progressValue: effectiveProgress,
                       height: barHeight,
                       radius: barRadius,
                     ),
-
                     SizedBox(height: spaceBottom),
-
-                    // Texto responsivo
                     PrimaryTitleText(
                       text: 'Cargando\ntu experiencia... ',
                       spacingText: 1,
                       size: titleSize,
-                      // color y weight se mantienen por defecto
                     ),
                   ],
                 ),
@@ -111,9 +101,9 @@ class _LoadingScreenState extends ConsumerState<LoadingScreen>
 
 class _CustomLinearProgressIndicator extends StatelessWidget {
   const _CustomLinearProgressIndicator({
-    required this.progressValue, 
-    required this.height, 
-    required this.radius
+    required this.progressValue,
+    required this.height,
+    required this.radius,
   });
 
   final double progressValue;

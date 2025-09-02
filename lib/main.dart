@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +14,24 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(const ProviderScope(child: MyApp()));
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('FlutterError: ${details.exceptionAsString()}');
+    if (details.stack != null) debugPrint(details.stack.toString());
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Uncaught zone error: $error');
+    debugPrint(stack.toString());
+    return true;
+  };
+  runZonedGuarded(
+    () => runApp(const ProviderScope(child: MyApp())),
+    (error, stack) {
+      debugPrint('runZonedGuarded: $error');
+      debugPrint(stack.toString());
+    },
+  );
+  // runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

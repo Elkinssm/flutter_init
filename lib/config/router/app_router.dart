@@ -1,10 +1,11 @@
 import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
-
 import 'transitions_config/custom_transition.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/loading_screen',
+  debugLogDiagnostics: true,
+  observers: [],
   routes: [
     GoRoute(
       path: '/loading_screen',
@@ -15,7 +16,6 @@ final appRouter = GoRouter(
       path: '/welcome_screen',
       name: WelcomeScreen.name,
       pageBuilder: (context, state) => CustomTransition.slideLeft(const WelcomeScreen()),
-      // builder: (context, state) => const WelcomeScreen(),
     ),
     GoRoute(
       path: '/login_screen',
@@ -26,7 +26,6 @@ final appRouter = GoRouter(
       path: '/register_screen',
       name: RegisterScreen.name,
       pageBuilder: (context, state) => CustomTransition.slideLeft(const RegisterScreen()),
-      // builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/player_screen',
@@ -36,50 +35,66 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/assistance_screen',
       name: AssistanceScreen.name,
-      builder: (context, state) => const AssistanceScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const AssistanceScreen()),
     ),
     GoRoute(
       path: '/history_screen',
       name: HistoryScreen.name,
-      builder: (context, state) => const HistoryScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const HistoryScreen()),
     ),
     GoRoute(
       path: '/performance_screen',
       name: PerformanceScreen.name,
-      builder: (context, state) => const PerformanceScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const PerformanceScreen()),
     ),
     GoRoute(
       path: '/coach_screen',
       name: CoachScreen.name,
-      builder: (context, state) => const CoachScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const CoachScreen()),
     ),
     GoRoute(
       path: '/category_screen',
       name: CategoryScreen.name,
-      builder: (context, state) => const CategoryScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const CategoryScreen()),
     ),
     GoRoute(
       path: '/selected_category_screen',
       name: SelectedCategoryScreen.name,
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final year = state.extra as int;
-        return SelectedCategoryScreen(year: year);
-      },//=> const SelectedCategoryScreen(),
+        return CustomTransition.slideLeft(SelectedCategoryScreen(year: year));
+      },
     ),
     GoRoute(
       path: '/daily_attendance_screen',
       name: DailyAttendanceScreen.name,
-      builder: (context, state) => const DailyAttendanceScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const DailyAttendanceScreen()),
     ),
     GoRoute(
       path: '/new_player_screen',
       name: NewPlayerScreen.name,
-      builder: (context, state) => const NewPlayerScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const NewPlayerScreen()),
     ),
     GoRoute(
       path: '/player_details_screen',
       name: PlayerDetailsScreen.name,
-      builder: (context, state) => const PlayerDetailsScreen(),
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const PlayerDetailsScreen()),
+    ),
+    GoRoute(
+      path: '/player_status_screen',
+      name: PlayerStatusScreen.name,
+      pageBuilder: (context, state) { 
+        final data = state.extra as Map<String, dynamic>? ?? {};
+        final name = data['name'] ?? '';
+        final image = data['image'] ?? '';
+
+        return CustomTransition.slideLeft(PlayerStatusScreen(names: name, image: image));
+      },
+    ),
+    GoRoute(
+      path: '/my_teams_screen',
+      name: MyTeamsScreen.name,
+      pageBuilder: (context, state) => CustomTransition.slideLeft(const MyTeamsScreen()),
     ),
   ],
 );

@@ -56,42 +56,43 @@ class CategoryCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          spacing: 7,
           children: [
-            Container(
-              height: 88,
-              width: 235,
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(224, 222, 217, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                spacing: 0.01,
-                children: [
-                  Image.asset(
-                    'assets/images/members-icon.png',
-                    width: 25,
-                    height: 25,
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      CustomText(
-                        text: '$year',
-                        size: 22,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      CustomText(
-                        text: '$members Miembros',
-                        size: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ],
-                  ),
-                ],
+            Expanded(
+              child: Container(
+                height: 88,
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(224, 222, 217, 1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  spacing: 0.01,
+                  children: [
+                    Image.asset(
+                      'assets/images/members-icon.png',
+                      width: 25,
+                      height: 25,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        CustomText(
+                          text: '$year',
+                          size: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        CustomText(
+                          text: '$members Miembros',
+                          size: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            // const SizedBox(width: 25),
             _AssistanceTag(onTapButton: onTapAssistance),
           ],
         ),

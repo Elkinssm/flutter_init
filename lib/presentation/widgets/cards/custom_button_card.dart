@@ -9,6 +9,9 @@ class CustomButtonCard extends StatefulWidget {
   final String subtitleText;
   final double titleTextSize;
   final double subtitleTextSize;
+  final FontWeight? fontWeightT1;
+  final FontWeight? fontWeightT2;
+  final bool? isContentLeft;
   final double spacing;
   final VoidCallback? onTap;
   const CustomButtonCard({
@@ -21,6 +24,9 @@ class CustomButtonCard extends StatefulWidget {
     required this.subtitleTextSize,
     required this.spacing,
     this.onTap,
+    this.fontWeightT1 = FontWeight.w800,
+    this.fontWeightT2 = FontWeight.w700,
+    this.isContentLeft = false,
   });
 
   @override
@@ -63,31 +69,48 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                   ? []
                   : const [
                     BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 6,
-                      offset: Offset(2, 4),
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 4),
                     ),
                   ],
         ),
         margin: EdgeInsets.only(top: _isPressed ? 1 : 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(height: isPhone(context) ? 8 : 2),
-            CustomText(
-              text: widget.titleText,
-              size: widget.titleTextSize,
-              fontWeight: FontWeight.w800,
-              color: const Color.fromRGBO(11, 25, 38, 1),
-              spacingText: 1.0,
-            ),
-            SizedBox(height: widget.spacing),
-            CustomText(
-              text: widget.subtitleText,
-              size: widget.subtitleTextSize,
-              fontWeight: FontWeight.w700,
-            ),
-          ],
+        child: Padding(
+          padding:
+              widget.isContentLeft!
+                  ? const EdgeInsets.symmetric(horizontal: 10, vertical: 10)
+                  : EdgeInsets.zero,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment:
+                widget.isContentLeft!
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center,
+            children: [
+              widget.isContentLeft!
+                  ? const SizedBox.shrink()
+                  : SizedBox(
+                    height:
+                        isPhone(context)
+                            ? hp(context, 0.02)
+                            : hp(context, 0.01),
+                  ),
+              CustomText(
+                text: widget.titleText,
+                size: widget.titleTextSize,
+                fontWeight: widget.fontWeightT1!,
+                color: const Color.fromRGBO(11, 25, 38, 1),
+                spacingText: 1.0,
+              ),
+              SizedBox(height: widget.spacing),
+              CustomText(
+                text: widget.subtitleText,
+                size: widget.subtitleTextSize,
+                fontWeight: widget.fontWeightT2!,
+              ),
+            ],
+          ),
         ),
       ),
     );

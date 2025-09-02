@@ -18,6 +18,7 @@ class NewPlayerScreen extends StatelessWidget {
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        resizeToAvoidBottomInset: false,
         body: _NewPlayerView(),
       ),
     );
@@ -30,6 +31,7 @@ class _NewPlayerView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFields = ref.watch(formFieldsRegisterPlayerProvider);
+    final kb = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
       child: Padding(
@@ -40,12 +42,12 @@ class _NewPlayerView extends ConsumerWidget {
             Flexible(
               child: ListView.builder(
                 physics: const ClampingScrollPhysics(),
-                itemCount: formFields.length + 1, // <-- uno más
+                padding: EdgeInsets.only(bottom: kb + 24),
+                itemCount: formFields.length + 1,
                 itemBuilder: (context, index) {
                   if (index < formFields.length) {
                     return formFields[index];
                   } else {
-                    // Último ítem: el botón
                     return Column(
                       children: [
                         const SizedBox(height: 25),
@@ -53,7 +55,6 @@ class _NewPlayerView extends ConsumerWidget {
                           text: 'Crear Jugador',
                           action: () {
                             FocusManager.instance.primaryFocus?.unfocus();
-                            // context.push();
                           },
                         ),
                         const SizedBox(height: 10),

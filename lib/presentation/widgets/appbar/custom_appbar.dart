@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final Color? backgroundColor;
+  final VoidCallback? onPressed;
   const  CustomAppbar({
     super.key,
     required this.title,
-    this.backgroundColor = const Color.fromRGBO(249, 248, 247, 1),
+    this.backgroundColor = const Color.fromRGBO(249, 248, 247, 1), 
+    this.onPressed,
   });
 
   @override
@@ -23,7 +25,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
         child: IconButton(
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
-          onPressed: () => context.pop(),
+          onPressed: onPressed ?? () => context.pop(),
           icon: Icon(Icons.arrow_back_outlined),
         ),
       ),

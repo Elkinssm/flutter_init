@@ -20,7 +20,7 @@ class PlayerScreen extends StatelessWidget {
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _PlayerScreen(), // Tu contenido aquí
+        body: _PlayerScreen(),
       ),
     );
   }

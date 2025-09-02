@@ -11,11 +11,13 @@ class SelectedCategoryScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
+        extendBody: true,
         backgroundColor: Color.fromRGBO(249, 248, 247, 1),
         appBar: CustomAppbar(title: 'Categoria $year'),
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        resizeToAvoidBottomInset: false,
         body: _SelectedCategoryView(),
       ),
     );
@@ -137,8 +139,8 @@ class _SelectedCategoryView extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 2),
-          ListViewStudent(),
+          const SizedBox(height: 10),
+          Expanded(child: ListViewStudent()),
         ],
       ),
     );

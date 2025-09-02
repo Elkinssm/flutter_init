@@ -39,6 +39,8 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
   DateTime _selectedDate = DateTime.now();
 
   Future<void> _pickDate() async {
+    const brand = Color.fromRGBO(217, 73, 41, 1);
+
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
@@ -46,6 +48,21 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 1),
       locale: const Locale('es', 'CO'),
+      confirmText: 'aceptar',
+      builder: (context, child) {
+        final base = Theme.of(context);
+        return Theme(
+          data: base.copyWith(
+            // Colores base del date picker
+            colorScheme: base.colorScheme.copyWith(
+              primary: brand, // afecta selección, encabezado, etc.
+              onPrimary: Colors.white, // texto/íconos sobre primary
+              surface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);

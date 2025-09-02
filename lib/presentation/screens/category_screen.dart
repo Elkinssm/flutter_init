@@ -12,6 +12,7 @@ class CategoryScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
+        extendBody: true,
         backgroundColor: Color.fromRGBO(249, 248, 247, 1),
         appBar: CustomAppbar(title: 'Categorias'),
         bottomNavigationBar: CustomBottomAppbar(),
@@ -66,7 +67,10 @@ class _CategoryViewState extends State<_CategoryView> {
                 setState(() => selectedIndex = index);
                 Future.delayed(const Duration(milliseconds: 120), () {
                   // ignore: use_build_context_synchronously
-                  context.pushNamed(SelectedCategoryScreen.name, extra: c.year);
+                  context.pushNamed(
+                    SelectedCategoryScreen.name,
+                    extra: c.year.toInt(),
+                  );
                 });
               },
               onTapAssistance: () {

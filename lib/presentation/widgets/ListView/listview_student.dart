@@ -1,5 +1,7 @@
+import 'package:coach_app/presentation/screens/player_status_screen.dart';
 import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // local model Students
 class Student {
@@ -25,33 +27,34 @@ class ListViewStudent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.separated(
-        itemCount: _students.length,
-        physics:
-            _students.length > 4
-                ? const BouncingScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
-        separatorBuilder:
-            (_, __) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Container(
-                height: 2,
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE3503B),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
+    final kb = MediaQuery.of(context).viewInsets.bottom;
+
+    return ListView.separated(
+      itemCount: _students.length,
+      padding: EdgeInsets.only(bottom: kb + 74),
+      physics:
+          _students.length > 4
+              ? const ClampingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+      separatorBuilder:
+          (_, __) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Container(
+              height: 2,
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3503B),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
             ),
-        itemBuilder: (_, i) => StudentTile(s: _students[i]),
-      ),
+          ),
+      itemBuilder: (_, i) => StudentTile(s: _students[i]),
     );
   }
 }
@@ -119,37 +122,49 @@ class StudentTile extends StatelessWidget {
         height: 70.5,
         child: Row(
           children: [
-            Stack(
-              children: [
-                Container(
-                  width: 64,
-                  height: 67,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Color.fromRGBO(27, 71, 56, 1),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 1,
-                        offset: const Offset(0, 3),
-                        color: Colors.black12,
+            InkWell(
+              onTap:
+                  () => context.pushNamed(
+                    PlayerStatusScreen.name,
+                    extra: {'name': s.name, 'image': s.image},
+                  ),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 65.5,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Color.fromRGBO(27, 71, 56, 1),
+                        width: 1,
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 64,
-                  height: 70,
-                  child: ClipOval(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 1),
-                      child: Image.asset(s.image, fit: BoxFit.cover),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 1,
+                          offset: const Offset(0, 3),
+                          color: Colors.black12,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width: 64,
+                    height: 70,
+                    child: ClipOval(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: Image.asset(
+                          s.image,
+                          fit: BoxFit.cover,
+                          cacheWidth: 128,
+                          cacheHeight: 128,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -157,10 +172,17 @@ class StudentTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomText(
-                    text: s.name,
-                    size: 16,
-                    fontWeight: FontWeight.w700,
+                  InkWell(
+                    onTap:
+                        () => context.pushNamed(
+                          PlayerStatusScreen.name,
+                          extra: {'name': s.name, 'image': s.image},
+                        ),
+                    child: CustomText(
+                      text: s.name,
+                      size: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Row(
