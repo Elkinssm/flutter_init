@@ -1,6 +1,8 @@
 import 'package:coach_app/presentation/helpers/responsive.dart';
+import 'package:coach_app/presentation/providers/selected_buttons_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class SelectedTeamScreen extends StatelessWidget {
@@ -25,11 +27,37 @@ class SelectedTeamScreen extends StatelessWidget {
   }
 }
 
-class _SelectedTeamView extends StatelessWidget {
+class _SelectedTeamView extends ConsumerWidget {
   const _SelectedTeamView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(selectedMenuProvider);
+
+    Widget content;
+    switch (selected) {
+      case 'Inicio':
+        content = const Expanded(child: SelectedListviewPlayers());
+        break;
+      case 'Alineación':
+        content = const Expanded(
+          child: Center(child: CustomText(text: 'Alineación', size: 18, fontWeight: FontWeight.w600)),
+        );
+        break;
+      case 'Posiciones':
+        content = const Expanded(
+          child: Center(child: CustomText(text: 'Posiciones', size: 18, fontWeight: FontWeight.w600)),
+        );
+        break;
+      case 'Partidos':
+        content = const Expanded(
+          child: Center(child: CustomText(text: 'Partidos', size: 18, fontWeight: FontWeight.w600)),
+        );
+        break;
+      default:
+        content = const Expanded(child: SizedBox());
+    }
+
     return maxWidthCenter(
       context: context,
       max: 880,
@@ -50,12 +78,12 @@ class _SelectedTeamView extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
-            Expanded(child: SelectedListviewPlayers()),
-            OnboardingNextButton(
-              text: 'Agregar Jugador',
+            content,
+            selected == 'Inicio' ? OnboardingNextButton(
+              text: 'Agregar Jugador', 
               action: () => context.push('/new_player_screen'),
-            ),
-            SizedBox(height: 90),
+            ) : const SizedBox.shrink(),
+            selected == 'Inicio' ? SizedBox(height: 90) : const SizedBox.shrink(),              
           ],
         ),
       ),

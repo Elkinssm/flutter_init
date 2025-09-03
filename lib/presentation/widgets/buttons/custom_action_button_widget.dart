@@ -14,8 +14,6 @@ class CustomActionButtonWidget extends ConsumerWidget {
     super.key,
   });
 
-  static const _orange = Color.fromRGBO(217, 73, 41, 1);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(selectedMenuProvider) == label;
