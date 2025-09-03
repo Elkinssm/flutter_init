@@ -2,7 +2,7 @@ import 'package:coach_app/presentation/providers/register_player_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 
 class NewPlayerScreen extends StatelessWidget {
   static const String name = '/new_player_screen';
@@ -14,7 +14,10 @@ class NewPlayerScreen extends StatelessWidget {
       top: false,
       child: Scaffold(
         backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Añadir jugador'),
+        appBar: CustomAppbar(
+          title: 'Añadir jugador',
+          onPressed: () => context.goNamed('/coach_screen'),
+        ),
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

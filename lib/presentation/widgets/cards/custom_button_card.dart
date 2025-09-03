@@ -79,7 +79,12 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
         child: Padding(
           padding:
               widget.isContentLeft!
-                  ? const EdgeInsets.symmetric(horizontal: 10, vertical: 10)
+                  ? const EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                    top: 13,
+                    bottom: 10,
+                  )
                   : EdgeInsets.zero,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,

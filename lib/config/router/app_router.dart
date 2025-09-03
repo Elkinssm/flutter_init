@@ -76,11 +76,6 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => CustomTransition.slideLeft(const NewPlayerScreen()),
     ),
     GoRoute(
-      path: '/player_details_screen',
-      name: PlayerDetailsScreen.name,
-      pageBuilder: (context, state) => CustomTransition.slideLeft(const PlayerDetailsScreen()),
-    ),
-    GoRoute(
       path: '/player_status_screen',
       name: PlayerStatusScreen.name,
       pageBuilder: (context, state) { 
@@ -95,6 +90,14 @@ final appRouter = GoRouter(
       path: '/my_teams_screen',
       name: MyTeamsScreen.name,
       pageBuilder: (context, state) => CustomTransition.slideLeft(const MyTeamsScreen()),
+    ),
+    GoRoute(
+      path: '/selected_team_screen',
+      name: SelectedTeamScreen.name,
+      pageBuilder: (context, state) { 
+        final teamName = state.extra as String;
+        return CustomTransition.slideLeft(SelectedTeamScreen(teamName: teamName));
+      },
     ),
   ],
 );

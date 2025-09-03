@@ -31,7 +31,6 @@ void main() async {
       debugPrint(stack.toString());
     },
   );
-  // runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

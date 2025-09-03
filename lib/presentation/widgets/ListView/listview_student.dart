@@ -30,7 +30,7 @@ class ListViewStudent extends StatelessWidget {
     final kb = MediaQuery.of(context).viewInsets.bottom;
 
     return ListView.separated(
-      itemCount: _students.length,
+      itemCount: _students.length + 1,
       padding: EdgeInsets.only(bottom: kb + 74),
       physics:
           _students.length > 4
@@ -54,7 +54,12 @@ class ListViewStudent extends StatelessWidget {
               ),
             ),
           ),
-      itemBuilder: (_, i) => StudentTile(s: _students[i]),
+      itemBuilder: (_, i) {
+        if (i < _students.length) {
+          return StudentTile(s: _students[i]);
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }
@@ -93,7 +98,7 @@ final _students = <Student>[
     percent: 92,
   ),
   Student(
-    name: 'Carlos Alberto',
+    name: 'Santiago José',
     image: 'assets/images/student-eg5-icon.png',
     number: 15,
     position: 'DC',
@@ -101,7 +106,7 @@ final _students = <Student>[
     percent: 92,
   ),
   Student(
-    name: 'Carlos Alberto',
+    name: 'Juan Andres',
     image: 'assets/images/student-eg6-icon.png',
     number: 22,
     position: 'SD',

@@ -1,6 +1,8 @@
 import 'package:coach_app/presentation/helpers/responsive.dart';
+import 'package:coach_app/presentation/screens/selected_team_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MyTeamsScreen extends StatelessWidget {
   static const String name = '/my_teams_screen';
@@ -17,6 +19,7 @@ class MyTeamsScreen extends StatelessWidget {
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        resizeToAvoidBottomInset: false,
         body: _MyTeamsView(),
       ),
     );
@@ -52,7 +55,16 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                 totalPlayers: 20,
                 teamClass: 'Sub-21',
                 isSelected: selectedIndex == 0,
-                onTapCard: () => setState(() => selectedIndex = 0),
+                onTapCard: () {
+                  setState(() => selectedIndex = 0);
+                  Future.delayed(const Duration(milliseconds: 120), () {
+                    // ignore: use_build_context_synchronously
+                    context.pushNamed(
+                      SelectedTeamScreen.name,
+                      extra: 'Futbol Club Roma',
+                    );
+                  });
+                },
               ),
               SizedBox(height: 15),
               CustomTeamCard(
@@ -61,7 +73,16 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                 totalPlayers: 22,
                 teamClass: 'Sub-21',
                 isSelected: selectedIndex == 1,
-                onTapCard: () => setState(() => selectedIndex = 1),
+                onTapCard: () {
+                  setState(() => selectedIndex = 1);
+                  Future.delayed(const Duration(milliseconds: 120), () {
+                    // ignore: use_build_context_synchronously
+                    context.pushNamed(
+                      SelectedTeamScreen.name,
+                      extra: 'Ajax Fc',
+                    );
+                  });
+                },
               ),
               SizedBox(height: 15),
               CustomText(
