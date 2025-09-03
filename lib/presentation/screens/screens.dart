@@ -15,3 +15,5 @@ export 'package:coach_app/presentation/screens/register_screen.dart';
 export 'package:coach_app/presentation/screens/selected_category_screen.dart';
 export 'package:coach_app/presentation/screens/welcome_screen.dart';
 export 'package:coach_app/presentation/widgets/table/monthly_summaary.dart';
+export 'package:coach_app/presentation/screens/test_screen.dart';
+

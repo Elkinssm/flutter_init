@@ -63,7 +63,7 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) {
         final year = state.extra as int;
         return CustomTransition.slideLeft(SelectedCategoryScreen(year: year));
-      },
+      }, //=> const SelectedCategoryScreen(),
     ),
     GoRoute(
       path: '/daily_attendance_screen',
@@ -98,6 +98,11 @@ final appRouter = GoRouter(
         final teamName = state.extra as String;
         return CustomTransition.slideLeft(SelectedTeamScreen(teamName: teamName));
       },
+    ),
+    GoRoute(
+      path: '/test_screen',
+      name: TestScreen.name,
+      builder: (context, state) => const TestScreen(),
     ),
   ],
 );
