@@ -5,7 +5,8 @@ import 'package:coach_app/presentation/helpers/responsive.dart';
 class OnboardingNextButton extends StatefulWidget {
   final String text;
   final VoidCallback? action;
-  const OnboardingNextButton({super.key, this.action, required this.text});
+  final bool? isEnabled;
+  const OnboardingNextButton({super.key, this.action, required this.text, this.isEnabled = true});
 
   @override
   State<OnboardingNextButton> createState() => _OnboardingNextButtonState();
@@ -17,11 +18,10 @@ class _OnboardingNextButtonState extends State<OnboardingNextButton> {
   static const _normal = Color.fromRGBO(217, 73, 41, 1);
   static const _pressed = Color.fromRGBO(27, 71, 56, 1);
 
-  Color get _bg => _isPressed ? _pressed : _normal;
+  Color get _bg => widget.isEnabled! ? (_isPressed ? _pressed : _normal) : Colors.grey;
 
   @override
   Widget build(BuildContext context) {
-    // Tamaño táctil mínimo 48dp, pero lo controlas desde el SizedBox padre.
     final radius = isPhone(context) ? 15.0 : 18.0;
     final textSize = ts(context, 13.5);
 
@@ -31,11 +31,10 @@ class _OnboardingNextButtonState extends State<OnboardingNextButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         child: FilledButton(
-          onPressed: widget.action,
+          onPressed: widget.isEnabled! ? widget.action : null,
           style: ButtonStyle(
             animationDuration: const Duration(milliseconds: 150),
             backgroundColor: WidgetStateProperty.all(_bg),
-            // minimumSize lo maneja el SizedBox contenedor en la pantalla
             shape: WidgetStateProperty.all(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
             ),

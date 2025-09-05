@@ -14,6 +14,7 @@ class CustomButtonCard extends StatefulWidget {
   final bool? isContentLeft;
   final double spacing;
   final VoidCallback? onTap;
+  final bool? isInfoCard;
   const CustomButtonCard({
     super.key,
     required this.width,
@@ -26,7 +27,8 @@ class CustomButtonCard extends StatefulWidget {
     this.onTap,
     this.fontWeightT1 = FontWeight.w800,
     this.fontWeightT2 = FontWeight.w700,
-    this.isContentLeft = false,
+    this.isContentLeft = false, 
+    this.isInfoCard = true,
   });
 
   @override
@@ -37,14 +39,17 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
   bool _isPressed = false;
 
   void _onTapDown(TapDownDetails details) {
+    if (widget.isInfoCard == true) return;
     setState(() => _isPressed = true);
   }
 
   void _onTapUp(TapUpDetails details) {
+    if (widget.isInfoCard == true) return;
     setState(() => _isPressed = false);
   }
 
   void _onTapCancel() {
+    if (widget.isInfoCard == true) return;
     setState(() => _isPressed = false);
   }
 

@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/helpers/hepler_aligment.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/selected_buttons_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -40,22 +41,32 @@ class _SelectedTeamView extends ConsumerWidget {
         content = const Expanded(child: SelectedListviewPlayers());
         break;
       case 'Alineación':
-        content = const Expanded(
-          child: Center(child: CustomText(text: 'Alineación', size: 18, fontWeight: FontWeight.w600)),
-        );
+        content = Expanded(child: HeplerAligment());
         break;
       case 'Posiciones':
         content = const Expanded(
-          child: Center(child: CustomText(text: 'Posiciones', size: 18, fontWeight: FontWeight.w600)),
+          child: Center(
+            child: CustomText(
+              text: 'Posiciones',
+              size: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         );
         break;
       case 'Partidos':
         content = const Expanded(
-          child: Center(child: CustomText(text: 'Partidos', size: 18, fontWeight: FontWeight.w600)),
+          child: Center(
+            child: CustomText(
+              text: 'Partidos',
+              size: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         );
         break;
       default:
-        content = const Expanded(child: SizedBox());
+        content = SizedBox();
     }
 
     return maxWidthCenter(
@@ -79,11 +90,15 @@ class _SelectedTeamView extends ConsumerWidget {
             ),
             SizedBox(height: 10),
             content,
-            selected == 'Inicio' ? OnboardingNextButton(
-              text: 'Agregar Jugador', 
-              action: () => context.push('/new_player_screen'),
-            ) : const SizedBox.shrink(),
-            selected == 'Inicio' ? SizedBox(height: 90) : const SizedBox.shrink(),              
+            selected == 'Inicio'
+                ? OnboardingNextButton(
+                  text: 'Agregar Jugador',
+                  action: () => context.push('/new_player_screen'),
+                )
+                : const SizedBox.shrink(),
+            selected == 'Inicio'
+                ? SizedBox(height: 90)
+                : const SizedBox.shrink(),
           ],
         ),
       ),

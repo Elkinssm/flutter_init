@@ -11,6 +11,7 @@ class CustomActionButton extends StatefulWidget {
   final double? iconH;
   final double? iconW;
   final double? radius;
+  final bool? isDisabled;
 
   const CustomActionButton({
     super.key,
@@ -21,6 +22,7 @@ class CustomActionButton extends StatefulWidget {
     this.iconH,
     this.iconW,
     this.radius,
+    this.isDisabled = true,
   });
 
   @override
@@ -31,14 +33,17 @@ class _CustomActionButtonState extends State<CustomActionButton> {
   bool _isPressed = false;
 
   void _onTapDown(TapDownDetails details) {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = true);
   }
 
   void _onTapUp(TapUpDetails details) {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = false);
   }
 
   void _onTapCancel() {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = false);
   }
 
@@ -83,7 +88,7 @@ class _CustomActionButtonState extends State<CustomActionButton> {
                   fontSize: textSize,
                   height: 0.98,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: widget.isDisabled! ? Colors.grey : Colors.black,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

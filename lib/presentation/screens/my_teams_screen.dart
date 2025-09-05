@@ -15,7 +15,7 @@ class MyTeamsScreen extends StatelessWidget {
       child: Scaffold(
         extendBody: true,
         backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Añadir jugador'),
+        appBar: CustomAppbar(title: 'Mis equipos'),
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -52,7 +52,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
               CustomTeamCard(
                 image: 'assets/images/club_roma.png',
                 teamName: 'Futbol Club Roma',
-                totalPlayers: 20,
+                totalPlayers: 6,
                 teamClass: 'Sub-21',
                 isSelected: selectedIndex == 0,
                 onTapCard: () {
@@ -70,7 +70,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
               CustomTeamCard(
                 image: 'assets/images/ajaz_fc.png',
                 teamName: 'Ajax Fc',
-                totalPlayers: 22,
+                totalPlayers: 6,
                 teamClass: 'Sub-21',
                 isSelected: selectedIndex == 1,
                 onTapCard: () {
@@ -105,6 +105,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                     fontWeightT2: FontWeight.w400,
                     isContentLeft: true,
                     spacing: 18,
+                    isInfoCard: true,
                   ),
                   CustomButtonCard(
                     width: 174.5,
@@ -116,6 +117,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                     fontWeightT2: FontWeight.w400,
                     isContentLeft: true,
                     spacing: 18,
+                    isInfoCard: true,
                   ),
                 ],
               ),
@@ -130,6 +132,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                 fontWeightT2: FontWeight.w400,
                 isContentLeft: true,
                 spacing: 18,
+                isInfoCard: true,
               ),
               SizedBox(height: 15),
               CustomText(

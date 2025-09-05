@@ -108,6 +108,7 @@ class CustomBottomAppbar extends ConsumerWidget {
                     selectedIndex,
                     'winner',
                     iconSize,
+                    ontap: () => context.pushNamed('/assistance_screen'),
                   ),
                   SizedBox(width: gapForFab),
                   _buildIcon(
@@ -117,6 +118,7 @@ class CustomBottomAppbar extends ConsumerWidget {
                     selectedIndex,
                     'stadium',
                     iconSize,
+                    ontap: () => context.pushNamed('/category_screen'),
                   ),
                   _buildIcon(
                     context,

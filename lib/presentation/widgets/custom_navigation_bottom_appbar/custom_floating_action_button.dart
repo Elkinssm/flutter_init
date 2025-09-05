@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   const CustomFloatingActionButton({super.key});
@@ -31,7 +32,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         width: fabSize,
         height: fabSize,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () => context.pushNamed('/selected_team_screen', extra: 'Equipo'),
           elevation: 0,
           highlightElevation: 0,
           shape: const CircleBorder(),

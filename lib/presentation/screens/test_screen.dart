@@ -1,7 +1,9 @@
 import 'package:coach_app/config/domain/player.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/widgets/players/coach_card.dart';
 import 'package:coach_app/presentation/widgets/players/player_list_item.dart';
 import 'package:coach_app/presentation/widgets/players/player_photo_marker.dart';
+import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
 
 // --- MOCK DATA: Ahora organizado por formación ---
@@ -24,7 +26,7 @@ final Map<String, List<Player>> formations = {
       position: 'Lateral Izquierdo',
       photoPath: 'assets/images/player.png',
       top: 0.22,
-      left: 0.08,
+      left: 0.25,
     ),
     Player(
       id: '3',
@@ -33,7 +35,7 @@ final Map<String, List<Player>> formations = {
       position: 'Central',
       photoPath: 'assets/images/player.png',
       top: 0.20,
-      left: 0.35,
+      left: 0.38,
     ),
     Player(
       id: '4',
@@ -42,7 +44,7 @@ final Map<String, List<Player>> formations = {
       position: 'Central',
       photoPath: 'assets/images/player.png',
       top: 0.20,
-      right: 0.35,
+      right: 0.38,
     ),
     Player(
       id: '5',
@@ -51,7 +53,7 @@ final Map<String, List<Player>> formations = {
       position: 'Lateral Derecho',
       photoPath: 'assets/images/player.png',
       top: 0.22,
-      right: 0.08,
+      right: 0.25,
     ),
     Player(
       id: '6',
@@ -60,7 +62,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.4,
-      left: 0.25,
+      left: 0.31,
     ),
     Player(
       id: '7',
@@ -79,7 +81,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.4,
-      right: 0.25,
+      right: 0.31,
     ),
     Player(
       id: '9',
@@ -88,7 +90,7 @@ final Map<String, List<Player>> formations = {
       position: 'Delantero',
       photoPath: 'assets/images/player.png',
       top: 0.6,
-      left: 0.1,
+      left: 0.25,
     ),
     Player(
       id: '10',
@@ -107,7 +109,7 @@ final Map<String, List<Player>> formations = {
       position: 'Delantero',
       photoPath: 'assets/images/player.png',
       top: 0.6,
-      right: 0.1,
+      right: 0.25,
     ),
   ],
   '4-4-2': [
@@ -128,7 +130,7 @@ final Map<String, List<Player>> formations = {
       position: 'Lateral Izquierdo',
       photoPath: 'assets/images/player.png',
       top: 0.22,
-      left: 0.08,
+      left: 0.25,
     ),
     Player(
       id: '3',
@@ -137,7 +139,7 @@ final Map<String, List<Player>> formations = {
       position: 'Central',
       photoPath: 'assets/images/player.png',
       top: 0.20,
-      left: 0.35,
+      left: 0.38,
     ),
     Player(
       id: '4',
@@ -146,7 +148,7 @@ final Map<String, List<Player>> formations = {
       position: 'Central',
       photoPath: 'assets/images/player.png',
       top: 0.20,
-      right: 0.35,
+      right: 0.38,
     ),
     Player(
       id: '5',
@@ -155,7 +157,7 @@ final Map<String, List<Player>> formations = {
       position: 'Lateral Derecho',
       photoPath: 'assets/images/player.png',
       top: 0.22,
-      right: 0.08,
+      right: 0.25,
     ),
     Player(
       id: '6',
@@ -164,7 +166,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.45,
-      left: 0.15,
+      left: 0.225,
     ),
     Player(
       id: '7',
@@ -173,7 +175,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.4,
-      left: 0.4,
+      left: 0.485,
     ),
     Player(
       id: '8',
@@ -182,7 +184,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.4,
-      right: 0.4,
+      right: 0.485,
     ),
     Player(
       id: '9',
@@ -191,7 +193,7 @@ final Map<String, List<Player>> formations = {
       position: 'Mediocampista',
       photoPath: 'assets/images/player.png',
       top: 0.45,
-      right: 0.15,
+      right: 0.225,
     ),
     Player(
       id: '10',
@@ -245,7 +247,6 @@ class TestScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ... El código de TestScreen se mantiene igual ...
     return DefaultTabController(
       length: 4,
       initialIndex: 1,
@@ -302,93 +303,94 @@ class AlignmentTab extends StatefulWidget {
 }
 
 class _AlignmentTabState extends State<AlignmentTab> {
-  // VARIABLES DE ESTADO: Guardan la información que puede cambiar
   String _selectedFormation = '4-3-3';
   List<Player> _currentLineup = formations['4-3-3']!;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          // REEMPLAZAMOS EL TEXTO POR UN DROPDOWN
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 4.0,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300, width: 1),
-            ),
-            child: DropdownButton<String>(
-              value: _selectedFormation,
-              underline: const SizedBox(), // quita la línea de abajo
-              items:
-                  formations.keys.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 20,
+    return Column(
+      children: [
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              height: 25,
+              padding: const EdgeInsets.only(right: 3, left: 10),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(203, 213, 225, 1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300, width: 1),
+              ),
+              child: DropdownButton<String>(
+                value: _selectedFormation,
+                underline: const SizedBox.shrink(),
+                isExpanded: false,
+                isDense: true,
+                borderRadius: BorderRadius.circular(12),
+                dropdownColor: const Color.fromRGBO(203, 213, 225, 1),
+                menuWidth: 80,
+                items:
+                    formations.keys.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: CustomText(
+                          text: value,
+                          size: ts(context, 14),
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Color.fromRGBO(79, 166, 38, 1),
                         ),
-                      ),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  // LA MAGIA OCURRE AQUÍ:
-                  setState(() {
-                    _selectedFormation = newValue;
-                    _currentLineup = formations[newValue]!;
-                  });
-                }
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            height: MediaQuery.of(context).size.height * 0.55,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/campo_futbol.png"),
-                fit: BoxFit.contain,
+                      );
+                    }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _selectedFormation = newValue;
+                      _currentLineup = formations[newValue]!;
+                    });
+                  }
+                },
               ),
             ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // AHORA USAMOS LA LISTA DEL ESTADO: _currentLineup
-                return Stack(
-                  children:
-                      _currentLineup.map((player) {
-                        return Positioned(
-                          top: constraints.maxHeight * (player.top ?? 0),
-                          left:
-                              player.left != null
-                                  ? constraints.maxWidth * player.left!
-                                  : null,
-                          right:
-                              player.right != null
-                                  ? constraints.maxWidth * player.right!
-                                  : null,
-                          child: PlayerPhotoMarker(player: player),
-                        );
-                      }).toList(),
-                );
-              },
+          ],
+        ),
+        const SizedBox(height: 2),
+        Container(
+          height: 350,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/campo_futbol.png"),
+              fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 24),
-          const CoachCard(),
-          const SizedBox(height: 24),
-          ...substitutes.map((player) => PlayerListItem(player: player)),
-          const SizedBox(height: 24),
-        ],
-      ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children:
+                    _currentLineup.map((player) {
+                      return Positioned(
+                        top: constraints.maxHeight * (player.top ?? 0),
+                        left:
+                            player.left != null
+                                ? constraints.maxWidth * player.left!
+                                : null,
+                        right:
+                            player.right != null
+                                ? constraints.maxWidth * player.right!
+                                : null,
+                        child: PlayerPhotoMarker(player: player),
+                      );
+                    }).toList(),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 10),
+        const CoachCard(),
+        const SizedBox(height: 10),
+        ...substitutes.map((player) => PlayerListItem(player: player)),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }

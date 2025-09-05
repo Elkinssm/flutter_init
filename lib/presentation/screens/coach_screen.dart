@@ -235,21 +235,24 @@ class _CoachView extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    SizedBox(height: isPhone(context) ? 4 : 2),
-                    CustomText(
-                      text: 'Asistencia',
-                      fontWeight: FontWeight.w900,
-                      size: asistenciaTitleSize,
-                      color: const Color.fromRGBO(11, 25, 38, 1),
-                    ),
-                    // SizedBox(height: hp(context, 0.01)),
-                    SizedBox(
-                      height: asistenciaHeight,
-                      child: const AssistanceBarChart(),
-                    ),
-                  ],
+                child: InkWell(
+                  onTap: () => context.pushNamed('/daily_attendance_screen'),
+                  child: Column(
+                    children: [
+                      SizedBox(height: isPhone(context) ? 4 : 2),
+                      CustomText(
+                        text: 'Asistencia',
+                        fontWeight: FontWeight.w900,
+                        size: asistenciaTitleSize,
+                        color: const Color.fromRGBO(11, 25, 38, 1),
+                      ),
+                      // SizedBox(height: hp(context, 0.01)),
+                      SizedBox(
+                        height: asistenciaHeight,
+                        child: const AssistanceBarChart(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: hp(context, 0.02)),
@@ -296,6 +299,7 @@ class _CoachView extends StatelessWidget {
                       iconH: actionIconH,
                       iconW: actionIconW,
                       onTap: () => context.push('/new_player_screen'),
+                      isDisabled: false,
                     ),
                   ),
                   SizedBox(
@@ -308,6 +312,7 @@ class _CoachView extends StatelessWidget {
                       iconH: actionIconH,
                       iconW: actionIconW,
                       onTap: () => context.push('/my_teams_screen'),
+                      isDisabled: false,
                     ),
                   ),
                   SizedBox(
@@ -319,6 +324,7 @@ class _CoachView extends StatelessWidget {
                       textSize: actionTextSize,
                       iconH: actionIconH,
                       iconW: actionIconW,
+                      isDisabled: true,
                     ),
                   ),
                   SizedBox(
@@ -330,6 +336,7 @@ class _CoachView extends StatelessWidget {
                       textSize: actionTextSize,
                       iconH: actionIconH,
                       iconW: actionIconW,
+                      isDisabled: true,
                     ),
                   ),
                 ],

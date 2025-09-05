@@ -7,12 +7,14 @@ class CustomTextFormField extends StatefulWidget {
   final IconData? icon;
   final bool? obscureText;
   final bool isPassword;
+  final TextEditingController? controller;
   const CustomTextFormField({
     super.key,
     required this.hintText,
     this.icon,
     this.obscureText = false,
-    this.isPassword = false,
+    this.isPassword = false, 
+    this.controller,
   });
 
   @override
@@ -39,6 +41,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     final iconSize = ts(context, 20);
 
     return TextFormField(
+      controller: widget.controller,
       onTapOutside: (event) => FocusNode().unfocus(),
       obscureText: _obscure,
       style: GoogleFonts.inter(fontSize: ts(context, 16)),

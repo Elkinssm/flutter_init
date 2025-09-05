@@ -67,7 +67,7 @@ class _PlayerScreen extends StatelessWidget {
                 spacing: 9.5,
                 children: [
                   CustomCards(
-                    action: () => context.push('/performance_screen'),
+                    action: () => context.push('/category_screen'),
                     title: 'Categoría',
                     subtitle: '2012',
                     textButton: 'Ver mi categoría',
@@ -111,6 +111,7 @@ class _PlayerScreen extends StatelessWidget {
                 "Toques efectivos: 95%",
               ],
               onTap: () => context.push('/performance_screen'),
+              isDisabled: false,
             ),
           ],
         ),

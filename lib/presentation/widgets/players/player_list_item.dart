@@ -11,12 +11,16 @@ class PlayerListItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Color.fromRGBO(213, 229, 244, 1),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+            BoxShadow(
+              color: Colors.black45,
+              blurRadius: 4,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: Row(

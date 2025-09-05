@@ -13,22 +13,60 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: _LoginView(),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (!didPop) {
+            context.go('/welcome_screen');
+          }
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: _LoginView(),
+          ),
         ),
       ),
     );
   }
 }
 
-class _LoginView extends ConsumerWidget {
+class _LoginView extends ConsumerStatefulWidget {
   const _LoginView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends ConsumerState<_LoginView> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isButtonEnabled = false;
+
+  void _checkFields() {
+    setState(() {
+      isButtonEnabled =
+          emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.addListener(_checkFields);
+    passwordController.addListener(_checkFields);
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isKeyboardVisible = ref.watch(keyboardVisibilityProvider);
 
     final sidePad = wp(context, isPhone(context) ? 0.06 : 0.08);
@@ -40,13 +78,12 @@ class _LoginView extends ConsumerWidget {
         isKeyboardVisible ? hp(context, 0.04) : hp(context, 0.07);
     final betweenFields = hp(context, 0.022);
     final bottomCTA = isKeyboardVisible ? hp(context, 0.02) : hp(context, 0.05);
-
     final logoH = isPhone(context) ? hp(context, 0.08) : hp(context, 0.10);
     final titleSize = ts(context, 40);
     final buttonW = isPhone(context) ? wp(context, 0.56) : wp(context, 0.42);
     final buttonH = isPhone(context) ? 45.0 : 52.0;
     final fieldH = isPhone(context) ? 46.0 : 52.0;
-
+    
     return SafeArea(
       top: false,
       child: LayoutBuilder(
@@ -90,7 +127,8 @@ class _LoginView extends ConsumerWidget {
                                 ),
                                 SizedBox(
                                   height: fieldH,
-                                  child: const CustomTextFormField(
+                                  child: CustomTextFormField(
+                                    controller: emailController,
                                     hintText: 'test@gmail.com',
                                     icon: Icons.mail_outline_sharp,
                                   ),
@@ -102,7 +140,8 @@ class _LoginView extends ConsumerWidget {
                                 ),
                                 SizedBox(
                                   height: fieldH,
-                                  child: const CustomTextFormField(
+                                  child: CustomTextFormField(
+                                    controller: passwordController,
                                     hintText: '**********',
                                     obscureText: true,
                                     isPassword: true,
@@ -120,6 +159,7 @@ class _LoginView extends ConsumerWidget {
                                 height: buttonH,
                                 child: OnboardingNextButton(
                                   text: 'Continuar',
+                                  isEnabled: isButtonEnabled,
                                   action: () {
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus();

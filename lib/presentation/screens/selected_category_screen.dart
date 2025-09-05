@@ -1,5 +1,6 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SelectedCategoryScreen extends StatelessWidget {
   static const String name = '/selected_category_screen';
@@ -81,6 +82,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/bar-chart-icon.png',
                   imageSize: 24,
+                  onTap: () => context.pushNamed('/performance_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -90,6 +92,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/tournaments-icon.png',
                   imageSize: 24,
+                  onTap: () => context.pushNamed('/my_teams_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -99,6 +102,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/check-list-icon.png',
                   imageSize: 24,
+                  onTap: () => context.pushNamed('/daily_attendance_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -108,6 +112,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/plus-icon.png',
                   imageSize: 24,
+                  onTap: () => context.pushNamed('/new_player_screen'),
                 ),
               ],
             ),

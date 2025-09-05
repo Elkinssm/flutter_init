@@ -8,15 +8,22 @@ class CoachCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: Color.fromRGBO(213, 229, 244, 1),
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black45,
+              blurRadius: 4,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: const Row(
           children: [
             CircleAvatar(
-              radius: 25,
+              radius: 15,
               backgroundImage: AssetImage(
                 'assets/images/player.png',
               ), // Foto del coach
@@ -29,7 +36,10 @@ class CoachCard extends StatelessWidget {
                   'Jerome Bell',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                Text('Entrenador', style: TextStyle(color: Colors.grey)),
+                Text(
+                  'Entrenador',
+                  style: TextStyle(color: Color.fromRGBO(217, 73, 41, 1)),
+                ),
               ],
             ),
           ],

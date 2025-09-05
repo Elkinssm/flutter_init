@@ -5,11 +5,13 @@ class ExerciseCard extends StatefulWidget {
   final String title;
   final String assetImage;
   final VoidCallback? onTap;
+  final bool? isDisabled;
   const ExerciseCard({
     super.key,
     required this.title,
     required this.assetImage,
     this.onTap,
+    this.isDisabled = true,
   });
 
   @override
@@ -20,14 +22,17 @@ class _ExerciseCardState extends State<ExerciseCard> {
   bool _isPressed = false;
 
   void _onTapDown(TapDownDetails details) {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = true);
   }
 
   void _onTapUp(TapUpDetails details) {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = false);
   }
 
   void _onTapCancel() {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = false);
   }
 
@@ -65,6 +70,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
               CustomText(
                 text: widget.title,
                 fontWeight: FontWeight.w600,
+                color: widget.isDisabled! ? Colors.grey : null,
                 size: 16,
               ),
               Image.asset(widget.assetImage, width: 35, height: 35),

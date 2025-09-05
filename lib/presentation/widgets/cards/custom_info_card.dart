@@ -9,6 +9,7 @@ class CustomInfoCard extends StatefulWidget {
   final int cacheWidth;
   final String assetImage;
   final VoidCallback? onTap;
+  final bool? isDisabled;
 
   const CustomInfoCard({
     super.key,
@@ -18,7 +19,8 @@ class CustomInfoCard extends StatefulWidget {
     required this.assetImage,
     this.onTap,
     required this.cacheHeight,
-    required this.cacheWidth,
+    required this.cacheWidth, 
+    this.isDisabled = true,
   });
 
   @override
@@ -29,6 +31,7 @@ class _CustomInfoCardState extends State<CustomInfoCard> {
   bool _isPressed = false;
 
   void _onTapDown(TapDownDetails details) {
+    if (widget.isDisabled == true) return;
     setState(() => _isPressed = true);
   }
 
