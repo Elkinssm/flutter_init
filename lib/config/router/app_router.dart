@@ -1,11 +1,14 @@
+import 'package:coach_app/presentation/helpers/globals.dart';
+import 'package:coach_app/presentation/helpers/loading_observer.dart';
 import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 import 'transitions_config/custom_transition.dart';
 
 final appRouter = GoRouter(
+  navigatorKey: rootNavKey,
+  observers: [LoadingNavObserver()],
   initialLocation: '/loading_screen',
   debugLogDiagnostics: true,
-  observers: [],
   routes: [
     GoRoute(
       path: '/loading_screen',
