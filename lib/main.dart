@@ -34,13 +34,20 @@ void main() async {
     return true;
   };
   runZonedGuarded(
-    () => runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const ProviderScope(child: MyApp()))),
+    () => runApp(
+      DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => const ProviderScope(child: MyApp()),
+      ),
+    ),
     (error, stack) {
       debugPrint('runZonedGuarded: $error');
       debugPrint(stack.toString());
     },
   );
 }
+// runApp(const ProviderScope(child: MyApp())),
+// runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const ProviderScope(child: MyApp()))),
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

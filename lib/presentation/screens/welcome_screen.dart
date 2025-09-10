@@ -28,21 +28,40 @@ class _WelcomeView extends ConsumerWidget {
       'assets/images/image7.png',
     ];
 
-    final topSafe = MediaQuery.of(context).padding.top;
-
-    final logoWidth = isPhone(context) ? wp(context, 0.42) : wp(context, 0.28);
-    final skipRightPad = isPhone(context) ? 15.0 : 24.0;
-
+    final topSpacing = shp(context, 0.06);
+    final bottomSafe = shp(context, 0.025);
+    final padLeftLogo =
+        isMediumTablet(context)
+            ? swp(context, 0.0)
+            : isLargeTablet(context)
+            ? swp(context, 0.0)
+            : swp(context, 0.05);
+    final logoWidth =
+        isPhone(context)
+            ? swp(context, 0.41)
+            : isBigPhone(context)
+            ? swp(context, 0.42)
+            : isMediumTablet(context)
+            ? swp(context, 0.4)
+            : isLargeTablet(context)
+            ? swp(context, 0.2)
+            : swp(context, 0.32);
+    final skipTopPad =
+        isSmallPhone(context) ? shp(context, 0.02) : shp(context, 0.02);
+    final skipRightPad =
+        isMediumTablet(context)
+            ? swp(context, 0.14)
+            : isLargeTablet(context)
+            ? swp(context, 0.055)
+            : swp(context, 0.025);
+    final skipTP = shp(context, 0.018);
+    final skipSize = ts(context, 17);
     final titleSize = ts(context, 50);
-    final subtitleSize = ts(context, 30);
-    final skipSize = ts(context, 14);
-    final indicatorHeight = isPhone(context) ? 8.0 : 10.0;
+    final subtitleSize = ts(context, 29);
+    final spacingDown1 = shp(context, 0.015);
+    final indicatorHeight = shp(context, 0.01);
     final indicatorGap = isPhone(context) ? 6.0 : 8.0;
-
-    final topSpacing = hp(context, 0.027) + topSafe;
-    final middleSpacing = hp(context, 0.093);
-    final bottomSpacing = hp(context, 0.03);
-
+    final middleSpacing = shp(context, 0.1);
     final buttonWidth =
         isPhone(context) ? wp(context, 0.56) : wp(context, 0.40);
     final buttonHeight = isPhone(context) ? 45.0 : 52.0;
@@ -58,7 +77,13 @@ class _WelcomeView extends ConsumerWidget {
             itemCount: images.length,
             onPageChanged:
                 (i) => ref.read(pageIndexProvider.notifier).state = i,
-            itemBuilder: (_, i) => Image.asset(images[i], fit: BoxFit.cover),
+            itemBuilder:
+                (_, i) => Image.asset(
+                  images[i],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
           ),
           maxWidthCenter(
             context: context,
@@ -68,23 +93,28 @@ class _WelcomeView extends ConsumerWidget {
               children: [
                 SizedBox(height: topSpacing),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: wp(context, 0.03)),
+                  padding: EdgeInsets.symmetric(horizontal: swp(context, 0.03)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 5),
+                        padding: EdgeInsets.only(left: padLeftLogo),
                         child: Image.asset(
                           'assets/images/group5.png',
                           width: logoWidth,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8, skipRightPad, 0),
+                        padding: EdgeInsets.fromLTRB(
+                          0,
+                          skipTopPad,
+                          skipRightPad,
+                          0,
+                        ),
                         child: TextButton(
                           onPressed: () => context.push('/login_screen'),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.only(top: 10),
+                            padding: EdgeInsets.only(top: skipTP),
                             minimumSize: const Size(0, 0),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -110,15 +140,31 @@ class _WelcomeView extends ConsumerWidget {
                     size: subtitleSize,
                   ),
                 ),
-                SizedBox(height: hp(context, 0.02)),
+                SizedBox(height: spacingDown1),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(images.length, (i) {
                     final active = i == page;
                     final width =
                         active
-                            ? (isPhone(context) ? 42.0 : 54.0)
-                            : (isPhone(context) ? 10.0 : 12.0);
+                            ? (isPhone(context)
+                                ? swp(context, 0.11)
+                                : isBigPhone(context)
+                                ? swp(context, 0.11)
+                                : isMediumTablet(context)
+                                ? swp(context, 0.10)
+                                : isLargeTablet(context)
+                                ? swp(context, 0.15)
+                                : swp(context, 0.05))
+                            : (isPhone(context)
+                                ? swp(context, 0.034)
+                                : isBigPhone(context)
+                                ? swp(context, 0.035)
+                                : isMediumTablet(context)
+                                ? swp(context, 0.03)
+                                : isLargeTablet(context)
+                                ? swp(context, 0.04)
+                                : swp(context, 0.05));
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       margin: EdgeInsets.symmetric(horizontal: indicatorGap),
@@ -132,17 +178,19 @@ class _WelcomeView extends ConsumerWidget {
                   }),
                 ),
                 SizedBox(height: hp(context, 0.02)),
-                Center(
-                  child: SizedBox(
-                    width: buttonWidth,
-                    height: buttonHeight,
-                    child: OnboardingNextButton(
-                      action: () => context.push('/login_screen'),
-                      text: 'Continuar',
+                Padding(
+                  padding: EdgeInsets.only(bottom: bottomSafe),
+                  child: Center(
+                    child: SizedBox(
+                      width: buttonWidth,
+                      height: buttonHeight,
+                      child: OnboardingNextButton(
+                        action: () => context.push('/login_screen'),
+                        text: 'Continuar',
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(height: bottomSpacing),
               ],
             ),
           ),

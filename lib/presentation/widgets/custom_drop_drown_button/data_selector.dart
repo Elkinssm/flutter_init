@@ -29,7 +29,7 @@ class DataSelector extends ConsumerWidget {
               ],
             ),
             child: DropdownButtonFormField<String>(
-              value: selectedValue,
+              initialValue: selectedValue, // value
               menuMaxHeight: 150,
               itemHeight: null,
               hint: const CustomText(
