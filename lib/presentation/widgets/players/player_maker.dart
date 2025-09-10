@@ -1,22 +1,20 @@
-// Widget reutilizable para cada jugador
 import 'package:flutter/material.dart';
 
 class PlayerMarker extends StatelessWidget {
   final String number;
   final String name;
 
-  // El constructor para recibir los datos
   const PlayerMarker({super.key, required this.number, required this.name});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize:
-          MainAxisSize.min, // Para que la columna no ocupe espacio extra
+          MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 18,
-          backgroundColor: Colors.red.withOpacity(0.9), // Color del equipo
+          backgroundColor: Colors.red.shade600,
           child: Text(
             number,
             style: const TextStyle(
@@ -30,7 +28,7 @@ class PlayerMarker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black54,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(

@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/config/theme/app_theme.dart';
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,7 +34,7 @@ void main() async {
     return true;
   };
   runZonedGuarded(
-    () => runApp(const ProviderScope(child: MyApp())),
+    () => runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const ProviderScope(child: MyApp()))),
     (error, stack) {
       debugPrint('runZonedGuarded: $error');
       debugPrint(stack.toString());

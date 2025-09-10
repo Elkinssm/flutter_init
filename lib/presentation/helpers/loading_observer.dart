@@ -12,21 +12,21 @@ class LoadingNavObserver extends NavigatorObserver {
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    NavLoading.instance.begin(thresholdMs: 50);
+    NavLoading.instance.begin(thresholdMs: 150);
     _endNextFrame();
     super.didPush(route, previousRoute);
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
-    NavLoading.instance.begin(thresholdMs: 50);
+    NavLoading.instance.begin(thresholdMs: 150);
     _endNextFrame();
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
-    NavLoading.instance.begin(thresholdMs: 50);
+    NavLoading.instance.begin(thresholdMs: 150);
     _endNextFrame();
     super.didPop(route, previousRoute);
   }

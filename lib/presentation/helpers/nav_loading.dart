@@ -12,7 +12,7 @@ class NavLoading {
   Timer? _delayTimer;
   bool _requested = false;
 
-  void begin({int thresholdMs = 50}) {
+  void begin({int thresholdMs = 150}) {
     _cancelDelay();
     _requested = true;
     _delayTimer = Timer(Duration(milliseconds: thresholdMs), () {

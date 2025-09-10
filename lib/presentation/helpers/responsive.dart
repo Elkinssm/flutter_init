@@ -8,8 +8,8 @@ bool isSmallTablet(BuildContext c) {
 }
 bool isLargeTablet(BuildContext c) => MediaQuery.of(c).size.shortestSide >= 840;
 
-double wp(BuildContext c, double p) => MediaQuery.of(c).size.width * p;
-double hp(BuildContext c, double p) => MediaQuery.of(c).size.height * p;
+double wp(BuildContext c, double p) => MediaQuery.of(c).size.shortestSide * p;
+double hp(BuildContext c, double p) => MediaQuery.of(c).size.longestSide * p;
 
 double ts(BuildContext c, double base) {
   if (isLargeTablet(c)) return base * 1.35;
