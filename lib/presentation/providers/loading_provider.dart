@@ -84,7 +84,7 @@ class LoadingNotifier extends StateNotifier<double> {
   Future<void> _initializeProviders() async {
     ref.read(keyboardVisibilityProvider.notifier);
     ref.read(selectedIconProvider.notifier);
-    ref.read(formRegisterUserFieldsProvider);
+    // ref.read(formRegisterUserFieldsProvider);
     ref.read(assistanceProvider.notifier);
     ref.read(formFieldsRegisterPlayerProvider);
     ref.read(selectedValueLineChartProvider);

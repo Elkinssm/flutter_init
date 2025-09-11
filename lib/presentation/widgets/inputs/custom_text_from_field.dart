@@ -13,7 +13,7 @@ class CustomTextFormField extends StatefulWidget {
     required this.hintText,
     this.icon,
     this.obscureText = false,
-    this.isPassword = false, 
+    this.isPassword = false,
     this.controller,
   });
 
@@ -33,7 +33,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(isPhone(context) ? 17 : 18),
+      borderRadius: BorderRadius.circular(18),
       borderSide: const BorderSide(color: Colors.transparent),
     );
 
@@ -48,7 +48,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(
           horizontal: isPhone(context) ? 15 : 18,
-          vertical: isPhone(context) ? 8 : 10,
+          vertical: isPhone(context) ? 8 : 18,
         ),
         enabledBorder: border,
         filled: true,
@@ -60,21 +60,22 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           color: Colors.grey,
           fontWeight: FontWeight.w400,
         ),
-        prefixIcon: widget.icon != null
-            ? Icon(widget.icon, size: iconSize)
-            : null,
-        suffixIcon: widget.isPassword
-            ? IconButton(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  size: iconSize,
-                ),
-                color: _obscure ? const Color.fromRGBO(138, 149, 151, 1) : null,
-                onPressed: () => setState(() => _obscure = !_obscure),
-              )
-            : null,
+        prefixIcon:
+            widget.icon != null ? Icon(widget.icon, size: iconSize) : null,
+        suffixIcon:
+            widget.isPassword
+                ? IconButton(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  icon: Icon(
+                    _obscure ? Icons.visibility_off : Icons.visibility,
+                    size: iconSize,
+                  ),
+                  color:
+                      _obscure ? const Color.fromRGBO(138, 149, 151, 1) : null,
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                )
+                : null,
       ),
     );
   }

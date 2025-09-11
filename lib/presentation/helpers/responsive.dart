@@ -74,7 +74,7 @@ double ts(BuildContext c, double base) {
   double factor;
 
   if (isLargeTablet(c)) {
-    factor = 1.35;
+    factor = 1.6;
   } else if (isMediumTablet(c)) {
     factor = 1.25;
   } else if (isSmallTablet(c)) {

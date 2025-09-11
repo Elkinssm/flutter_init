@@ -44,7 +44,7 @@ class _WelcomeView extends ConsumerWidget {
             : isMediumTablet(context)
             ? swp(context, 0.4)
             : isLargeTablet(context)
-            ? swp(context, 0.2)
+            ? swp(context, 0.25)
             : swp(context, 0.32);
     final skipTopPad =
         isSmallPhone(context) ? shp(context, 0.02) : shp(context, 0.02);
@@ -59,12 +59,19 @@ class _WelcomeView extends ConsumerWidget {
     final titleSize = ts(context, 50);
     final subtitleSize = ts(context, 29);
     final spacingDown1 = shp(context, 0.015);
+    final spacingDown2 = shp(context, 0.022);
     final indicatorHeight = shp(context, 0.01);
-    final indicatorGap = isPhone(context) ? 6.0 : 8.0;
+    final indicatorGap = swp(context, 0.005);
     final middleSpacing = shp(context, 0.1);
     final buttonWidth =
-        isPhone(context) ? wp(context, 0.56) : wp(context, 0.40);
-    final buttonHeight = isPhone(context) ? 45.0 : 52.0;
+        isPhone(context)
+            ? swp(context, 0.43)
+            : isBigPhone(context)
+            ? swp(context, 0.43)
+            : isLargeTablet(context)
+            ? swp(context, 0.35)
+            : swp(context, 0.40);
+    final buttonHeight = shp(context, 0.048);
 
     return SafeArea(
       top: false,
@@ -154,7 +161,7 @@ class _WelcomeView extends ConsumerWidget {
                                 : isMediumTablet(context)
                                 ? swp(context, 0.10)
                                 : isLargeTablet(context)
-                                ? swp(context, 0.15)
+                                ? swp(context, 0.10)
                                 : swp(context, 0.05))
                             : (isPhone(context)
                                 ? swp(context, 0.034)
@@ -163,7 +170,7 @@ class _WelcomeView extends ConsumerWidget {
                                 : isMediumTablet(context)
                                 ? swp(context, 0.03)
                                 : isLargeTablet(context)
-                                ? swp(context, 0.04)
+                                ? swp(context, 0.03)
                                 : swp(context, 0.05));
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
@@ -177,7 +184,7 @@ class _WelcomeView extends ConsumerWidget {
                     );
                   }),
                 ),
-                SizedBox(height: hp(context, 0.02)),
+                SizedBox(height: spacingDown2),
                 Padding(
                   padding: EdgeInsets.only(bottom: bottomSafe),
                   child: Center(

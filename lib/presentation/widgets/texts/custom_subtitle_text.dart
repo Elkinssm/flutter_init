@@ -16,7 +16,7 @@ class CustomSubtitleText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color selectedColor = colors[color];
-    final fs = ts(context, 16);
+    final fs = ts(context, 16.2);
 
     return Center(
       child: Text(

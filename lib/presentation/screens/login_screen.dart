@@ -69,21 +69,38 @@ class _LoginViewState extends ConsumerState<_LoginView> {
   Widget build(BuildContext context) {
     final isKeyboardVisible = ref.watch(keyboardVisibilityProvider);
 
-    final sidePad = wp(context, isPhone(context) ? 0.06 : 0.08);
+    final sidePad =
+        isLargeTablet(context) ? swp(context, 0.01) : swp(context, 0.08);
     final topLogoSpace =
-        isKeyboardVisible ? hp(context, 0.03) : hp(context, 0.06);
+        isKeyboardVisible ? shp(context, 0.03) : shp(context, 0.07);
     final afterLogoSpace =
-        isKeyboardVisible ? hp(context, 0.03) : hp(context, 0.05);
+        isKeyboardVisible ? shp(context, 0.03) : shp(context, 0.05);
     final afterTitleSpace =
-        isKeyboardVisible ? hp(context, 0.04) : hp(context, 0.07);
-    final betweenFields = hp(context, 0.022);
-    final bottomCTA = isKeyboardVisible ? hp(context, 0.02) : hp(context, 0.05);
-    final logoH = isPhone(context) ? hp(context, 0.08) : hp(context, 0.10);
-    final titleSize = ts(context, 40);
-    final buttonW = isPhone(context) ? wp(context, 0.56) : wp(context, 0.42);
-    final buttonH = isPhone(context) ? 45.0 : 52.0;
-    final fieldH = isPhone(context) ? 46.0 : 52.0;
-    
+        isKeyboardVisible ? shp(context, 0.04) : shp(context, 0.07);
+    final betweenFields = shp(context, 0.022);
+    final bottomCTA =
+        isKeyboardVisible ? shp(context, 0.02) : shp(context, 0.05);
+    final logoH = isPhone(context) ? shp(context, 0.12) : shp(context, 0.12);
+    final titleSize = ts(context, 39.5);
+    final buttonW =
+        isPhone(context)
+            ? swp(context, 0.43)
+            : isBigPhone(context)
+            ? swp(context, 0.43)
+            : isLargeTablet(context)
+            ? swp(context, 0.35)
+            : isMediumTablet(context)
+            ? swp(context, 0.35)
+            : swp(context, 0.40);
+    final buttonH = shp(context, 0.048);
+    final fieldH = shp(context, 0.052);
+    final bottomSpace =
+        isPhone(context)
+            ? shp(context, 0.001)
+            : isBigPhone(context)
+            ? shp(context, 0.001)
+            : shp(context, 0.01);
+
     return SafeArea(
       top: false,
       child: LayoutBuilder(
@@ -192,7 +209,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: bottomSpace),
                           ],
                         ),
                       ),
@@ -218,11 +235,7 @@ class _Background extends StatelessWidget {
         children: [
           Positioned.fill(
             child: RepaintBoundary(
-              child: Image.asset(
-                'assets/images/image8.png',
-                fit: BoxFit.cover,
-                cacheWidth: MediaQuery.of(context).size.width.toInt(),
-              ),
+              child: Image.asset('assets/images/image8.png', fit: BoxFit.cover),
             ),
           ),
           Positioned.fill(
