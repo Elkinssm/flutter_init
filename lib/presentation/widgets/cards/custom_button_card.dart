@@ -1,4 +1,3 @@
-import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +26,7 @@ class CustomButtonCard extends StatefulWidget {
     this.onTap,
     this.fontWeightT1 = FontWeight.w800,
     this.fontWeightT2 = FontWeight.w700,
-    this.isContentLeft = false, 
+    this.isContentLeft = false,
     this.isInfoCard = true,
   });
 
@@ -92,7 +91,7 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                   )
                   : EdgeInsets.zero,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment:
                 widget.isContentLeft!
                     ? CrossAxisAlignment.start
@@ -103,21 +102,32 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                   : SizedBox(
                     height:
                         isPhone(context)
-                            ? hp(context, 0.02)
-                            : hp(context, 0.01),
+                            ? hp(context, 0.01)
+                            : hp(context, 0.005),
                   ),
-              CustomText(
-                text: widget.titleText,
-                size: widget.titleTextSize,
-                fontWeight: widget.fontWeightT1!,
-                color: const Color.fromRGBO(11, 25, 38, 1),
-                spacingText: 1.0,
+              // Usar Text con overflow controlado
+              Text(
+                widget.titleText,
+                style: TextStyle(
+                  fontSize: widget.titleTextSize,
+                  fontWeight: widget.fontWeightT1!,
+                  color: const Color.fromRGBO(11, 25, 38, 1),
+                  height: 1.0,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-              SizedBox(height: widget.spacing),
-              CustomText(
-                text: widget.subtitleText,
-                size: widget.subtitleTextSize,
-                fontWeight: widget.fontWeightT2!,
+              SizedBox(height: widget.spacing * 0.8),
+              Text(
+                widget.subtitleText,
+                style: TextStyle(
+                  fontSize: widget.subtitleTextSize,
+                  fontWeight: widget.fontWeightT2!,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),

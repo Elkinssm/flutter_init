@@ -181,8 +181,6 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                   action: () {
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus();
-
-                            
                                     if (!_isEmailRegistered(
                                       emailController.text,
                                     )) {
@@ -217,7 +215,6 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                     // Establecer el rol del usuario solo si está registrado
                                     setUserRole(emailController.text);
 
-                              
                                     final userRole = currentUserRole;
                                     if (userRole == 'coach') {
                                       context.push('/coach_screen');

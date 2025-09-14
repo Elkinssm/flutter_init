@@ -28,6 +28,8 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
           hoverColor: Colors.transparent,
           onPressed: onPressed ?? () => context.pop(),
           icon: Icon(Icons.arrow_back_outlined),
+          // Área táctil
+          constraints: BoxConstraints(minWidth: 60, minHeight: 60),
         ),
       ),
       titleSpacing: 0,

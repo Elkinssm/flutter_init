@@ -158,10 +158,12 @@ class _CoachView extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Image.asset(
-                    'assets/images/coach.png',
-                    width: coachImgW,
-                    fit: BoxFit.contain,
+                  Flexible(
+                    child: Image.asset(
+                      'assets/images/coach.png',
+                      width: coachImgW,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                   SizedBox(
                     width:
