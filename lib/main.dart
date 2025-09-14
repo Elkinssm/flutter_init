@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -36,7 +37,7 @@ void main() async {
   runZonedGuarded(
     () => runApp(
       DevicePreview(
-        enabled: !kReleaseMode,
+        enabled: false,
         builder: (context) => const ProviderScope(child: MyApp()),
       ),
     ),

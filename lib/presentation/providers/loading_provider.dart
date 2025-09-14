@@ -1,7 +1,6 @@
 import 'package:coach_app/presentation/providers/calendar_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/providers/register_player_provider.dart';
-import 'package:coach_app/presentation/providers/register_user_provider.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:coach_app/presentation/providers/selected_value_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

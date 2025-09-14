@@ -32,3 +32,4 @@ export 'package:coach_app/presentation/widgets/players/player_maker.dart';
 export 'package:coach_app/presentation/widgets/players/player_photo_marker.dart';
 export 'package:coach_app/presentation/widgets/players/coach_card.dart';
 export 'package:coach_app/presentation/widgets/players/player_list_item.dart';
+export 'package:coach_app/presentation/widgets/modal/custom_modal.dart';

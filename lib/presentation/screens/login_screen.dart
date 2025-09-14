@@ -1,3 +1,4 @@
+import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -146,7 +147,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                   height: fieldH,
                                   child: CustomTextFormField(
                                     controller: emailController,
-                                    hintText: 'test@gmail.com',
+                                    hintText: 'usuario@ejemplo.com',
                                     icon: Icons.mail_outline_sharp,
                                   ),
                                 ),
@@ -159,7 +160,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                   height: fieldH,
                                   child: CustomTextFormField(
                                     controller: passwordController,
-                                    hintText: '**********',
+                                    hintText: 'Ingresa tu contraseña',
                                     obscureText: true,
                                     isPassword: true,
                                   ),
@@ -180,7 +181,49 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                   action: () {
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus();
-                                    context.push('/coach_screen');
+
+                            
+                                    if (!_isEmailRegistered(
+                                      emailController.text,
+                                    )) {
+                                      CustomModal.show(
+                                        context: context,
+                                        title: 'Email no registrado',
+                                        message:
+                                            'El email ingresado no está registrado en el sistema. ¿Te gustaría registrarte?',
+                                        type: ModalType.error,
+                                        buttonText: 'Registrarse',
+                                        onButtonPressed: () {
+                                          Navigator.of(context).pop();
+                                          context.push('/register_screen');
+                                        },
+                                      );
+                                      return;
+                                    }
+
+                                    // Verificar si la contraseña no está vacía
+                                    if (passwordController.text.isEmpty) {
+                                      CustomModal.show(
+                                        context: context,
+                                        title: 'Contraseña requerida',
+                                        message:
+                                            'Por favor ingresa tu contraseña para continuar.',
+                                        type: ModalType.warning,
+                                        buttonText: 'Entendido',
+                                      );
+                                      return;
+                                    }
+
+                                    // Establecer el rol del usuario solo si está registrado
+                                    setUserRole(emailController.text);
+
+                              
+                                    final userRole = currentUserRole;
+                                    if (userRole == 'coach') {
+                                      context.push('/coach_screen');
+                                    } else {
+                                      context.push('/player_screen');
+                                    }
                                   },
                                 ),
                               ),
@@ -190,7 +233,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 CustomSubtitleText(
-                                  text: '¿No tienes una cuenta?',
+                                  text: '¿No tienes cuenta?',
                                   color: 0,
                                 ),
                                 TextButton(
@@ -222,6 +265,19 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         },
       ),
     );
+  }
+
+  // Función para verificar si un email está registrado
+  bool _isEmailRegistered(String email) {
+    final Map<String, String> registeredEmails = {
+      'admin@mail.com': 'coach',
+      'coach@mail.com': 'coach',
+      'entrenador@mail.com': 'coach',
+      'player1@mail.com': 'player',
+      'player2@mail.com': 'player',
+      'jugador@mail.com': 'player',
+    };
+    return registeredEmails.containsKey(email.toLowerCase());
   }
 }
 
