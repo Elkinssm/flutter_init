@@ -8,6 +8,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool? obscureText;
   final bool isPassword;
   final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
   const CustomTextFormField({
     super.key,
     required this.hintText,
@@ -15,6 +16,7 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.isPassword = false,
     this.controller,
+    this.onChanged,
   });
 
   @override
@@ -42,6 +44,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
     return TextFormField(
       controller: widget.controller,
+      onChanged: widget.onChanged,
       onTapOutside: (event) => FocusNode().unfocus(),
       obscureText: _obscure,
       style: GoogleFonts.inter(fontSize: ts(context, 16)),

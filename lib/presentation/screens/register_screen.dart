@@ -1,9 +1,11 @@
-import 'package:coach_app/presentation/helpers/responsive.dart';
+﻿import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/register_user_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
+import 'package:coach_app/presentation/widgets/inputs/app_form_field_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:coach_app/config/router/app_router.dart' as app_router;
 
 class RegisterScreen extends StatelessWidget {
   static const String name = 'register_screen';
@@ -14,9 +16,9 @@ class RegisterScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Registro jugador'),
-        body: _RegisterView(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'Registro jugador'),
+        body: const _RegisterView(),
       ),
     );
   }
@@ -27,7 +29,7 @@ class _RegisterView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final labels = ref.watch(registerFieldLabelsProvider);
+    final fields = ref.watch(registerFieldsProvider);
     final titleTextSize = ts(context, 32);
 
     return SafeArea(
@@ -35,38 +37,87 @@ class _RegisterView extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Column(
           children: [
-            SizedBox(height: 26),
+            const SizedBox(height: 26),
             CustomText(
-              text: 'Regístrate gratis',
+              text: 'Registrate gratis',
               size: titleTextSize,
               fontWeight: FontWeight.w800,
               color: Colors.black,
             ),
-            SizedBox(height: 36),
+            const SizedBox(height: 36),
             Expanded(
               child: ListView.separated(
                 physics: const ClampingScrollPhysics(),
-                itemCount: labels.length,
+                itemCount: fields.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
-                  final label = labels[index];
-                  return _FieldTile(
-                    context: context,
-                    label: label,
+                  final field = fields[index];
+                  final values = ref.watch(registerFormValuesProvider);
+                  final currentValue = values[field.label];
+                  final attempted = ref.watch(registerSubmitAttemptedProvider);
+                  final isEmpty = (currentValue == null || currentValue.toString().trim().isEmpty);
+                  final errorText = (attempted && field.isRequired && isEmpty)
+                      ? 'Este campo es obligatorio'
+                      : null;
+
+                  return AppFormFieldTile(
                     key: ValueKey('field_$index'),
+                    label: field.label,
+                    type: field.type,
+                    options: field.options,
+                    dateKind: field.dateKind,
+                    // helper solo si quieres mostrar texto informativo constante
+                    helper: null,
+                    isRequired: field.isRequired,
+                    value: currentValue,
+                    errorText: errorText,
+                    onChanged: (val) {
+                      ref.read(registerFormValuesProvider.notifier).state = {
+                        ...values,
+                        field.label: val,
+                      };
+                    },
                   );
                 },
-              ),
             ),
-            SizedBox(height: 25),
+            ),
+            const SizedBox(height: 25),
             OnboardingNextButton(
               text: 'Registrate',
               action: () {
                 FocusManager.instance.primaryFocus?.unfocus();
+                // Mark submit attempted to show inline errors
+                ref.read(registerSubmitAttemptedProvider.notifier).state = true;
+                final fields = ref.read(registerFieldsProvider);
+                final values = ref.read(registerFormValuesProvider);
+
+                final missing = <String>[];
+                for (final f in fields) {
+                  final v = values[f.label];
+                  if (!f.isRequired) continue;
+                  switch (f.type) {
+                    case FieldType.text:
+                      if (v == null || v.trim().isEmpty) missing.add(f.label);
+                      break;
+                    case FieldType.select:
+                    case FieldType.date:
+                      if (v == null || v.isEmpty) missing.add(f.label);
+                      break;
+                  }
+                }
+
+                if (missing.isNotEmpty) return; // inline errors are visible now
+
+                // Log data to console so you can see what’s sent
+                // ignore: avoid_print
+                print('Registro: '+ values.toString());
+
+                // Bypass role guard: mark current user as player to allow navigation
+                app_router.currentUserRole = 'player';
                 context.push('/player_screen');
               },
             ),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
           ],
         ),
       ),
@@ -74,30 +125,4 @@ class _RegisterView extends ConsumerWidget {
   }
 }
 
-class _FieldTile extends StatelessWidget {
-  final String label;
-  final BuildContext context;
-  const _FieldTile({super.key, required this.label, required this.context});
-
-  @override
-  Widget build(BuildContext context) {
-    final textSize = ts(context, 16);
-    final spacing = shp(context, 0.010);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: swp(context, 0.01)),
-          child: CustomText(
-            text: label,
-            fontWeight: FontWeight.w700,
-            size: textSize,
-          ),
-        ),
-        SizedBox(height: spacing),
-        const CustomTextFormField(hintText: 'test'),
-      ],
-    );
-  }
-}
+// _FieldTile replaced by reusable AppFormFieldTile in widgets/inputs/app_form_field_tile.dart
