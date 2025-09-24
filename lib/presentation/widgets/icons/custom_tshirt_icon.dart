@@ -5,11 +5,13 @@ class CustomTshirtIcon extends StatelessWidget {
   final int number;
   final double width;
   final double height;
+  final bool isPresent; // when true, force green shirt (asistencia)
   const CustomTshirtIcon({
     super.key,
     required this.number,
     required this.width,
     required this.height,
+    this.isPresent = false,
   });
 
   @override
@@ -17,11 +19,13 @@ class CustomTshirtIcon extends StatelessWidget {
     const greenNumbers = {2, 3};
     const yellowNumbers = {1, 4};
 
-    final String imagePath = greenNumbers.contains(number)
+    final String imagePath = isPresent
         ? 'assets/images/tshirt-icon-green.png'
-        : yellowNumbers.contains(number)
-            ? 'assets/images/tshirt-icon-yellow.png'
-            : 'assets/images/tshirt-icon-blue.png';
+        : greenNumbers.contains(number)
+            ? 'assets/images/tshirt-icon-green.png'
+            : yellowNumbers.contains(number)
+                ? 'assets/images/tshirt-icon-yellow.png'
+                : 'assets/images/tshirt-icon-blue.png';
 
     return SizedBox(
       height: height,

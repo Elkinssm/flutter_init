@@ -37,6 +37,7 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
   );
   int? _highlightedIndex;
   DateTime _selectedDate = DateTime.now();
+  final Set<int> _present = <int>{};
 
   Future<void> _pickDate() async {
     const brand = Color.fromRGBO(217, 73, 41, 1);
@@ -81,6 +82,7 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final presentCount = _present.length;
           const crossAxisCount = 4;
           const gridPadding = 20.0;
           final totalSpacing = gridPadding * 2 + 0 * (crossAxisCount - 1);
@@ -165,10 +167,20 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                           index: index,
                           name: playerNames[index],
                           isHighlighted: _highlightedIndex == index,
+                          isPresent: _present.contains(index),
                           onHoldStart:
                               () => setState(() => _highlightedIndex = index),
                           onHoldEnd:
                               () => setState(() => _highlightedIndex = null),
+                          onTap: () {
+                            setState(() {
+                              if (_present.contains(index)) {
+                                _present.remove(index);
+                              } else {
+                                _present.add(index);
+                              }
+                            });
+                          },
                           number: number,
                           itemWidth: itemWidth,
                           itemHeight: itemHeight,
@@ -177,10 +189,39 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const CustomText(
+                      text: 'Asistencia',
+                      size: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color.fromRGBO(55, 73, 87, 1),
+                    ),
+                    CustomText(
+                      text: '$presentCount/$totalPlayers',
+                      size: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color.fromRGBO(21, 71, 56, 1),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: presentCount / totalPlayers,
+                    minHeight: 8,
+                    backgroundColor: Colors.grey.shade300,
+                    color: const Color.fromRGBO(21, 71, 56, 1),
+                  ),
+                ),
                 SizedBox(height: 10),
                 Center(
                   child: OnboardingNextButton(
                     text: 'Registrar Asistencia',
+                    isEnabled: presentCount > 0,
                     action: () => context.push('/new_player_screen'),
                   ),
                 ),
@@ -200,6 +241,8 @@ class _SelectedIcons extends StatelessWidget {
     required this.isHighlighted,
     required this.onHoldStart,
     required this.onHoldEnd,
+    required this.onTap,
+    required this.isPresent,
     required this.number,
     required this.itemWidth,
     required this.itemHeight,
@@ -210,6 +253,8 @@ class _SelectedIcons extends StatelessWidget {
   final bool isHighlighted;
   final VoidCallback onHoldStart;
   final VoidCallback onHoldEnd;
+  final VoidCallback onTap;
+  final bool isPresent;
   final int number;
   final double itemWidth;
   final double itemHeight;
@@ -223,11 +268,30 @@ class _SelectedIcons extends StatelessWidget {
         GestureDetector(
           onTapDown: (_) => onHoldStart(),
           onTapUp: (_) => onHoldEnd(),
+          onTap: onTap,
           onTapCancel: onHoldEnd,
           child: CustomTshirtIcon(
             number: number,
             width: itemWidth * 0.7,
             height: itemHeight * 0.7,
+            isPresent: isPresent,
+          ),
+        ),
+        Positioned(
+          right: -6,
+          bottom: -6,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 150),
+            opacity: isPresent ? 1 : 0,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: const BoxDecoration(
+                color: Color(0xFF55A06F),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, size: 14, color: Colors.white),
+            ),
           ),
         ),
         Positioned(
