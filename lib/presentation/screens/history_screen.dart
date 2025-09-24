@@ -12,12 +12,12 @@ class HistoryScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Jugador'),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'Jugador'),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _HistoryView(), // Tu
+        body: const _HistoryView(),
       ),
     );
   }
@@ -76,7 +76,7 @@ class _HistoryView extends StatelessWidget {
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
+                        children: const [
                           CustomText(
                             text: 'Asistencia',
                             fontWeight: FontWeight.bold,
@@ -96,7 +96,7 @@ class _HistoryView extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
+                        children: const [
                           CustomText(
                             text: 'Año',
                             fontWeight: FontWeight.bold,
@@ -117,9 +117,9 @@ class _HistoryView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
-        MonthlySummaary(),
+        const MonthlySummaary(),
         const SizedBox(height: 28),
-        TableStats(),
+        const TableStats(),
       ],
     );
   }

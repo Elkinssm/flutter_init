@@ -3,9 +3,23 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   static const String name = '/category_screen';
   const CategoryScreen({super.key});
+
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Precarga de íconos usados en esta vista
+      precacheImage(const AssetImage('assets/images/group14.png'), context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +27,10 @@ class CategoryScreen extends StatelessWidget {
       top: false,
       child: Scaffold(
         extendBody: true,
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Categorias'),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'Categorias'),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: const _CategoryView(),
       ),

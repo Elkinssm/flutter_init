@@ -4,7 +4,7 @@ import 'package:coach_app/presentation/providers/register_user_provider.dart'
 import 'package:coach_app/presentation/widgets/inputs/custom_text_from_field.dart';
 import 'package:flutter/material.dart';
 
-class AppFormFieldTile extends StatelessWidget {
+class AppFormFieldTile extends StatefulWidget {
   final String label;
   final FieldType type;
   final List<String> options;
@@ -27,6 +27,37 @@ class AppFormFieldTile extends StatelessWidget {
     this.value,
     this.errorText,
   });
+  @override
+  State<AppFormFieldTile> createState() => _AppFormFieldTileState();
+}
+
+class _AppFormFieldTileState extends State<AppFormFieldTile> {
+  TextEditingController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.type == FieldType.date) {
+      _controller = TextEditingController(text: widget.value ?? '');
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AppFormFieldTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.type == FieldType.date) {
+      _controller ??= TextEditingController();
+      if ((_controller!.text) != (widget.value ?? '')) {
+        _controller!.text = widget.value ?? '';
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +66,7 @@ class AppFormFieldTile extends StatelessWidget {
 
     Widget input;
 
-    if (type == FieldType.select) {
+    if (widget.type == FieldType.select) {
       input = Container(
         decoration: BoxDecoration(
           color:
@@ -46,21 +77,21 @@ class AppFormFieldTile extends StatelessWidget {
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             isExpanded: true,
-            value: value,
+            value: widget.value,
             hint: const Text('Seleccione una opción'),
             icon: const Icon(Icons.arrow_drop_down),
-            items: options
+            items: widget.options
                 .map((opt) => DropdownMenuItem<String>(
                       value: opt,
                       child: Text(opt),
                     ))
                 .toList(),
-            onChanged: onChanged,
+            onChanged: widget.onChanged,
           ),
         ),
       );
-    } else if (type == FieldType.date &&
-        (dateKind ?? DateFieldKind.full) == DateFieldKind.year) {
+    } else if (widget.type == FieldType.date &&
+        (widget.dateKind ?? DateFieldKind.full) == DateFieldKind.year) {
       input = InkWell(
         onTap: () async {
           final selected = await showModalBottomSheet<String>(
@@ -111,17 +142,17 @@ class AppFormFieldTile extends StatelessWidget {
               );
             },
           );
-          if (selected != null) onChanged(selected);
+          if (selected != null) widget.onChanged(selected);
         },
         child: AbsorbPointer(
           child: CustomTextFormField(
             hintText: 'Selecciona año',
-            controller: TextEditingController(text: value ?? ''),
+            controller: _controller,
           ),
         ),
       );
-    } else if (type == FieldType.date &&
-        (dateKind ?? DateFieldKind.full) == DateFieldKind.full) {
+    } else if (widget.type == FieldType.date &&
+        (widget.dateKind ?? DateFieldKind.full) == DateFieldKind.full) {
       input = InkWell(
         onTap: () async {
           final now = DateTime.now();
@@ -135,20 +166,20 @@ class AppFormFieldTile extends StatelessWidget {
           if (picked != null) {
             final s =
                 '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-            onChanged(s);
+            widget.onChanged(s);
           }
         },
         child: AbsorbPointer(
           child: CustomTextFormField(
             hintText: 'Selecciona fecha',
-            controller: TextEditingController(text: value ?? ''),
+            controller: _controller,
           ),
         ),
       );
     } else {
       input = CustomTextFormField(
-        hintText: 'Ingresa $label',
-        onChanged: onChanged,
+        hintText: 'Ingresa ${widget.label}',
+        onChanged: widget.onChanged,
       );
     }
 
@@ -161,14 +192,14 @@ class AppFormFieldTile extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  label,
+                  widget.label,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: textSize,
                   ),
                 ),
               ),
-              if (isRequired)
+              if (widget.isRequired)
                 const Text('*',
                     style: TextStyle(
                         color: Colors.red, fontWeight: FontWeight.bold)),
@@ -177,21 +208,21 @@ class AppFormFieldTile extends StatelessWidget {
         ),
         SizedBox(height: spacing),
         input,
-        if (errorText != null) ...[
+        if (widget.errorText != null) ...[
           const SizedBox(height: 6),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: swp(context, 0.01)),
             child: Text(
-              errorText!,
+              widget.errorText!,
               style: TextStyle(color: Colors.red[700], fontSize: ts(context, 12), fontWeight: FontWeight.w600),
             ),
           ),
-        ] else if (helper != null) ...[
+        ] else if (widget.helper != null) ...[
           const SizedBox(height: 6),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: swp(context, 0.01)),
             child: Text(
-              helper!,
+              widget.helper!,
               style: TextStyle(color: Colors.grey[600], fontSize: ts(context, 12)),
             ),
           ),

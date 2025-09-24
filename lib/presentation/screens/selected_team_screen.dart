@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/helpers/hepler_aligment.dart';
+﻿import 'package:coach_app/presentation/helpers/hepler_aligment.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/selected_buttons_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -6,10 +6,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class SelectedTeamScreen extends StatelessWidget {
+class SelectedTeamScreen extends StatefulWidget {
   static const String name = '/selected_team_screen';
   const SelectedTeamScreen({super.key, required this.teamName});
   final String teamName;
+
+  @override
+  State<SelectedTeamScreen> createState() => _SelectedTeamScreenState();
+}
+
+class _SelectedTeamScreenState extends State<SelectedTeamScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      const avatars = [
+        'assets/images/student-eg1-icon.png',
+        'assets/images/student-eg2-icon.png',
+        'assets/images/student-eg3-icon.png',
+        'assets/images/student-eg4-icon.png',
+        'assets/images/student-eg5-icon.png',
+        'assets/images/student-eg6-icon.png',
+      ];
+      for (final a in avatars) {
+        precacheImage(AssetImage(a), context);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +40,8 @@ class SelectedTeamScreen extends StatelessWidget {
       top: false,
       child: Scaffold(
         extendBody: true,
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: teamName),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: CustomAppbar(title: widget.teamName),
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -105,3 +128,4 @@ class _SelectedTeamView extends ConsumerWidget {
     );
   }
 }
+

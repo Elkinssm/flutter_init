@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/screens/player_status_screen.dart';
+﻿import 'package:coach_app/presentation/screens/player_status_screen.dart';
 import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -56,13 +56,13 @@ class SelectedListviewPlayers extends StatelessWidget {
 
 final _students = <Students>[
   Students(
-    name: 'Camilo Andrés',
+    name: 'Camilo Andréss©s',
     image: 'assets/images/student-eg1-icon.png',
     number: 22,
     position: 'ST',
   ),
   Students(
-    name: 'Andrés Felipe',
+    name: 'Andrés©s Felipe',
     image: 'assets/images/student-eg2-icon.png',
     number: 11,
     position: 'DC',
@@ -80,13 +80,13 @@ final _students = <Students>[
     position: 'ED',
   ),
   Students(
-    name: 'Santiago José',
+    name: 'Santiago José©',
     image: 'assets/images/student-eg5-icon.png',
     number: 15,
     position: 'DC',
   ),
   Students(
-    name: 'Juan Andres',
+    name: 'Juan Andréss',
     image: 'assets/images/student-eg6-icon.png',
     number: 22,
     position: 'SD',
@@ -257,3 +257,4 @@ class _StatChips extends StatelessWidget {
     );
   }
 }
+

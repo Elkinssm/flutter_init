@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/providers/carousel_provider.dart';
+﻿import 'package:coach_app/presentation/providers/carousel_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,11 +15,25 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-class _WelcomeView extends ConsumerWidget {
+class _WelcomeView extends ConsumerStatefulWidget {
   const _WelcomeView();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_WelcomeView> createState() => _WelcomeViewState();
+}
+
+class _WelcomeViewState extends ConsumerState<_WelcomeView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheImage(const AssetImage('assets/images/image7.png'), context);
+      precacheImage(const AssetImage('assets/images/group5.png'), context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.watch(pageControllerProvider);
     final page = ref.watch(pageIndexProvider);
     final images = const [
@@ -206,3 +220,5 @@ class _WelcomeView extends ConsumerWidget {
     );
   }
 }
+
+

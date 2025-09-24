@@ -1,4 +1,4 @@
-import 'package:coach_app/config/router/app_router.dart';
+﻿import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +57,10 @@ class _LoginViewState extends ConsumerState<_LoginView> {
     super.initState();
     emailController.addListener(_checkFields);
     passwordController.addListener(_checkFields);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheImage(const AssetImage('assets/images/image8.png'), context);
+      precacheImage(const AssetImage('assets/images/group6.png'), context);
+    });
   }
 
   @override
@@ -153,14 +157,14 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                                 SizedBox(height: betweenFields),
                                 const LabelText(
-                                  label: 'Contraseña',
+                                  label: 'Contrasea',
                                   colorIndex: 0,
                                 ),
                                 SizedBox(
                                   height: fieldH,
                                   child: CustomTextFormField(
                                     controller: passwordController,
-                                    hintText: 'Ingresa tu contraseña',
+                                    hintText: 'Ingresa tu Contrasea',
                                     obscureText: true,
                                     isPassword: true,
                                   ),
@@ -199,20 +203,20 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                       return;
                                     }
 
-                                    // Verificar si la contraseña no está vacía
+                                    // Verificar si la Contrasea no está¡ vacía­a
                                     if (passwordController.text.isEmpty) {
                                       CustomModal.show(
                                         context: context,
-                                        title: 'Contraseña requerida',
+                                        title: 'Contrasea requerida',
                                         message:
-                                            'Por favor ingresa tu contraseña para continuar.',
+                                            'Por favor ingresa tu Contrasea para continuar.',
                                         type: ModalType.warning,
                                         buttonText: 'Entendido',
                                       );
                                       return;
                                     }
 
-                                    // Establecer el rol del usuario solo si está registrado
+                                    // estáblecer el rol del usuario solo si está¡ registrado
                                     setUserRole(emailController.text);
 
                                     final userRole = currentUserRole;
@@ -311,3 +315,11 @@ class _Background extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+

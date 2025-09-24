@@ -52,8 +52,9 @@ class _RegisterView extends ConsumerWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final field = fields[index];
-                  final values = ref.watch(registerFormValuesProvider);
-                  final currentValue = values[field.label];
+                  final currentValue = ref.watch(
+                    registerFormValuesProvider.select((m) => m[field.label]),
+                  );
                   final attempted = ref.watch(registerSubmitAttemptedProvider);
                   final isEmpty = (currentValue == null || currentValue.toString().trim().isEmpty);
                   final errorText = (attempted && field.isRequired && isEmpty)
@@ -72,6 +73,7 @@ class _RegisterView extends ConsumerWidget {
                     value: currentValue,
                     errorText: errorText,
                     onChanged: (val) {
+                      final values = ref.read(registerFormValuesProvider);
                       ref.read(registerFormValuesProvider.notifier).state = {
                         ...values,
                         field.label: val,
@@ -108,9 +110,9 @@ class _RegisterView extends ConsumerWidget {
 
                 if (missing.isNotEmpty) return; // inline errors are visible now
 
-                // Log data to console so you can see what’s sent
+                // Log data to console so you can see what's sent
                 // ignore: avoid_print
-                print('Registro: '+ values.toString());
+                print('Registro: $values');
 
                 // Bypass role guard: mark current user as player to allow navigation
                 app_router.currentUserRole = 'player';

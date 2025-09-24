@@ -51,7 +51,7 @@ final appRouter = GoRouter(
   navigatorKey: rootNavKey,
   observers: [LoadingNavObserver()],
   initialLocation: '/loading_screen',
-  debugLogDiagnostics: true,
+  debugLogDiagnostics: false,
   redirect: (context, state) {
     // Pantallas que no requieren autenticación
     final publicRoutes = [
@@ -74,7 +74,6 @@ final appRouter = GoRouter(
     // Protección por roles (solo para emails registrados)
     final coachOnlyRoutes = [
       '/coach_screen',
-      '/category_screen',
       '/selected_category_screen',
       '/daily_attendance_screen',
       '/new_player_screen',
@@ -88,6 +87,8 @@ final appRouter = GoRouter(
       '/assistance_screen',
       '/history_screen',
       '/performance_screen',
+      // Allow players to see category view
+      '/category_screen',
     ];
 
     // Si es una ruta solo para coach y el usuario no es coach

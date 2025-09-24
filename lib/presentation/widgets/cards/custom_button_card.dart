@@ -84,12 +84,12 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
           padding:
               widget.isContentLeft!
                   ? const EdgeInsets.only(
-                    left: 10,
-                    right: 10,
-                    top: 13,
-                    bottom: 10,
-                  )
-                  : EdgeInsets.zero,
+                      left: 10,
+                      right: 10,
+                      top: 10,
+                      bottom: 8,
+                    )
+                  : const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment:
@@ -97,14 +97,7 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                     ? CrossAxisAlignment.start
                     : CrossAxisAlignment.center,
             children: [
-              widget.isContentLeft!
-                  ? const SizedBox.shrink()
-                  : SizedBox(
-                    height:
-                        isPhone(context)
-                            ? hp(context, 0.01)
-                            : hp(context, 0.005),
-                  ),
+              widget.isContentLeft! ? const SizedBox.shrink() : const SizedBox(height: 0),
               // Usar Text con overflow controlado
               Text(
                 widget.titleText,
@@ -118,12 +111,16 @@ class _CustomButtonCardState extends State<CustomButtonCard> {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
-              SizedBox(height: widget.spacing * 0.8),
+              SizedBox(
+                height: (widget.height < 80 ? widget.spacing * 0.6 : widget.spacing * 0.8)
+                    .clamp(6, 16),
+              ),
               Text(
                 widget.subtitleText,
                 style: TextStyle(
                   fontSize: widget.subtitleTextSize,
                   fontWeight: widget.fontWeightT2!,
+                  height: 1.0,
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,

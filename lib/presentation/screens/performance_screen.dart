@@ -12,10 +12,10 @@ class PerformanceScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'User'),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'User'),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: const _PerformanceView(),
       ),

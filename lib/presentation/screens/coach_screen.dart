@@ -3,22 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 
-class CoachScreen extends StatelessWidget {
+class CoachScreen extends StatefulWidget {
   static const String name = '/coach_screen';
   const CoachScreen({super.key});
+
+  @override
+  State<CoachScreen> createState() => _CoachScreenState();
+}
+
+class _CoachScreenState extends State<CoachScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Precarga de íconos usados en acciones
+      precacheImage(const AssetImage('assets/images/student-icon.png'), context);
+      precacheImage(const AssetImage('assets/images/edit-icon.png'), context);
+      precacheImage(const AssetImage('assets/images/calendar-icon.png'), context);
+      precacheImage(const AssetImage('assets/images/cup-icon.png'), context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
         appBar: CustomAppbar(
           title: 'Coach Dashboard',
           onPressed: () => context.push('/login_screen'),
         ),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: const _CoachView(),
       ),

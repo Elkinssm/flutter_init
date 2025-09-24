@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/providers/register_player_provider.dart';
+﻿import 'package:coach_app/presentation/providers/register_player_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,3 +74,4 @@ class _NewPlayerView extends ConsumerWidget {
     );
   }
 }
+

@@ -26,8 +26,26 @@ class PlayerScreen extends StatelessWidget {
   }
 }
 
-class _PlayerScreen extends StatelessWidget {
+class _PlayerScreen extends StatefulWidget {
   const _PlayerScreen();
+
+  @override
+  State<_PlayerScreen> createState() => _PlayerScreenState();
+}
+
+class _PlayerScreenState extends State<_PlayerScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Precache commonly used images to avoid jank when they appear
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheImage(const AssetImage('assets/images/player.png'), context);
+      precacheImage(const AssetImage('assets/images/group14.png'), context);
+      precacheImage(const AssetImage('assets/images/performance-icon.png'), context);
+      precacheImage(const AssetImage('assets/images/strong-icon.png'), context);
+      precacheImage(const AssetImage('assets/images/person-icon.png'), context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +74,7 @@ class _PlayerScreen extends StatelessWidget {
                       spacingText: 0.9,
                     ),
                   ),
-                  Image.asset('assets/images/player.png', width: 175),
+                  Image.asset('assets/images/player.png', width: 175, cacheWidth: 175),
                 ],
               ),
             ),
@@ -65,22 +83,26 @@ class _PlayerScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: CustomCards(
-                      action: () => context.push('/category_screen'),
-                      title: 'Categoría',
-                      subtitle: '2012',
-                      textButton: 'Ver mi categoría',
-                      sizeTextButton: 16,
+                    child: RepaintBoundary(
+                      child: CustomCards(
+                        action: () => context.push('/category_screen'),
+                        title: 'Categoría',
+                        subtitle: '2012',
+                        textButton: 'Ver mi categoría',
+                        sizeTextButton: 16,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: CustomCards(
-                      action: () => context.push('/history_screen'),
-                      title: 'Los Tigres',
-                      subtitle: '6 categorías',
-                      textButton: 'Ver resumen',
-                      sizeTextButton: 16,
+                    child: RepaintBoundary(
+                      child: CustomCards(
+                        action: () => context.push('/history_screen'),
+                        title: 'Los Tigres',
+                        subtitle: '6 categorías',
+                        textButton: 'Ver resumen',
+                        sizeTextButton: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -89,35 +111,39 @@ class _PlayerScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 15),
-        CustomSupportStats(),
+        const CustomSupportStats(),
         const SizedBox(height: 18),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
               Expanded(
-                child: CustomInfoCard(
-                  cacheHeight: 24,
-                  cacheWidth: 24,
-                  assetImage: 'assets/images/group14.png',
-                  title: "Próximo Partido",
-                  data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
+                child: RepaintBoundary(
+                  child: CustomInfoCard(
+                    cacheHeight: 24,
+                    cacheWidth: 24,
+                    assetImage: 'assets/images/group14.png',
+                    title: "Próximo Partido",
+                    data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: CustomInfoCard(
-                  cacheHeight: 20,
-                  cacheWidth: 22,
-                  assetImage: 'assets/images/performance-icon.png',
-                  title: "Desempeño",
-                  data: [
-                    "Velocidad: 8.4 km/h",
-                    "Precisión tiros: 75%",
-                    "Toques efectivos: 95%",
-                  ],
-                  onTap: () => context.push('/performance_screen'),
-                  isDisabled: false,
+                child: RepaintBoundary(
+                  child: CustomInfoCard(
+                    cacheHeight: 20,
+                    cacheWidth: 22,
+                    assetImage: 'assets/images/performance-icon.png',
+                    title: "Desempeño",
+                    data: [
+                      "Velocidad: 8.4 km/h",
+                      "Precisión tiros: 75%",
+                      "Toques efectivos: 95%",
+                    ],
+                    onTap: () => context.push('/performance_screen'),
+                    isDisabled: false,
+                  ),
                 ),
               ),
             ],

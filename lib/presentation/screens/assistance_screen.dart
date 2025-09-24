@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class AssistanceScreen extends StatelessWidget {
   static const String name = '/assistance_screen';
@@ -16,12 +16,12 @@ class AssistanceScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Jugador'),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'Jugador'),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _AssitanceView(),
+        body: const _AssitanceView(),
       ),
     );
   }
@@ -60,17 +60,17 @@ class _AssitanceView extends ConsumerWidget {
               action: () => context.push('/history_screen'),
               title: 'Categoría',
               subtitle: '2012',
-              textButton: 'Ver historico',
+              textButton: 'Ver histórico',
               sizeTextButton: 16,
             ),
-            SizedBox(
+            const SizedBox(
               height: 120,
               width: 175,
               child: Card(
-                color: const Color.fromRGBO(229, 240, 246, 1),
+                color: Color.fromRGBO(229, 240, 246, 1),
                 elevation: 4.0,
                 child: Padding(
-                  padding: const EdgeInsets.all(7),
+                  padding: EdgeInsets.all(7),
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Column(
@@ -80,10 +80,10 @@ class _AssitanceView extends ConsumerWidget {
                           text: 'Total\nAsistencia',
                           size: 18,
                           fontWeight: FontWeight.w700,
-                          color: const Color.fromRGBO(11, 25, 38, 1),
+                          color: Color.fromRGBO(11, 25, 38, 1),
                           spacingText: 1.0,
                         ),
-                        const CustomText(
+                        CustomText(
                           text: '90%',
                           size: 24,
                           fontWeight: FontWeight.bold,
@@ -124,7 +124,7 @@ class _Calendar extends StatelessWidget {
         color: const Color(0xFFF8F5E9),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE4C77F), width: 1),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             offset: Offset(3, 3),
@@ -136,8 +136,8 @@ class _Calendar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10, top: 10),
+          const Padding(
+            padding: EdgeInsets.only(left: 10, top: 10),
             child: CustomText(
               text: 'Asistencia',
               fontWeight: FontWeight.w700,
@@ -146,7 +146,7 @@ class _Calendar extends StatelessWidget {
           ),
           TableCalendar(
             pageAnimationEnabled: true,
-            pageAnimationDuration: Duration(milliseconds: 300),
+            pageAnimationDuration: const Duration(milliseconds: 300),
             pageAnimationCurve: Curves.easeInOut,
             rowHeight: 38,
             locale: 'es_ES',
@@ -173,27 +173,26 @@ class _Calendar extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 color: Colors.black,
               ),
-              titleTextFormatter:
-                  (date, locale) =>
-                      '${toBeginningOfSentenceCase(DateFormat.MMMM(locale).format(date))} ${date.year}',
+              titleTextFormatter: (date, locale) =>
+                  '${toBeginningOfSentenceCase(DateFormat.MMMM(locale).format(date))} ${date.year}',
             ),
             calendarStyle: CalendarStyle(
               outsideDaysVisible: false,
               defaultTextStyle: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF0B1926),
+                color: const Color(0xFF0B1926),
               ),
               weekendTextStyle: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF0B1926),
+                color: const Color(0xFF0B1926),
               ),
-              todayDecoration: BoxDecoration(
+              todayDecoration: const BoxDecoration(
                 color: Color(0xFF55A06F),
                 shape: BoxShape.circle,
               ),
-              selectedDecoration: BoxDecoration(
+              selectedDecoration: const BoxDecoration(
                 color: Color(0xFF55A06F),
                 shape: BoxShape.circle,
               ),
@@ -202,9 +201,7 @@ class _Calendar extends StatelessWidget {
               defaultBuilder: (context, day, focusedDay) {
                 final isAttended = assistanceState.attendedDays.any(
                   (d) =>
-                      d.year == day.year &&
-                      d.month == day.month &&
-                      d.day == day.day,
+                      d.year == day.year && d.month == day.month && d.day == day.day,
                 );
                 if (isAttended) {
                   return Center(
@@ -239,3 +236,4 @@ class _Calendar extends StatelessWidget {
     );
   }
 }
+

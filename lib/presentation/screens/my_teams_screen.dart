@@ -1,4 +1,4 @@
-import 'package:coach_app/presentation/helpers/responsive.dart';
+﻿import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/screens/selected_team_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +14,13 @@ class MyTeamsScreen extends StatelessWidget {
       top: false,
       child: Scaffold(
         extendBody: true,
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(title: 'Mis equipos'),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
+        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+        appBar: const CustomAppbar(title: 'Mis equipos'),
+        bottomNavigationBar: const CustomBottomAppbar(),
+        floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         resizeToAvoidBottomInset: false,
-        body: _MyTeamsView(),
+        body: const _MyTeamsView(),
       ),
     );
   }
@@ -159,3 +159,4 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
     );
   }
 }
+
