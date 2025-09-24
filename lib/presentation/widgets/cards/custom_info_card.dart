@@ -52,8 +52,8 @@ class _CustomInfoCardState extends State<CustomInfoCard> {
       onTapCancel: _onTapCancel,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
-        width: 166,
-        height: 120,
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 132),
         decoration: BoxDecoration(
           color: const Color.fromRGBO(229, 240, 246, 1),
           borderRadius: BorderRadius.circular(12),
@@ -92,22 +92,20 @@ class _CustomInfoCardState extends State<CustomInfoCard> {
               ),
               const SizedBox(height: 8),
               if (widget.data != null && widget.data!.isNotEmpty)
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children:
-                        widget.data!
-                            .map(
-                              (item) => CustomText(
-                                text: item,
-                                size: 13,
-                                fontWeight: FontWeight.w400,
-                                spacingText: 1.4,
-                              ),
-                            )
-                            .toList(),
-                  ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: widget.data!
+                      .map(
+                        (item) => CustomText(
+                          text: item,
+                          size: 13,
+                          fontWeight: FontWeight.w400,
+                          spacingText: 1.4,
+                        ),
+                      )
+                      .toList(),
                 ),
             ],
           ),

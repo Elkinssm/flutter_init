@@ -61,24 +61,27 @@ class _PlayerScreen extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: screenHeigth * 0.28),
+              padding: EdgeInsets.only(top: screenHeigth * 0.28, left: 20, right: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 9.5,
                 children: [
-                  CustomCards(
-                    action: () => context.push('/category_screen'),
-                    title: 'Categoría',
-                    subtitle: '2012',
-                    textButton: 'Ver mi categoría',
-                    sizeTextButton: 16,
+                  Expanded(
+                    child: CustomCards(
+                      action: () => context.push('/category_screen'),
+                      title: 'Categoría',
+                      subtitle: '2012',
+                      textButton: 'Ver mi categoría',
+                      sizeTextButton: 16,
+                    ),
                   ),
-                  CustomCards(
-                    action: () => context.push('/history_screen'),
-                    title: 'Los Tigres',
-                    subtitle: '6 categorías',
-                    textButton: 'Ver resumen',
-                    sizeTextButton: 16,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CustomCards(
+                      action: () => context.push('/history_screen'),
+                      title: 'Los Tigres',
+                      subtitle: '6 categorías',
+                      textButton: 'Ver resumen',
+                      sizeTextButton: 16,
+                    ),
                   ),
                 ],
               ),
@@ -88,32 +91,37 @@ class _PlayerScreen extends StatelessWidget {
         const SizedBox(height: 15),
         CustomSupportStats(),
         const SizedBox(height: 18),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 3,
-          children: [
-            CustomInfoCard(
-              cacheHeight: 24,
-              cacheWidth: 24,
-              assetImage: 'assets/images/group14.png',
-              title: "Próximo Partido",
-              data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
-            ),
-            const SizedBox(width: 12),
-            CustomInfoCard(
-              cacheHeight: 20,
-              cacheWidth: 22,
-              assetImage: 'assets/images/performance-icon.png',
-              title: "Desempeño",
-              data: [
-                "Velocidad: 8.4 km/h",
-                "Precisión tiros: 75%",
-                "Toques efectivos: 95%",
-              ],
-              onTap: () => context.push('/performance_screen'),
-              isDisabled: false,
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Expanded(
+                child: CustomInfoCard(
+                  cacheHeight: 24,
+                  cacheWidth: 24,
+                  assetImage: 'assets/images/group14.png',
+                  title: "Próximo Partido",
+                  data: ["Fecha: 12/02/2025", "Rival: Los Tigres", "Hora: 4:00 pm"],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: CustomInfoCard(
+                  cacheHeight: 20,
+                  cacheWidth: 22,
+                  assetImage: 'assets/images/performance-icon.png',
+                  title: "Desempeño",
+                  data: [
+                    "Velocidad: 8.4 km/h",
+                    "Precisión tiros: 75%",
+                    "Toques efectivos: 95%",
+                  ],
+                  onTap: () => context.push('/performance_screen'),
+                  isDisabled: false,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 18),
         Row(

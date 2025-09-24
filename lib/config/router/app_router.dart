@@ -102,7 +102,7 @@ final appRouter = GoRouter(
       return '/login_screen'; // Redirigir al login si no es player
     }
 
-    return null; // Permitir acceso
+    return null; 
   },
   routes: [
     GoRoute(

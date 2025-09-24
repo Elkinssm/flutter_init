@@ -19,9 +19,8 @@ class CustomCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120,
-      width: 175,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 120),
       child: Card(
         color: Color.fromRGBO(229, 240, 246, 1),
         elevation: 4.0,
