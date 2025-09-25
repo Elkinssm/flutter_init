@@ -1,6 +1,9 @@
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+// TshirtStatus is re-exported by widgets.dart
+
+enum _BatchAction { allPresent, allAbsent }
 
 class DailyAttendanceScreen extends StatelessWidget {
   static const String name = '/daily_attendance_screen';
@@ -37,7 +40,38 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
   );
   int? _highlightedIndex;
   DateTime _selectedDate = DateTime.now();
-  final Set<int> _present = <int>{};
+  final Map<int, TshirtStatus> _status = <int, TshirtStatus>{};
+  bool _assetsPrecached = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Estado inicial: todos ausentes (amarillo)
+    for (var i = 0; i < totalPlayers; i++) {
+      _status[i] = TshirtStatus.absent;
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Precarga de assets para evitar parpadeos/jank al mostrar íconos
+    if (!_assetsPrecached) {
+      _precacheTshirtIcons(context);
+      _assetsPrecached = true;
+    }
+  }
+
+  Future<void> _precacheTshirtIcons(BuildContext context) async {
+    const assets = [
+      'assets/images/tshirt-icon-green.png',
+      'assets/images/tshirt-icon-yellow.png',
+      'assets/images/tshirt-icon-blue.png',
+    ];
+    for (final path in assets) {
+      await precacheImage(AssetImage(path), context);
+    }
+  }
 
   Future<void> _pickDate() async {
     const brand = Color.fromRGBO(217, 73, 41, 1);
@@ -82,7 +116,14 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final presentCount = _present.length;
+          final presentCount =
+              _status.values.where((s) => s == TshirtStatus.present).length;
+          final allPresent = _status.values.every(
+            (s) => s == TshirtStatus.present,
+          );
+          final allAbsent = _status.values.every(
+            (s) => s == TshirtStatus.absent,
+          );
           const crossAxisCount = 4;
           const gridPadding = 20.0;
           final totalSpacing = gridPadding * 2 + 0 * (crossAxisCount - 1);
@@ -90,11 +131,12 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
               (constraints.maxWidth - totalSpacing) / crossAxisCount;
           final itemHeight = itemWidth;
 
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 00),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          return RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 00),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 SizedBox(height: 5),
                 const Padding(
                   padding: EdgeInsets.only(left: 4, bottom: 6),
@@ -141,57 +183,55 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: SizedBox(
-                    height: 470,
+                Expanded(
+                  child: RepaintBoundary(
                     child: GridView.builder(
-                      padding: const EdgeInsets.only(
-                        top: 20,
-                        right: 8,
-                        left: 8,
-                      ),
-                      shrinkWrap: true,
-                      itemCount: totalPlayers,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            mainAxisSpacing: 0.0,
-                            crossAxisSpacing: 0.0,
-                            childAspectRatio: 1.12,
-                          ),
-                      itemBuilder: (context, index) {
-                        final number = index + 1;
-                        return _SelectedIcons(
-                          index: index,
-                          name: playerNames[index],
-                          isHighlighted: _highlightedIndex == index,
-                          isPresent: _present.contains(index),
-                          onHoldStart:
-                              () => setState(() => _highlightedIndex = index),
-                          onHoldEnd:
-                              () => setState(() => _highlightedIndex = null),
-                          onTap: () {
-                            setState(() {
-                              if (_present.contains(index)) {
-                                _present.remove(index);
-                              } else {
-                                _present.add(index);
-                              }
-                            });
-                          },
-                          number: number,
-                          itemWidth: itemWidth,
-                          itemHeight: itemHeight,
-                        );
-                      },
+                    padding: const EdgeInsets.only(
+                      top: 20,
+                      right: 8,
+                      left: 8,
+                      bottom: 8,
+                    ),
+                    itemCount: totalPlayers,
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 0.0,
+                          crossAxisSpacing: 0.0,
+                          childAspectRatio: 1.12,
+                        ),
+                    itemBuilder: (context, index) {
+                      final number = index + 1;
+                      return _SelectedIcons(
+                        index: index,
+                        name: playerNames[index],
+                        isHighlighted: _highlightedIndex == index,
+                        status: _status[index] ?? TshirtStatus.none,
+                        onHoldStart:
+                            () => setState(() => _highlightedIndex = index),
+                        onHoldEnd:
+                            () => setState(() => _highlightedIndex = null),
+                        onTap: () {
+                          setState(() {
+                            final current =
+                                _status[index] ?? TshirtStatus.absent;
+                            _status[index] =
+                                current == TshirtStatus.present
+                                    ? TshirtStatus.absent
+                                    : TshirtStatus.present;
+                          });
+                        },
+                        number: number,
+                        itemWidth: itemWidth,
+                        itemHeight: itemHeight,
+                      );
+                    },
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const CustomText(
                       text: 'Asistencia',
@@ -199,14 +239,59 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                       fontWeight: FontWeight.w700,
                       color: Color.fromRGBO(55, 73, 87, 1),
                     ),
+                    const Spacer(),
                     CustomText(
                       text: '$presentCount/$totalPlayers',
                       size: 16,
                       fontWeight: FontWeight.w700,
                       color: const Color.fromRGBO(21, 71, 56, 1),
                     ),
+                    const SizedBox(width: 4),
+                    PopupMenuButton<_BatchAction>(
+                      tooltip: 'Acciones',
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: (value) {
+                        setState(() {
+                          switch (value) {
+                            case _BatchAction.allPresent:
+                              for (var i = 0; i < totalPlayers; i++) {
+                                _status[i] = TshirtStatus.present;
+                              }
+                              break;
+                            case _BatchAction.allAbsent:
+                              for (var i = 0; i < totalPlayers; i++) {
+                                _status[i] = TshirtStatus.absent;
+                              }
+                              break;
+                          }
+                        });
+                      },
+                      itemBuilder:
+                          (context) => [
+                            PopupMenuItem<_BatchAction>(
+                              value: _BatchAction.allPresent,
+                              enabled: !allPresent,
+                              child: const ListTile(
+                                leading: Icon(Icons.done_all),
+                                title: Text('Todos presentes'),
+                                dense: true,
+                              ),
+                            ),
+                            PopupMenuItem<_BatchAction>(
+                              value: _BatchAction.allAbsent,
+                              enabled: !allAbsent,
+                              child: const ListTile(
+                                leading: Icon(Icons.clear),
+                                title: Text('Todos ausentes'),
+                                dense: true,
+                              ),
+                            ),
+                          ],
+                    ),
                   ],
                 ),
+                const SizedBox(height: 6),
+                // Acciones ahora están integradas en el menú de la fila superior
                 const SizedBox(height: 6),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -214,7 +299,9 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                     value: presentCount / totalPlayers,
                     minHeight: 8,
                     backgroundColor: Colors.grey.shade300,
-                    color: const Color.fromRGBO(21, 71, 56, 1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Color.fromRGBO(21, 71, 56, 1),
+                    ),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -225,7 +312,10 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                     action: () => context.push('/new_player_screen'),
                   ),
                 ),
+                // Leave room so the FAB/bottom bar doesn't overlap the CTA
+                const SizedBox(height: 30),
               ],
+            ),
             ),
           );
         },
@@ -242,7 +332,7 @@ class _SelectedIcons extends StatelessWidget {
     required this.onHoldStart,
     required this.onHoldEnd,
     required this.onTap,
-    required this.isPresent,
+    required this.status,
     required this.number,
     required this.itemWidth,
     required this.itemHeight,
@@ -254,7 +344,7 @@ class _SelectedIcons extends StatelessWidget {
   final VoidCallback onHoldStart;
   final VoidCallback onHoldEnd;
   final VoidCallback onTap;
-  final bool isPresent;
+  final TshirtStatus status;
   final int number;
   final double itemWidth;
   final double itemHeight;
@@ -274,24 +364,7 @@ class _SelectedIcons extends StatelessWidget {
             number: number,
             width: itemWidth * 0.7,
             height: itemHeight * 0.7,
-            isPresent: isPresent,
-          ),
-        ),
-        Positioned(
-          right: -6,
-          bottom: -6,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 150),
-            opacity: isPresent ? 1 : 0,
-            child: Container(
-              width: 22,
-              height: 22,
-              decoration: const BoxDecoration(
-                color: Color(0xFF55A06F),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check, size: 14, color: Colors.white),
-            ),
+            status: status,
           ),
         ),
         Positioned(
