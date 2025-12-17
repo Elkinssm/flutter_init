@@ -4,45 +4,22 @@ import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 import 'transitions_config/custom_transition.dart';
 
-// Agregar esta variable global para manejar el estado del usuario
+// Variable global para manejar el estado del usuario
 String? currentUserRole;
 
-// Función para verificar si un email está registrado
-bool _isEmailRegistered(String email) {
-  final Map<String, String> registeredEmails = {
-    'admin@mail.com': 'coach',
-    'coach@mail.com': 'coach',
-    'entrenador@mail.com': 'coach',
-    'player1@mail.com': 'player',
-    'player2@mail.com': 'player',
-    'jugador@mail.com': 'player',
-  };
-  return registeredEmails.containsKey(email.toLowerCase());
-}
-
-// Función para obtener el rol del usuario
-String _getUserRole(String email) {
-  final Map<String, String> roleByEmail = {
-    'admin@mail.com': 'coach',
-    'coach@mail.com': 'coach',
-    'entrenador@mail.com': 'coach',
-    'player1@mail.com': 'player',
-    'player2@mail.com': 'player',
-    'jugador@mail.com': 'player',
-  };
-  return roleByEmail[email.toLowerCase()] ?? 'player';
-}
-
-// Función para establecer el rol del usuario (llamar desde login)
-void setUserRole(String email) {
-  if (_isEmailRegistered(email)) {
-    currentUserRole = _getUserRole(email);
+// Establecer el rol recibido del backend
+void setUserRoleFromBackend(String role) {
+  final normalized = role.toLowerCase();
+  if (normalized.contains('admin') || normalized.contains('coach')) {
+    currentUserRole = 'coach';
+  } else if (normalized.contains('player') || normalized.contains('jugador')) {
+    currentUserRole = 'player';
   } else {
-    currentUserRole = null; // No permitir acceso si no está registrado
+    currentUserRole = 'player';
   }
 }
 
-// Función para limpiar el rol (llamar desde logout)
+// Limpiar rol (llamar desde logout)
 void clearUserRole() {
   currentUserRole = null;
 }
@@ -51,17 +28,19 @@ final appRouter = GoRouter(
   navigatorKey: rootNavKey,
   observers: [LoadingNavObserver()],
   initialLocation: '/loading_screen',
+  // initialLocation: '/health_check',
   debugLogDiagnostics: false,
   redirect: (context, state) {
-    // Pantallas que no requieren autenticación
+    // Pantallas que no requieren autenticaci¢n
     final publicRoutes = [
       '/loading_screen',
       '/welcome_screen',
       '/login_screen',
       '/register_screen',
+      '/health_check',
     ];
 
-    // Si está en una ruta pública, permitir acceso
+    // Si est  en una ruta p£blica, permitir acceso
     if (publicRoutes.contains(state.uri.path)) {
       return null;
     }
@@ -71,7 +50,7 @@ final appRouter = GoRouter(
       return '/login_screen';
     }
 
-    // Protección por roles (solo para emails registrados)
+    // Protecci¢n por roles
     final coachOnlyRoutes = [
       '/coach_screen',
       '/selected_category_screen',
@@ -94,16 +73,16 @@ final appRouter = GoRouter(
     // Si es una ruta solo para coach y el usuario no es coach
     if (coachOnlyRoutes.contains(state.uri.path) &&
         currentUserRole != 'coach') {
-      return '/login_screen'; // Redirigir al login si no es coach
+      return '/login_screen';
     }
 
     // Si es una ruta solo para player y el usuario no es player
     if (playerOnlyRoutes.contains(state.uri.path) &&
         currentUserRole != 'player') {
-      return '/login_screen'; // Redirigir al login si no es player
+      return '/login_screen';
     }
 
-    return null; 
+    return null;
   },
   routes: [
     GoRoute(
@@ -223,6 +202,11 @@ final appRouter = GoRouter(
       path: '/test_screen',
       name: TestScreen.name,
       builder: (context, state) => const TestScreen(),
+    ),
+    GoRoute(
+      path: '/health_check',
+      name: HealthCheckScreen.name,
+      builder: (context, state) => const HealthCheckScreen(),
     ),
   ],
 );

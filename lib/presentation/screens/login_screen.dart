@@ -1,4 +1,5 @@
-﻿import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -44,12 +45,62 @@ class _LoginViewState extends ConsumerState<_LoginView> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isButtonEnabled = false;
+  bool isLoading = false;
 
   void _checkFields() {
     setState(() {
       isButtonEnabled =
-          emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
+          !isLoading &&
+          emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
     });
+  }
+
+  Future<void> _submit() async {
+    if (!isButtonEnabled || isLoading) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    setState(() {
+      isLoading = true;
+      isButtonEnabled = false;
+    });
+
+    try {
+      final auth = await AuthService().login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      setUserRoleFromBackend(auth.user.rol);
+      final userRole = currentUserRole;
+      if (!mounted) return;
+
+      final destination =
+          userRole == 'coach' ? '/coach_screen' : '/player_screen';
+      context.push(destination);
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error de acceso',
+        message: error.message,
+        type: ModalType.error,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error inesperado',
+        message: error.toString(),
+        type: ModalType.error,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        _checkFields();
+      });
+    }
   }
 
   @override
@@ -157,14 +208,14 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                                 SizedBox(height: betweenFields),
                                 const LabelText(
-                                  label: 'Contrasea',
+                                  label: 'Contraseña',
                                   colorIndex: 0,
                                 ),
                                 SizedBox(
                                   height: fieldH,
                                   child: CustomTextFormField(
                                     controller: passwordController,
-                                    hintText: 'Ingresa tu Contrasea',
+                                    hintText: 'Ingresa tu Contraseña',
                                     obscureText: true,
                                     isPassword: true,
                                   ),
@@ -180,52 +231,9 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 width: buttonW,
                                 height: buttonH,
                                 child: OnboardingNextButton(
-                                  text: 'Continuar',
-                                  isEnabled: isButtonEnabled,
-                                  action: () {
-                                    FocusManager.instance.primaryFocus
-                                        ?.unfocus();
-                                    if (!_isEmailRegistered(
-                                      emailController.text,
-                                    )) {
-                                      CustomModal.show(
-                                        context: context,
-                                        title: 'Email no registrado',
-                                        message:
-                                            'El email ingresado no está registrado en el sistema. ¿Te gustaría registrarte?',
-                                        type: ModalType.error,
-                                        buttonText: 'Registrarse',
-                                        onButtonPressed: () {
-                                          Navigator.of(context).pop();
-                                          context.push('/register_screen');
-                                        },
-                                      );
-                                      return;
-                                    }
-
-                                    // Verificar si la Contrasea no está¡ vacía­a
-                                    if (passwordController.text.isEmpty) {
-                                      CustomModal.show(
-                                        context: context,
-                                        title: 'Contrasea requerida',
-                                        message:
-                                            'Por favor ingresa tu Contrasea para continuar.',
-                                        type: ModalType.warning,
-                                        buttonText: 'Entendido',
-                                      );
-                                      return;
-                                    }
-
-                                    // estáblecer el rol del usuario solo si está¡ registrado
-                                    setUserRole(emailController.text);
-
-                                    final userRole = currentUserRole;
-                                    if (userRole == 'coach') {
-                                      context.push('/coach_screen');
-                                    } else {
-                                      context.push('/player_screen');
-                                    }
-                                  },
+                                  text: isLoading ? 'Cargando...' : 'Continuar',
+                                  isEnabled: isButtonEnabled && !isLoading,
+                                  action: _submit,
                                 ),
                               ),
                             ),
@@ -267,19 +275,6 @@ class _LoginViewState extends ConsumerState<_LoginView> {
       ),
     );
   }
-
-  // Función para verificar si un email está registrado
-  bool _isEmailRegistered(String email) {
-    final Map<String, String> registeredEmails = {
-      'admin@mail.com': 'coach',
-      'coach@mail.com': 'coach',
-      'entrenador@mail.com': 'coach',
-      'player1@mail.com': 'player',
-      'player2@mail.com': 'player',
-      'jugador@mail.com': 'player',
-    };
-    return registeredEmails.containsKey(email.toLowerCase());
-  }
 }
 
 class _Background extends StatelessWidget {
@@ -315,11 +310,3 @@ class _Background extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
