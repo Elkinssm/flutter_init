@@ -4,45 +4,20 @@ import 'package:coach_app/presentation/screens/screens.dart';
 import 'package:go_router/go_router.dart';
 import 'transitions_config/custom_transition.dart';
 
-// Agregar esta variable global para manejar el estado del usuario
+// Estado de rol devuelto por backend
 String? currentUserRole;
 
-// Función para verificar si un email está registrado
-bool _isEmailRegistered(String email) {
-  final Map<String, String> registeredEmails = {
-    'admin@mail.com': 'coach',
-    'coach@mail.com': 'coach',
-    'entrenador@mail.com': 'coach',
-    'player1@mail.com': 'player',
-    'player2@mail.com': 'player',
-    'jugador@mail.com': 'player',
-  };
-  return registeredEmails.containsKey(email.toLowerCase());
-}
-
-// Función para obtener el rol del usuario
-String _getUserRole(String email) {
-  final Map<String, String> roleByEmail = {
-    'admin@mail.com': 'coach',
-    'coach@mail.com': 'coach',
-    'entrenador@mail.com': 'coach',
-    'player1@mail.com': 'player',
-    'player2@mail.com': 'player',
-    'jugador@mail.com': 'player',
-  };
-  return roleByEmail[email.toLowerCase()] ?? 'player';
-}
-
-// Función para establecer el rol del usuario (llamar desde login)
-void setUserRole(String email) {
-  if (_isEmailRegistered(email)) {
-    currentUserRole = _getUserRole(email);
+void setUserRoleFromBackend(String role) {
+  final normalized = role.toLowerCase();
+  if (normalized.contains('admin') || normalized.contains('coach')) {
+    currentUserRole = 'coach';
+  } else if (normalized.contains('player') || normalized.contains('jugador')) {
+    currentUserRole = 'player';
   } else {
-    currentUserRole = null; // No permitir acceso si no está registrado
+    currentUserRole = 'player';
   }
 }
 
-// Función para limpiar el rol (llamar desde logout)
 void clearUserRole() {
   currentUserRole = null;
 }
@@ -53,7 +28,7 @@ final appRouter = GoRouter(
   initialLocation: '/loading_screen',
   debugLogDiagnostics: false,
   redirect: (context, state) {
-    // Pantallas que no requieren autenticación
+    // Pantallas públicas
     final publicRoutes = [
       '/loading_screen',
       '/welcome_screen',
@@ -61,17 +36,14 @@ final appRouter = GoRouter(
       '/register_screen',
     ];
 
-    // Si está en una ruta pública, permitir acceso
     if (publicRoutes.contains(state.uri.path)) {
       return null;
     }
 
-    // Si no hay rol de usuario, redirigir al login
     if (currentUserRole == null) {
       return '/login_screen';
     }
 
-    // Protección por roles (solo para emails registrados)
     final coachOnlyRoutes = [
       '/coach_screen',
       '/selected_category_screen',
@@ -87,23 +59,20 @@ final appRouter = GoRouter(
       '/assistance_screen',
       '/history_screen',
       '/performance_screen',
-      // Allow players to see category view
       '/category_screen',
     ];
 
-    // Si es una ruta solo para coach y el usuario no es coach
     if (coachOnlyRoutes.contains(state.uri.path) &&
         currentUserRole != 'coach') {
-      return '/login_screen'; // Redirigir al login si no es coach
+      return '/login_screen';
     }
 
-    // Si es una ruta solo para player y el usuario no es player
     if (playerOnlyRoutes.contains(state.uri.path) &&
         currentUserRole != 'player') {
-      return '/login_screen'; // Redirigir al login si no es player
+      return '/login_screen';
     }
 
-    return null; 
+    return null;
   },
   routes: [
     GoRoute(

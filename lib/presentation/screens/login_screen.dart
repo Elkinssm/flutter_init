@@ -1,10 +1,11 @@
-﻿import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/infrastructure/services/auth_service.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class LoginScreen extends StatelessWidget {
   static const String name = '/login_screen';
@@ -25,7 +26,7 @@ class LoginScreen extends StatelessWidget {
           resizeToAvoidBottomInset: true,
           body: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
-            child: _LoginView(),
+            child: const _LoginView(),
           ),
         ),
       ),
@@ -44,13 +45,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isButtonEnabled = false;
-
-  void _checkFields() {
-    setState(() {
-      isButtonEnabled =
-          emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
-    });
-  }
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -70,6 +65,59 @@ class _LoginViewState extends ConsumerState<_LoginView> {
     super.dispose();
   }
 
+  void _checkFields() {
+    setState(() {
+      isButtonEnabled =
+          !isLoading &&
+          emailController.text.isNotEmpty &&
+          passwordController.text.isNotEmpty;
+    });
+  }
+
+  Future<void> _submit() async {
+    if (!isButtonEnabled || isLoading) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    setState(() {
+      isLoading = true;
+      isButtonEnabled = false;
+    });
+
+    try {
+      final auth = await AuthService().login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+      setUserRoleFromBackend(auth.user.rol);
+      final destination =
+          currentUserRole == 'coach' ? '/coach_screen' : '/player_screen';
+      if (!mounted) return;
+      context.push(destination);
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error de acceso',
+        message: error.message,
+        type: ModalType.error,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error inesperado',
+        message: error.toString(),
+        type: ModalType.error,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        _checkFields();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isKeyboardVisible = ref.watch(keyboardVisibilityProvider);
@@ -85,7 +133,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
     final betweenFields = shp(context, 0.022);
     final bottomCTA =
         isKeyboardVisible ? shp(context, 0.02) : shp(context, 0.05);
-    final logoH = isPhone(context) ? shp(context, 0.12) : shp(context, 0.12);
+    final logoH = shp(context, 0.12);
     final titleSize = ts(context, 39.5);
     final buttonW =
         isPhone(context)
@@ -157,14 +205,14 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                                 SizedBox(height: betweenFields),
                                 const LabelText(
-                                  label: 'Contrasea',
+                                  label: 'Contraseña',
                                   colorIndex: 0,
                                 ),
                                 SizedBox(
                                   height: fieldH,
                                   child: CustomTextFormField(
                                     controller: passwordController,
-                                    hintText: 'Ingresa tu Contrasea',
+                                    hintText: 'Ingresa tu Contraseña',
                                     obscureText: true,
                                     isPassword: true,
                                   ),
@@ -180,52 +228,9 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 width: buttonW,
                                 height: buttonH,
                                 child: OnboardingNextButton(
-                                  text: 'Continuar',
-                                  isEnabled: isButtonEnabled,
-                                  action: () {
-                                    FocusManager.instance.primaryFocus
-                                        ?.unfocus();
-                                    if (!_isEmailRegistered(
-                                      emailController.text,
-                                    )) {
-                                      CustomModal.show(
-                                        context: context,
-                                        title: 'Email no registrado',
-                                        message:
-                                            'El email ingresado no está registrado en el sistema. ¿Te gustaría registrarte?',
-                                        type: ModalType.error,
-                                        buttonText: 'Registrarse',
-                                        onButtonPressed: () {
-                                          Navigator.of(context).pop();
-                                          context.push('/register_screen');
-                                        },
-                                      );
-                                      return;
-                                    }
-
-                                    // Verificar si la Contrasea no está¡ vacía­a
-                                    if (passwordController.text.isEmpty) {
-                                      CustomModal.show(
-                                        context: context,
-                                        title: 'Contrasea requerida',
-                                        message:
-                                            'Por favor ingresa tu Contrasea para continuar.',
-                                        type: ModalType.warning,
-                                        buttonText: 'Entendido',
-                                      );
-                                      return;
-                                    }
-
-                                    // estáblecer el rol del usuario solo si está¡ registrado
-                                    setUserRole(emailController.text);
-
-                                    final userRole = currentUserRole;
-                                    if (userRole == 'coach') {
-                                      context.push('/coach_screen');
-                                    } else {
-                                      context.push('/player_screen');
-                                    }
-                                  },
+                                  text: isLoading ? 'Cargando...' : 'Continuar',
+                                  isEnabled: isButtonEnabled && !isLoading,
+                                  action: _submit,
                                 ),
                               ),
                             ),
@@ -239,7 +244,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                                 TextButton(
                                   style: TextButton.styleFrom(
-                                    padding: EdgeInsets.only(left: 2),
+                                    padding: const EdgeInsets.only(left: 2),
                                   ),
                                   onPressed: () {
                                     FocusManager.instance.primaryFocus
@@ -266,19 +271,6 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         },
       ),
     );
-  }
-
-  // Función para verificar si un email está registrado
-  bool _isEmailRegistered(String email) {
-    final Map<String, String> registeredEmails = {
-      'admin@mail.com': 'coach',
-      'coach@mail.com': 'coach',
-      'entrenador@mail.com': 'coach',
-      'player1@mail.com': 'player',
-      'player2@mail.com': 'player',
-      'jugador@mail.com': 'player',
-    };
-    return registeredEmails.containsKey(email.toLowerCase());
   }
 }
 
@@ -315,11 +307,3 @@ class _Background extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
