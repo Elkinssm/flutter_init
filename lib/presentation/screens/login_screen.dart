@@ -47,6 +47,53 @@ class _LoginViewState extends ConsumerState<_LoginView> {
   bool isButtonEnabled = false;
   bool isLoading = false;
 
+  Future<void> _submit() async {
+    if (!isButtonEnabled || isLoading) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    setState(() {
+      isLoading = true;
+      isButtonEnabled = false;
+    });
+
+    try {
+      final auth = await AuthService().login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      setUserRoleFromBackend(auth.user.rol);
+      final userRole = currentUserRole;
+      if (!mounted) return;
+
+      final destination =
+          userRole == 'coach' ? '/coach_screen' : '/player_screen';
+      context.push(destination);
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error de acceso',
+        message: error.message,
+        type: ModalType.error,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Error inesperado',
+        message: error.toString(),
+        type: ModalType.error,
+      );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        _checkFields();
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,50 +119,6 @@ class _LoginViewState extends ConsumerState<_LoginView> {
           emailController.text.isNotEmpty &&
           passwordController.text.isNotEmpty;
     });
-  }
-
-  Future<void> _submit() async {
-    if (!isButtonEnabled || isLoading) return;
-    FocusManager.instance.primaryFocus?.unfocus();
-
-    setState(() {
-      isLoading = true;
-      isButtonEnabled = false;
-    });
-
-    try {
-      final auth = await AuthService().login(
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
-      setUserRoleFromBackend(auth.user.rol);
-      final destination =
-          currentUserRole == 'coach' ? '/coach_screen' : '/player_screen';
-      if (!mounted) return;
-      context.push(destination);
-    } on AuthException catch (error) {
-      if (!mounted) return;
-      CustomModal.show(
-        context: context,
-        title: 'Error de acceso',
-        message: error.message,
-        type: ModalType.error,
-      );
-    } catch (error) {
-      if (!mounted) return;
-      CustomModal.show(
-        context: context,
-        title: 'Error inesperado',
-        message: error.toString(),
-        type: ModalType.error,
-      );
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-        _checkFields();
-      });
-    }
   }
 
   @override

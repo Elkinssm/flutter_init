@@ -26,6 +26,7 @@ final appRouter = GoRouter(
   navigatorKey: rootNavKey,
   observers: [LoadingNavObserver()],
   initialLocation: '/loading_screen',
+  // initialLocation: '/health_check',
   debugLogDiagnostics: false,
   redirect: (context, state) {
     // Pantallas públicas
@@ -34,6 +35,7 @@ final appRouter = GoRouter(
       '/welcome_screen',
       '/login_screen',
       '/register_screen',
+      '/health_check',
     ];
 
     if (publicRoutes.contains(state.uri.path)) {
@@ -192,6 +194,11 @@ final appRouter = GoRouter(
       path: '/test_screen',
       name: TestScreen.name,
       builder: (context, state) => const TestScreen(),
+    ),
+    GoRoute(
+      path: '/health_check',
+      name: HealthCheckScreen.name,
+      builder: (context, state) => const HealthCheckScreen(),
     ),
   ],
 );
