@@ -255,7 +255,7 @@ class _CoachView extends StatelessWidget {
                   ],
                 ),
                 child: InkWell(
-                  onTap: () => context.pushNamed('/daily_attendance_screen'),
+                  onTap: () => context.push('/daily_attendance_screen'),
                   child: Column(
                     children: [
                       SizedBox(height: isPhone(context) ? 4 : 2),

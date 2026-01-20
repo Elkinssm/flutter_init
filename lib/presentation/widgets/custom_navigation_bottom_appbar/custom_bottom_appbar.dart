@@ -1,3 +1,4 @@
+import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +81,7 @@ class CustomBottomAppbar extends ConsumerWidget {
           Positioned.fill(
             child: CustomPaint(
               painter: BlockBarPainterOrange(),
-              child: SizedBox(height: blockBarH),
+              size: Size.fromHeight(blockBarH),
             ),
           ),
           Positioned(
@@ -99,7 +100,13 @@ class CustomBottomAppbar extends ConsumerWidget {
                     selectedIndex,
                     'home',
                     iconSize,
-                    ontap: () => context.go('/coach_screen'),
+                    ontap: () {
+                      // Navegar según el rol del usuario
+                      final homeRoute = currentUserRole == 'coach' 
+                          ? '/coach_screen' 
+                          : '/player_screen';
+                      context.go(homeRoute);
+                    },
                   ),
                   _buildIcon(
                     context,
@@ -108,7 +115,7 @@ class CustomBottomAppbar extends ConsumerWidget {
                     selectedIndex,
                     'winner',
                     iconSize,
-                    ontap: () => context.pushNamed('/assistance_screen'),
+                    ontap: () => context.push('/assistance_screen'),
                   ),
                   SizedBox(width: gapForFab),
                   _buildIcon(
@@ -118,7 +125,7 @@ class CustomBottomAppbar extends ConsumerWidget {
                     selectedIndex,
                     'stadium',
                     iconSize,
-                    ontap: () => context.pushNamed('/category_screen'),
+                    ontap: () => context.push('/category_screen'),
                   ),
                   _buildIcon(
                     context,

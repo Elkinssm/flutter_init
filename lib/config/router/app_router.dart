@@ -46,32 +46,23 @@ final appRouter = GoRouter(
       return '/login_screen';
     }
 
-    final coachOnlyRoutes = [
-      '/coach_screen',
-      '/selected_category_screen',
-      '/daily_attendance_screen',
-      '/new_player_screen',
-      '/player_status_screen',
-      '/my_teams_screen',
-      '/selected_team_screen',
-    ];
+    // El coach puede acceder a TODAS las pantallas
+    if (currentUserRole == 'coach') {
+      return null; // Permitir acceso total
+    }
 
-    final playerOnlyRoutes = [
+    // El player solo puede acceder a sus pantallas específicas
+    final playerAllowedRoutes = [
       '/player_screen',
       '/assistance_screen',
       '/history_screen',
       '/performance_screen',
-      '/category_screen',
+      '/category_screen', // Ver su categoría
+      '/selected_category_screen', // Detalles de categoría
     ];
 
-    if (coachOnlyRoutes.contains(state.uri.path) &&
-        currentUserRole != 'coach') {
-      return '/login_screen';
-    }
-
-    if (playerOnlyRoutes.contains(state.uri.path) &&
-        currentUserRole != 'player') {
-      return '/login_screen';
+    if (!playerAllowedRoutes.contains(state.uri.path)) {
+      return '/player_screen'; // Redirigir a su pantalla principal
     }
 
     return null;

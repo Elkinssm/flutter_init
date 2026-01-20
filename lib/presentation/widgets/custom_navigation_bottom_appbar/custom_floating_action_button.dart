@@ -32,7 +32,8 @@ class CustomFloatingActionButton extends StatelessWidget {
         width: fabSize,
         height: fabSize,
         child: FloatingActionButton(
-          onPressed: () => context.pushNamed('/selected_team_screen', extra: 'Equipo'),
+          onPressed:
+              () => context.push('/selected_team_screen', extra: 'Equipo'),
           elevation: 0,
           highlightElevation: 0,
           shape: const CircleBorder(),

@@ -82,7 +82,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/bar-chart-icon.png',
                   imageSize: 24,
-                  onTap: () => context.pushNamed('/performance_screen'),
+                  onTap: () => context.push('/performance_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -92,7 +92,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/tournaments-icon.png',
                   imageSize: 24,
-                  onTap: () => context.pushNamed('/my_teams_screen'),
+                  onTap: () => context.push('/my_teams_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -102,7 +102,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/check-list-icon.png',
                   imageSize: 24,
-                  onTap: () => context.pushNamed('/daily_attendance_screen'),
+                  onTap: () => context.push('/daily_attendance_screen'),
                 ),
                 CustomIconCard(
                   width: 82,
@@ -112,7 +112,7 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/plus-icon.png',
                   imageSize: 24,
-                  onTap: () => context.pushNamed('/new_player_screen'),
+                  onTap: () => context.push('/new_player_screen'),
                 ),
               ],
             ),
