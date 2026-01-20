@@ -17,10 +17,15 @@ class _CoachScreenState extends State<CoachScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Precarga de íconos usados en acciones
-      precacheImage(const AssetImage('assets/images/student-icon.png'), context);
+      precacheImage(
+        const AssetImage('assets/images/student-icon.png'),
+        context,
+      );
       precacheImage(const AssetImage('assets/images/edit-icon.png'), context);
-      precacheImage(const AssetImage('assets/images/calendar-icon.png'), context);
-      precacheImage(const AssetImage('assets/images/cup-icon.png'), context);
+      precacheImage(
+        const AssetImage('assets/images/calendar-icon.png'),
+        context,
+      );
     });
   }
 
@@ -303,62 +308,60 @@ class _CoachView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: hp(context, 0.018)),
-              Wrap(
-                spacing: actionGapH,
-                runSpacing: actionGapW,
-                alignment: WrapAlignment.center,
-                children: [
-                  SizedBox(
-                    width: actionItemW,
-                    height: actionItemH,
-                    child: CustomActionButton(
-                      image: 'assets/images/student-icon.png',
-                      text: 'Crear\nEstudiante',
-                      textSize: actionTextSize,
-                      iconH: actionIconH,
-                      iconW: actionIconW,
-                      onTap: () => context.push('/new_player_screen'),
-                      isDisabled: false,
+              // Primera fila: 2 botones
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: wp(context, 0.02)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: actionItemH,
+                        child: CustomActionButton(
+                          image: 'assets/images/student-icon.png',
+                          text: 'Crear\nEstudiante',
+                          textSize: actionTextSize,
+                          iconH: actionIconH,
+                          iconW: actionIconW,
+                          onTap: () => context.push('/new_player_screen'),
+                          isDisabled: false,
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    width: actionItemW,
-                    height: actionItemH,
-                    child: CustomActionButton(
-                      image: 'assets/images/edit-icon.png',
-                      text: 'Editar\nEquipo',
-                      textSize: actionTextSize,
-                      iconH: actionIconH,
-                      iconW: actionIconW,
-                      onTap: () => context.push('/my_teams_screen'),
-                      isDisabled: false,
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SizedBox(
+                        height: actionItemH,
+                        child: CustomActionButton(
+                          image: 'assets/images/edit-icon.png',
+                          text: 'Editar\nEquipo',
+                          textSize: actionTextSize,
+                          iconH: actionIconH,
+                          iconW: actionIconW,
+                          onTap: () => context.push('/my_teams_screen'),
+                          isDisabled: false,
+                        ),
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              SizedBox(height: actionGapW),
+              // Segunda fila: botón ancho completo
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: wp(context, 0.02)),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: actionItemH,
+                  child: CustomActionButton(
+                    image: 'assets/images/calendar-icon.png',
+                    text: 'Programar Partido',
+                    textSize: actionTextSize,
+                    iconH: actionIconH,
+                    iconW: actionIconW,
+                    onTap: () => context.push('/new_match_screen'),
+                    isDisabled: false,
                   ),
-                  SizedBox(
-                    width: actionItemW,
-                    height: actionItemH,
-                    child: CustomActionButton(
-                      image: 'assets/images/calendar-icon.png',
-                      text: 'Programar\nPartido',
-                      textSize: actionTextSize,
-                      iconH: actionIconH,
-                      iconW: actionIconW,
-                      isDisabled: true,
-                    ),
-                  ),
-                  SizedBox(
-                    width: actionItemW,
-                    height: actionItemH,
-                    child: CustomActionButton(
-                      image: 'assets/images/cup-icon.png',
-                      text: 'Torneos',
-                      textSize: actionTextSize,
-                      iconH: actionIconH,
-                      iconW: actionIconW,
-                      isDisabled: true,
-                    ),
-                  ),
-                ],
+                ),
               ),
               SizedBox(
                 height:

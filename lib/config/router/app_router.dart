@@ -153,6 +153,13 @@ final appRouter = GoRouter(
               CustomTransition.slideLeft(const NewPlayerScreen()),
     ),
     GoRoute(
+      path: '/new_match_screen',
+      name: NewMatchScreen.name,
+      pageBuilder:
+          (context, state) =>
+              CustomTransition.slideLeft(const NewMatchScreen()),
+    ),
+    GoRoute(
       path: '/player_status_screen',
       name: PlayerStatusScreen.name,
       pageBuilder: (context, state) {
