@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:coach_app/config/router/app_router.dart';
@@ -31,20 +30,13 @@ void main() async {
     if (details.stack != null) debugPrint(details.stack.toString());
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Uncaught zone error: $error');
+    debugPrint('Uncaught error: $error');
     debugPrint(stack.toString());
     return true;
   };
-  runZonedGuarded(
-    () => runApp(const ProviderScope(child: MyApp())),
-    (error, stack) {
-      debugPrint('runZonedGuarded: $error');
-      debugPrint(stack.toString());
-    },
-  );
+
+  runApp(const ProviderScope(child: MyApp()));
 }
-// runApp(const ProviderScope(child: MyApp())),
-// runApp(DevicePreview(enabled: !kReleaseMode, builder: (context) => const ProviderScope(child: MyApp()))),
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
