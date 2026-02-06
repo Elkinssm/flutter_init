@@ -1,59 +1,105 @@
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PlayerScreen extends StatelessWidget {
+class PlayerScreen extends StatefulWidget {
   static const String name = '/player_screen';
   const PlayerScreen({super.key});
 
   @override
+  State<PlayerScreen> createState() => _PlayerScreenPageState();
+}
+
+class _PlayerScreenPageState extends State<PlayerScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(
-          title: 'Jugador',
-          backgroundColor: Colors.transparent,
-        ),
-        bottomNavigationBar: CustomBottomAppbar(),
-        floatingActionButton: CustomFloatingActionButton(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _PlayerScreen(),
-      ),
+    return Consumer(
+      builder: (context, ref, _) {
+        if (ref.watch(openProfileDrawerProvider)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(openProfileDrawerProvider.notifier).state = false;
+            _scaffoldKey.currentState?.openEndDrawer();
+          });
+        }
+        return SafeArea(
+          top: false,
+          child: Scaffold(
+            key: _scaffoldKey,
+            extendBodyBehindAppBar: true,
+            backgroundColor: Color.fromRGBO(249, 248, 247, 1),
+            appBar: const CustomAppbar(
+              title: 'Jugador',
+              backgroundColor: Colors.transparent,
+            ),
+            endDrawer: const ProfileDrawer(),
+            bottomNavigationBar: CustomBottomAppbar(),
+            floatingActionButton: CustomFloatingActionButton(),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            body: _PlayerScreen(),
+          ),
+        );
+      },
     );
   }
 }
 
-class _PlayerScreen extends StatefulWidget {
+class _PlayerScreen extends ConsumerStatefulWidget {
   const _PlayerScreen();
 
   @override
-  State<_PlayerScreen> createState() => _PlayerScreenState();
+  ConsumerState<_PlayerScreen> createState() => _PlayerScreenState();
 }
 
-class _PlayerScreenState extends State<_PlayerScreen> {
+class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
   @override
   void initState() {
     super.initState();
-    // Precache commonly used images to avoid jank when they appear
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      precacheImage(const AssetImage('assets/images/player.png'), context);
-      precacheImage(const AssetImage('assets/images/group14.png'), context);
-      precacheImage(
-        const AssetImage('assets/images/performance-icon.png'),
-        context,
-      );
-      precacheImage(const AssetImage('assets/images/strong-icon.png'), context);
-      precacheImage(const AssetImage('assets/images/person-icon.png'), context);
+      _precacheImages();
+      _checkProfileIncomplete();
     });
+  }
+
+  void _precacheImages() {
+    precacheImage(const AssetImage('assets/images/player.png'), context);
+    precacheImage(const AssetImage('assets/images/group14.png'), context);
+    precacheImage(
+      const AssetImage('assets/images/performance-icon.png'),
+      context,
+    );
+    precacheImage(const AssetImage('assets/images/strong-icon.png'), context);
+    precacheImage(const AssetImage('assets/images/person-icon.png'), context);
+  }
+
+  void _checkProfileIncomplete() {
+    if (ref.read(showProfileIncompleteModalProvider)) {
+      ref.read(showProfileIncompleteModalProvider.notifier).state = false;
+      if (!context.mounted) return;
+      CustomModal.showProfileIncomplete(
+        context: context,
+        onCompleteProfile: () => context.push('/new_player_screen'),
+        onSkip: () {},
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileComplete = ref.watch(currentUserProfileCompleteProvider);
+    final initials = ref.watch(currentUserInitialsProvider);
     final screenHeigth = MediaQuery.of(context).size.height;
+
+    if (!profileComplete) {
+      return _IncompleteProfileView(
+        initials: initials,
+        onCompleteProfile: () => context.push('/new_player_screen'),
+      );
+    }
 
     return Column(
       children: [
@@ -132,6 +178,81 @@ class _PlayerScreenState extends State<_PlayerScreen> {
         ),
         const SizedBox(height: 20),
       ],
+    );
+  }
+}
+
+/// Vista simplificada cuando el perfil está incompleto: avatar con iniciales y CTA.
+class _IncompleteProfileView extends StatelessWidget {
+  const _IncompleteProfileView({
+    required this.initials,
+    required this.onCompleteProfile,
+  });
+
+  final String initials;
+  final VoidCallback onCompleteProfile;
+
+  static const _avatarColor = Color(0xFFD94929);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 56,
+              backgroundColor: _avatarColor,
+              child: Text(
+                initials,
+                style: GoogleFonts.inter(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Completa tu perfil',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0B1926),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Cuéntanos un poco más sobre ti para que el profe te conozca mejor.',
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6B7280),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onCompleteProfile,
+                style: FilledButton.styleFrom(
+                  backgroundColor: _avatarColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Completar perfil'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

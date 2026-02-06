@@ -26,7 +26,10 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           hoverColor: Colors.transparent,
-          onPressed: onPressed ?? () => context.pop(),
+          onPressed: onPressed ??
+              () {
+                if (Navigator.of(context).canPop()) context.pop();
+              },
           icon: Icon(Icons.arrow_back_outlined),
           // Área táctil
           constraints: BoxConstraints(minWidth: 60, minHeight: 60),

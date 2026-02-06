@@ -46,10 +46,28 @@ class _SplashOverlay extends StatefulWidget {
 }
 
 class _SplashOverlayState extends State<_SplashOverlay> {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        body: Center(
+          child: Container(
+            color: const Color.fromRGBO(255, 255, 255, 1),
+            child: const AppLoadingContent(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Componente de loading de la app (logo + barra + texto). Reutilizable en registro, etc.
+class AppLoadingContent extends StatelessWidget {
+  const AppLoadingContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     final sidePad = wp(context, isPhone(context) ? 0.06 : 0.08);
     final spaceTop = hp(context, 0.04);
     final spaceMid = hp(context, 0.025);
@@ -60,46 +78,36 @@ class _SplashOverlayState extends State<_SplashOverlay> {
     final barRadius = isPhone(context) ? 8.0 : 10.0;
     final titleSize = ts(context, 28);
 
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        body: Center(
-          child: Container(
-            color: const Color.fromRGBO(255, 255, 255, 1),
-            child: maxWidthCenter(
-              context: context,
-              max: 720,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: sidePad),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: spaceTop),
-                    SizedBox(
-                      width: logoW,
-                      height: logoH,
-                      child: Image.asset(
-                        'assets/images/subtract.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    SizedBox(height: spaceMid),
-                    _CustomLinearProgressIndicator(
-                      progressValue: null,
-                      height: barHeight,
-                      radius: barRadius,
-                    ),
-                    SizedBox(height: spaceBottom),
-                    PrimaryTitleText(
-                      text: 'Cargando\ntu experiencia... ',
-                      spacingText: 1,
-                      size: titleSize,
-                    ),
-                  ],
-                ),
+    return maxWidthCenter(
+      context: context,
+      max: 720,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: sidePad),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: spaceTop),
+            SizedBox(
+              width: logoW,
+              height: logoH,
+              child: Image.asset(
+                'assets/images/subtract.png',
+                fit: BoxFit.contain,
               ),
             ),
-          ),
+            SizedBox(height: spaceMid),
+            _CustomLinearProgressIndicator(
+              progressValue: null,
+              height: barHeight,
+              radius: barRadius,
+            ),
+            SizedBox(height: spaceBottom),
+            PrimaryTitleText(
+              text: 'Cargando\ntu experiencia... ',
+              spacingText: 1,
+              size: titleSize,
+            ),
+          ],
         ),
       ),
     );

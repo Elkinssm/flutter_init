@@ -26,7 +26,6 @@ final appRouter = GoRouter(
   navigatorKey: rootNavKey,
   observers: [LoadingNavObserver()],
   initialLocation: '/loading_screen',
-  // initialLocation: '/health_check',
   debugLogDiagnostics: false,
   redirect: (context, state) {
     // Pantallas públicas
@@ -57,8 +56,9 @@ final appRouter = GoRouter(
       '/assistance_screen',
       '/history_screen',
       '/performance_screen',
-      '/category_screen', // Ver su categoría
-      '/selected_category_screen', // Detalles de categoría
+      '/category_screen',
+      '/selected_category_screen',
+      '/new_player_screen', // Completar perfil de jugador
     ];
 
     if (!playerAllowedRoutes.contains(state.uri.path)) {

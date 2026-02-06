@@ -14,6 +14,9 @@ class CustomModal extends StatelessWidget {
   final String buttonText;
   final VoidCallback? onButtonPressed;
   final bool barrierDismissible;
+  final String? secondaryButtonText;
+  final VoidCallback? onSecondaryButtonPressed;
+  final TextAlign messageAlign;
 
   const CustomModal({
     super.key,
@@ -23,6 +26,9 @@ class CustomModal extends StatelessWidget {
     this.buttonText = 'Entendido',
     this.onButtonPressed,
     this.barrierDismissible = true,
+    this.secondaryButtonText,
+    this.onSecondaryButtonPressed,
+    this.messageAlign = TextAlign.center,
   });
 
   @override
@@ -38,32 +44,49 @@ class CustomModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icono según el tipo
             _buildIcon(context),
             const SizedBox(height: 16),
-
-            // Título usando CustomTitleText
             CustomTitleText(
               text: title,
               size: ts(context, 20),
-              color: colors[0], // Negro
+              color: colors[0],
               fontWeight: FontWeight.w700,
             ),
             const SizedBox(height: 12),
-
-            // Mensaje usando CustomText
             CustomText(
               text: message,
               size: ts(context, 16),
               fontWeight: FontWeight.w400,
               color: colors[0].withValues(alpha: 0.7),
-              textAlign: TextAlign.center,
+              textAlign: messageAlign,
             ),
             const SizedBox(height: 24),
-
-            // Botón
             _buildButton(context),
+            if (secondaryButtonText != null && secondaryButtonText!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildSecondaryButton(context),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: onSecondaryButtonPressed ?? () => Navigator.of(context).pop(),
+        style: TextButton.styleFrom(
+          foregroundColor: colors[0].withValues(alpha: 0.7),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        child: Text(
+          secondaryButtonText!,
+          style: GoogleFonts.inter(
+            fontSize: ts(context, 15),
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -143,7 +166,6 @@ class CustomModal extends StatelessWidget {
     );
   }
 
-  // Método estático para mostrar el modal fácilmente
   static void show({
     required BuildContext context,
     required String title,
@@ -152,6 +174,9 @@ class CustomModal extends StatelessWidget {
     String buttonText = 'Entendido',
     VoidCallback? onButtonPressed,
     bool barrierDismissible = true,
+    String? secondaryButtonText,
+    VoidCallback? onSecondaryButtonPressed,
+    TextAlign messageAlign = TextAlign.center,
   }) {
     showDialog(
       context: context,
@@ -164,8 +189,38 @@ class CustomModal extends StatelessWidget {
           buttonText: buttonText,
           onButtonPressed: onButtonPressed,
           barrierDismissible: barrierDismissible,
+          secondaryButtonText: secondaryButtonText,
+          onSecondaryButtonPressed: onSecondaryButtonPressed,
+          messageAlign: messageAlign,
         );
       },
+    );
+  }
+
+  /// Modal para avisar que el perfil de jugador está incompleto.
+  static void showProfileIncomplete({
+    required BuildContext context,
+    VoidCallback? onCompleteProfile,
+    VoidCallback? onSkip,
+  }) {
+    show(
+      context: context,
+      title: '¡Qué bueno verte!',
+      message:
+          'Para que tu experiencia sea única y el profe pueda conocerte mejor, cuéntanos un poco más sobre ti en tu perfil.',
+      type: ModalType.info,
+      buttonText: 'Completar Perfil',
+      messageAlign: TextAlign.center,
+      onButtonPressed: () {
+        Navigator.of(context).pop();
+        onCompleteProfile?.call();
+      },
+      secondaryButtonText: 'Después',
+      onSecondaryButtonPressed: () {
+        Navigator.of(context).pop();
+        onSkip?.call();
+      },
+      barrierDismissible: false,
     );
   }
 }

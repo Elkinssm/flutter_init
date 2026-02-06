@@ -13,7 +13,6 @@ export 'package:coach_app/presentation/widgets/cards/custom_support_stats.dart';
 export 'package:coach_app/presentation/widgets/cards/custom_team_card.dart';
 export 'package:coach_app/presentation/widgets/cards/exercise_card.dart';
 export 'package:coach_app/presentation/widgets/custom_drop_drown_button/data_selector.dart';
-export 'package:coach_app/presentation/widgets/custom_navigation_bottom_appbar/curved_bar_painter.dart';
 export 'package:coach_app/presentation/widgets/custom_navigation_bottom_appbar/custom_bottom_appbar.dart';
 export 'package:coach_app/presentation/widgets/custom_navigation_bottom_appbar/custom_floating_action_button.dart';
 export 'package:coach_app/presentation/widgets/graphics/assistance_bar_chart.dart';
@@ -33,3 +32,4 @@ export 'package:coach_app/presentation/widgets/players/player_photo_marker.dart'
 export 'package:coach_app/presentation/widgets/players/coach_card.dart';
 export 'package:coach_app/presentation/widgets/players/player_list_item.dart';
 export 'package:coach_app/presentation/widgets/modal/custom_modal.dart';
+export 'package:coach_app/presentation/widgets/drawer/profile_drawer.dart';

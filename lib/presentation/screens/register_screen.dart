@@ -1,10 +1,10 @@
-import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/presentation/helpers/nav_loading.dart';
+import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'dart:ui';
 
 class RegisterScreen extends StatelessWidget {
@@ -45,6 +45,7 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isButtonEnabled = false;
+  bool _backgroundImageReady = false;
 
   void _checkFields() {
     setState(() {
@@ -58,8 +59,11 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
     super.initState();
     emailController.addListener(_checkFields);
     passwordController.addListener(_checkFields);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      precacheImage(const AssetImage('assets/images/register.jpg'), context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await precacheImage(const AssetImage('assets/images/register.jpg'), context);
+      if (mounted) {
+        setState(() => _backgroundImageReady = true);
+      }
       precacheImage(const AssetImage('assets/images/group6.png'), context);
     });
   }
@@ -77,12 +81,21 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
       'valid@mail.com',
       'demo@mail.com',
       'test@mail.com',
+      'incompleto@mail.com', // Para probar modal de perfil incompleto
+      'perfil@mail.com',
     };
     return allowedEmails.contains(email.toLowerCase().trim());
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_backgroundImageReady) {
+      return const Scaffold(
+        backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+        body: Center(child: AppLoadingContent()),
+      );
+    }
+
     final isKeyboardVisible = ref.watch(keyboardVisibilityProvider);
 
     final sidePad =
@@ -298,26 +311,6 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                               ),
                             ),
                             SizedBox(height: bottomCTA),
-                            // Mensaje informativo
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: swp(context, 0.05)),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: shp(context, 0.016),
-                                  horizontal: swp(context, 0.04),
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.45),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Center(
-                                  child: CustomSubtitleText(
-                                    text: 'Una vez registrado, te pediremos completar tus datos para acceder a todas las funciones.',
-                                    color: 3,
-                                  ),
-                                ),
-                              ),
-                            ),
                             SizedBox(height: bottomSpace),
                           ],
                         ),
@@ -337,14 +330,52 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
 class _Background extends StatelessWidget {
   const _Background();
 
+  static const _overlayOrange = Color.fromRGBO(217, 73, 41, 1);
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return SizedBox.expand(
       child: Stack(
+        fit: StackFit.expand,
         children: [
+          // 1) Gradiente naranja como base (se ve de inmediato, sin parpadeo)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromRGBO(0, 0, 0, 0),
+                    _overlayOrange,
+                  ],
+                  stops: [0.0, 1.8],
+                  begin: Alignment.center,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+          ),
+          // 2) Imagen con fade-in cuando termina de cargar (evita “color primero, imagen después”)
           Positioned.fill(
             child: RepaintBoundary(
-              child: Image.asset('assets/images/register.jpg', fit: BoxFit.cover),
+              child: Image.asset(
+                'assets/images/register.jpg',
+                fit: BoxFit.cover,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (frame == null && !wasSynchronouslyLoaded) {
+                    return const SizedBox.shrink();
+                  }
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    builder: (context, value, child) => Opacity(
+                      opacity: value,
+                      child: child,
+                    ),
+                    child: child,
+                  );
+                },
+              ),
             ),
           ),
           Positioned.fill(
@@ -355,13 +386,14 @@ class _Background extends StatelessWidget {
               ),
             ),
           ),
+          // 3) Overlay naranja encima para unificar el tono
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     Color.fromRGBO(0, 0, 0, 0),
-                    Color.fromRGBO(217, 73, 41, 1),
+                    _overlayOrange,
                   ],
                   stops: [0.0, 1.8],
                   begin: Alignment.center,

@@ -1,4 +1,5 @@
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,6 +79,7 @@ class CustomBottomAppbar extends ConsumerWidget {
                         isSelected: selectedIndex == 3,
                         onTap: () {
                           ref.read(selectedIconProvider.notifier).state = 3;
+                          ref.read(openProfileDrawerProvider.notifier).state = true;
                           final route = currentUserRole == 'coach'
                               ? '/coach_screen'
                               : '/player_screen';

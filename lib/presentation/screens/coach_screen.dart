@@ -1,7 +1,9 @@
+import 'package:coach_app/presentation/helpers/responsive.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class CoachScreen extends StatefulWidget {
   static const String name = '/coach_screen';
@@ -12,11 +14,12 @@ class CoachScreen extends StatefulWidget {
 }
 
 class _CoachScreenState extends State<CoachScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Precarga de íconos usados en acciones
       precacheImage(
         const AssetImage('assets/images/student-icon.png'),
         context,
@@ -31,19 +34,31 @@ class _CoachScreenState extends State<CoachScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
-        appBar: CustomAppbar(
-          title: 'Coach Dashboard',
-          onPressed: () => context.push('/login_screen'),
-        ),
-        bottomNavigationBar: const CustomBottomAppbar(),
-        floatingActionButton: const CustomFloatingActionButton(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: const _CoachView(),
-      ),
+    return Consumer(
+      builder: (context, ref, _) {
+        if (ref.watch(openProfileDrawerProvider)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(openProfileDrawerProvider.notifier).state = false;
+            _scaffoldKey.currentState?.openEndDrawer();
+          });
+        }
+        return SafeArea(
+          top: false,
+          child: Scaffold(
+            key: _scaffoldKey,
+            backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+            appBar: CustomAppbar(
+              title: 'Coach Dashboard',
+              onPressed: () => context.push('/login_screen'),
+            ),
+            endDrawer: const ProfileDrawer(),
+            bottomNavigationBar: const CustomBottomAppbar(),
+            floatingActionButton: const CustomFloatingActionButton(),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            body: const _CoachView(),
+          ),
+        );
+      },
     );
   }
 }

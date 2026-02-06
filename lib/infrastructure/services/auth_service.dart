@@ -93,14 +93,14 @@ class AuthService {
 
   // Datos mock para modo local - LOGIN
   AuthResult _mockLogin(String email, String password) {
-    // Simular diferentes usuarios según el email
-    final isAdmin = email.toLowerCase().contains('admin') || 
-                    email.toLowerCase().contains('demo');
-    final isCoach = email.toLowerCase().contains('coach') || 
-                    email.toLowerCase().contains('entrenador');
-    
+    final lower = email.toLowerCase();
+    final isAdmin = lower.contains('admin') || lower.contains('demo');
+    final isCoach = lower.contains('coach') || lower.contains('entrenador');
+    // Perfil incompleto para probar: usuario "incompleto@mail.com" o "perfil@mail.com"
+    final profileComplete = lower != 'incompleto@mail.com' && lower != 'perfil@mail.com';
+
     final rol = isAdmin ? 'ADMIN' : (isCoach ? 'COACH' : 'PLAYER');
-    
+
     return AuthResult(
       message: 'Login correcto (MODO LOCAL)',
       token: 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
@@ -114,6 +114,7 @@ class AuthService {
         fechaRegistro: DateTime.now().toString(),
         ultimoLogin: DateTime.now().toString(),
         intentosFallidos: 0,
+        profileComplete: profileComplete,
       ),
     );
   }
@@ -133,6 +134,7 @@ class AuthService {
         fechaRegistro: DateTime.now().toString(),
         ultimoLogin: DateTime.now().toString(),
         intentosFallidos: 0,
+        profileComplete: true,
       ),
     );
   }
@@ -180,6 +182,7 @@ class AuthUser {
     required this.fechaRegistro,
     required this.ultimoLogin,
     required this.intentosFallidos,
+    this.profileComplete = true,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
@@ -193,6 +196,7 @@ class AuthUser {
       fechaRegistro: json['fecha_registro']?.toString() ?? '',
       ultimoLogin: json['ultimo_login']?.toString() ?? '',
       intentosFallidos: json['intentos_fallidos'] as int? ?? 0,
+      profileComplete: json['perfil_completo'] as bool? ?? true,
     );
   }
 
@@ -205,6 +209,7 @@ class AuthUser {
   final String fechaRegistro;
   final String ultimoLogin;
   final int intentosFallidos;
+  final bool profileComplete;
 }
 
 class AuthException implements Exception {

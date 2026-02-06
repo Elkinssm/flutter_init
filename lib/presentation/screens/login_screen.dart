@@ -2,6 +2,7 @@ import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,6 +66,23 @@ class _LoginViewState extends ConsumerState<_LoginView> {
       setUserRoleFromBackend(auth.user.rol);
       final userRole = currentUserRole;
       if (!mounted) return;
+
+      ref.read(currentUserProfileCompleteProvider.notifier).state =
+          auth.user.profileComplete;
+      final n = auth.user.nombre.trim();
+      final a = auth.user.apellido.trim();
+      final initials = (n.isNotEmpty && a.isNotEmpty)
+          ? '${n[0]}${a[0]}'.toUpperCase()
+          : (n.isNotEmpty ? n[0].toUpperCase() : '?');
+      ref.read(currentUserInitialsProvider.notifier).state = initials;
+      final displayName =
+          '${auth.user.nombre} ${auth.user.apellido}'.trim();
+      ref.read(currentUserDisplayNameProvider.notifier).state =
+          displayName.isEmpty ? 'Usuario' : displayName;
+
+      if (!auth.user.profileComplete && userRole == 'player') {
+        ref.read(showProfileIncompleteModalProvider.notifier).state = true;
+      }
 
       final destination =
           userRole == 'coach' ? '/coach_screen' : '/player_screen';

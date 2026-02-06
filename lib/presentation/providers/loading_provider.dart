@@ -18,7 +18,6 @@ class LoadingNotifier extends StateNotifier<double> {
     final tasks = [
       _preloadImages(context),
       _initializeProviders(),
-      // _simulateApiCall(),
     ];
 
     for (int i = 0; i < tasks.length; i++) {
@@ -73,6 +72,7 @@ class LoadingNotifier extends StateNotifier<double> {
       'assets/images/manchester_icon.png',
       'assets/images/paris_icon.png',
       'assets/images/campo_futbol.png',
+      'assets/images/register.jpg',
     ];
 
     for (final img in images) {
@@ -83,16 +83,10 @@ class LoadingNotifier extends StateNotifier<double> {
   Future<void> _initializeProviders() async {
     ref.read(keyboardVisibilityProvider.notifier);
     ref.read(selectedIconProvider.notifier);
-    // ref.read(formRegisterUserFieldsProvider);
     ref.read(assistanceProvider.notifier);
     ref.read(formFieldsRegisterPlayerProvider);
     ref.read(selectedValueLineChartProvider);
     ref.read(selectedValueBarChartProvider);
     await Future.delayed(const Duration(milliseconds: 100));
   }
-
-  // Future<void> _simulateApiCall() async {
-  //   await Future.delayed(const Duration(milliseconds: 500));
-  //   // Aquí irían llamadas API reales
-  // }
 }
