@@ -1,181 +1,180 @@
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
-import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomBottomAppbar extends ConsumerWidget {
   const CustomBottomAppbar({super.key});
 
+  static const _orange = Color.fromRGBO(217, 73, 41, 1);
+  static const _greenFab = Color.fromRGBO(79, 166, 38, 1);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIconProvider);
-
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    final barBaseH = 60.0;
-    final totalH = barBaseH + bottomInset;
-
-    final whiteCurveH = barBaseH;
-    final orangeCurveH = barBaseH;
-    final orangelineH = barBaseH;
-    final blockBarH = barBaseH;
-
-    final iconSize = isPhone(context) ? ts(context, 24) : ts(context, 26);
-    final gapForFab = isPhone(context) ? wp(context, 0.16) : wp(context, 0.18);
+    const barHeight = 64.0;
+    final totalHeight = barHeight + bottomInset;
 
     return SizedBox(
-      height: totalH,
+      height: totalHeight,
       child: Stack(
         alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
         children: [
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: orangeCurveH,
-                width: double.infinity,
-                child: CustomPaint(
-                  painter: CurvedBarPainterOrange(context: context),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: whiteCurveH,
-                width: double.infinity,
-                child: CustomPaint(
-                  painter: CurvedBarPainterWhite(context: context),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: orangelineH,
-                width: double.infinity,
-                child: CustomPaint(
-                  painter: CurvedLinePainterOrange(context: context),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                height: orangelineH,
-                width: double.infinity,
-                child: CustomPaint(
-                  painter: CurvedLine2PainterOrange(context: context),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BlockBarPainterOrange(),
-              size: Size.fromHeight(blockBarH),
-            ),
-          ),
+          // Barra naranja con esquinas redondeadas abajo
           Positioned(
             left: 0,
             right: 0,
-            bottom: bottomInset * 0.5,
-            child: SizedBox(
-              height: barBaseH,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildIcon(
-                    context,
-                    ref,
-                    0,
-                    selectedIndex,
-                    'home',
-                    iconSize,
-                    ontap: () {
-                      // Navegar según el rol del usuario
-                      final homeRoute = currentUserRole == 'coach' 
-                          ? '/coach_screen' 
-                          : '/player_screen';
-                      context.go(homeRoute);
-                    },
-                  ),
-                  _buildIcon(
-                    context,
-                    ref,
-                    1,
-                    selectedIndex,
-                    'winner',
-                    iconSize,
-                    ontap: () => context.push('/assistance_screen'),
-                  ),
-                  SizedBox(width: gapForFab),
-                  _buildIcon(
-                    context,
-                    ref,
-                    2,
-                    selectedIndex,
-                    'stadium',
-                    iconSize,
-                    ontap: () => context.push('/category_screen'),
-                  ),
-                  _buildIcon(
-                    context,
-                    ref,
-                    3,
-                    selectedIndex,
-                    'message',
-                    iconSize,
-                  ),
-                ],
+            bottom: 0,
+            child: Container(
+              height: barHeight + bottomInset,
+              decoration: const BoxDecoration(
+                color: _orange,
               ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _NavItem(
+                        label: 'INICIO',
+                        icon: Icons.home_rounded,
+                        isSelected: selectedIndex == 0,
+                        onTap: () {
+                          ref.read(selectedIconProvider.notifier).state = 0;
+                          final route = currentUserRole == 'coach'
+                              ? '/coach_screen'
+                              : '/player_screen';
+                          context.go(route);
+                        },
+                      ),
+                      _NavItem(
+                        label: 'EQUIPO',
+                        icon: Icons.groups_rounded,
+                        isSelected: selectedIndex == 1,
+                        onTap: () {
+                          ref.read(selectedIconProvider.notifier).state = 1;
+                          context.push('/my_teams_screen');
+                        },
+                      ),
+                      const SizedBox(width: 72),
+                      _NavItem(
+                        label: 'CALENDARIO',
+                        icon: Icons.calendar_month_rounded,
+                        isSelected: selectedIndex == 2,
+                        onTap: () {
+                          ref.read(selectedIconProvider.notifier).state = 2;
+                          context.push('/category_screen');
+                        },
+                      ),
+                      _NavItem(
+                        label: 'PERFIL',
+                        icon: Icons.person_outline_rounded,
+                        isSelected: selectedIndex == 3,
+                        onTap: () {
+                          ref.read(selectedIconProvider.notifier).state = 3;
+                          final route = currentUserRole == 'coach'
+                              ? '/coach_screen'
+                              : '/player_screen';
+                          context.go(route);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // FAB central (balón) que sobresale por encima de la barra
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomInset + barHeight - 36,
+            child: const Center(
+              child: _CenterFab(),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildIcon(
-    BuildContext context,
-    WidgetRef ref,
-    int index,
-    int selectedIndex,
-    String name,
-    double iconSize, {
-    VoidCallback? ontap,
-  }) {
-    final isSelected = selectedIndex == index;
-    final imagePath =
-        isSelected
-            ? 'assets/images/$name-100.png'
-            : 'assets/images/$name-black-100.png';
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
 
-    final tapBox = isPhone(context) ? 48.0 : 52.0;
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
 
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        ref.read(selectedIconProvider.notifier).state = index;
-        ontap?.call();
-      },
-      child: SizedBox(
-        width: tapBox,
-        height: tapBox,
-        child: Center(
-          child: Image.asset(
-            imagePath,
-            height: iconSize,
-            width: iconSize,
-            fit: BoxFit.contain,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 26,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CenterFab extends StatelessWidget {
+  const _CenterFab();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 6,
+      shadowColor: Colors.black26,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: () => context.push('/selected_team_screen', extra: 'Equipo'),
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: CustomBottomAppbar._greenFab,
+            border: Border.all(color: Colors.white, width: 5),
+          ),
+          child: const Icon(
+            Icons.sports_soccer_rounded,
+            color: Colors.white,
+            size: 36,
           ),
         ),
       ),
