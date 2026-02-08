@@ -1,8 +1,11 @@
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
+import 'package:coach_app/presentation/helpers/globals.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,25 +61,46 @@ class _LoginViewState extends ConsumerState<_LoginView> {
     });
 
     try {
-      final auth = await AuthService().login(
-        email: emailController.text.trim(),
-        password: passwordController.text,
-      );
+      final auth = await AuthService()
+          .login(
+            email: emailController.text.trim(),
+            password: passwordController.text,
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout:
+                () =>
+                    throw AuthException(
+                      'El servidor no respondió a tiempo. Revisa que el backend esté encendido y la URL en Environment.',
+                    ),
+          );
 
       setUserRoleFromBackend(auth.user.rol);
       final userRole = currentUserRole;
       if (!mounted) return;
 
+      if (Environment.useBackend &&
+          auth.token != null &&
+          auth.token!.isNotEmpty) {
+        await ref
+            .read(sessionServiceProvider)
+            .saveSession(
+              token: auth.token!,
+              user: auth.user,
+              expiresAt: auth.expiresAt,
+            )
+            .timeout(const Duration(seconds: 5));
+      }
       ref.read(currentUserProfileCompleteProvider.notifier).state =
           auth.user.profileComplete;
       final n = auth.user.nombre.trim();
       final a = auth.user.apellido.trim();
-      final initials = (n.isNotEmpty && a.isNotEmpty)
-          ? '${n[0]}${a[0]}'.toUpperCase()
-          : (n.isNotEmpty ? n[0].toUpperCase() : '?');
+      final initials =
+          (n.isNotEmpty && a.isNotEmpty)
+              ? '${n[0]}${a[0]}'.toUpperCase()
+              : (n.isNotEmpty ? n[0].toUpperCase() : '?');
       ref.read(currentUserInitialsProvider.notifier).state = initials;
-      final displayName =
-          '${auth.user.nombre} ${auth.user.apellido}'.trim();
+      final displayName = '${auth.user.nombre} ${auth.user.apellido}'.trim();
       ref.read(currentUserDisplayNameProvider.notifier).state =
           displayName.isEmpty ? 'Usuario' : displayName;
 
@@ -86,7 +110,12 @@ class _LoginViewState extends ConsumerState<_LoginView> {
 
       final destination =
           userRole == 'coach' ? '/coach_screen' : '/player_screen';
-      context.push(destination);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = rootNavKey.currentContext;
+        if (ctx != null && ctx.mounted) {
+          GoRouter.of(ctx).go(destination);
+        }
+      });
     } on AuthException catch (error) {
       if (!mounted) return;
       CustomModal.show(
@@ -94,21 +123,22 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         title: 'Error de acceso',
         message: error.message,
         type: ModalType.error,
+        buttonText: 'Entendido',
       );
-    } catch (error) {
+    } catch (error, _) {
       if (!mounted) return;
-      CustomModal.show(
-        context: context,
-        title: 'Error inesperado',
-        message: error.toString(),
-        type: ModalType.error,
+      CustomModal.showNetworkError(
+        context,
+        detail: error.toString().length > 80 ? null : error.toString(),
+        onRetry: () => _submit(),
       );
     } finally {
-      if (!mounted) return;
-      setState(() {
-        isLoading = false;
-        _checkFields();
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          _checkFields();
+        });
+      }
     }
   }
 

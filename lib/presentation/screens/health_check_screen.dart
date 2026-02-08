@@ -50,7 +50,7 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
     if (host.isEmpty || parsedPort == null) return;
 
     setState(() {
-      _service = HealthService(hostOverride: host, port: parsedPort);
+      _service = HealthService(hostOverride: host, portOverride: parsedPort);
       _healthFuture = _fetchHealth();
     });
   }
@@ -110,6 +110,12 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
                     'Ping a ${_service.endpoint}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Misma URL que login/API (Environment)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 16),
                   FutureBuilder<HealthCheckResult>(

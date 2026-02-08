@@ -5,6 +5,8 @@ class CategoryCard extends StatelessWidget {
   final int year;
   final int members;
   final bool isSelected;
+  /// Si se indica, se muestra en lugar del año (ej. "Sub-21" desde API).
+  final String? displayLabel;
   final VoidCallback? onTapCard;
   final VoidCallback? onTapAssistance;
   const CategoryCard({
@@ -12,6 +14,7 @@ class CategoryCard extends StatelessWidget {
     required this.year,
     required this.members,
     required this.isSelected,
+    this.displayLabel,
     this.onTapCard,
     this.onTapAssistance,
   });
@@ -78,7 +81,7 @@ class CategoryCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         CustomText(
-                          text: '$year',
+                          text: displayLabel ?? '$year',
                           size: 22,
                           fontWeight: FontWeight.w800,
                         ),

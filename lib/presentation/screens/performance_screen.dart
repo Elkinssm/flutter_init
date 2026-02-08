@@ -1,3 +1,4 @@
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/selected_value_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class PerformanceScreen extends StatelessWidget {
       top: false,
       child: Scaffold(
         backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
-        appBar: const CustomAppbar(title: 'User'),
+        appBar: const CustomAppbar(title: 'Rendimiento'),
         bottomNavigationBar: const CustomBottomAppbar(),
         floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -28,6 +29,7 @@ class _PerformanceView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final displayName = ref.watch(currentUserDisplayNameProvider);
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -36,7 +38,7 @@ class _PerformanceView extends ConsumerWidget {
           const SizedBox(height: 8),
           Center(
             child: CustomTitleText(
-              text: 'David\nBallesteros',
+              text: displayName.replaceAll(' ', '\n'),
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
             ),

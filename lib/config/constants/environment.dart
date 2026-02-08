@@ -25,7 +25,7 @@ class Environment {
   /// Modo de operación:
   /// - true: Se conecta al backend real
   /// - false: Usa datos locales/mock (sin conexión al backend)
-  static const bool useBackend = false; // Cambia a false para modo local
+  static const bool useBackend = true; // Cambia a false para modo local
 
   // Configuración del backend (solo se usa si useBackend = true)
   // Para Android emulador, usa '10.0.2.2'
@@ -41,4 +41,29 @@ class Environment {
 
   // Helper para logs
   static String get mode => useBackend ? 'BACKEND' : 'LOCAL';
+
+  /// Credenciales para el botón "Probar login rápido" (solo desarrollo).
+  static const String testLoginEmail = 'coach@demo.com';
+  static const String testLoginPassword = 'secret123';
+
+  // ========== CREDENCIALES PARA PROBAR EN LOCAL ==========
+  //
+  // LOGIN (usuarios ya creados por seeders):
+  // +----------+---------------------+-------------+
+  // | Rol      | Email               | Contraseña  |
+  // +----------+---------------------+-------------+
+  // | Admin    | admin@demo.com      | secret123   |
+  // | Coach    | coach@demo.com      | secret123   |
+  // | Jugador  | jugador1@demo.com   | secret123   |
+  // +----------+---------------------+-------------+
+  //
+  // REGISTRO (emails NUEVOS, que no existan en el backend):
+  // +---------------------+-------------+
+  // | Email               | Contraseña  |
+  // +---------------------+-------------+
+  // | nuevo@email.com     | secret123   |
+  // | jugador2@demo.com   | secret123   |
+  // | test@test.com       | secret123   |
+  // +---------------------+-------------+
+  // Tras registrar → usuario JUGADOR, perfil incompleto → Completar perfil.
 }

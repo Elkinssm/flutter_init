@@ -1,11 +1,17 @@
+import 'dart:ui';
+
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/nav_loading.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:ui';
 
 class RegisterScreen extends StatelessWidget {
   static const String name = '/register_screen';
@@ -46,6 +52,7 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
   final passwordController = TextEditingController();
   bool isButtonEnabled = false;
   bool _backgroundImageReady = false;
+  bool _isLoading = false;
 
   void _checkFields() {
     setState(() {
@@ -60,11 +67,15 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
     emailController.addListener(_checkFields);
     passwordController.addListener(_checkFields);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await precacheImage(const AssetImage('assets/images/register.jpg'), context);
-      if (mounted) {
-        setState(() => _backgroundImageReady = true);
-      }
+      if (!context.mounted) return;
+      // Precargar imágenes (no necesitan await)
       precacheImage(const AssetImage('assets/images/group6.png'), context);
+      await precacheImage(
+        const AssetImage('assets/images/register.jpg'),
+        context,
+      );
+      if (!mounted) return;
+      setState(() => _backgroundImageReady = true);
     });
   }
 
@@ -230,12 +241,14 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                 width: buttonW,
                                 height: buttonH,
                                 child: OnboardingNextButton(
-                                  text: 'Registrarse',
-                                  isEnabled: isButtonEnabled,
-                                  action: () {
+                                  text:
+                                      _isLoading
+                                          ? 'Cargando...'
+                                          : 'Registrarse',
+                                  isEnabled: isButtonEnabled && !_isLoading,
+                                  action: () async {
                                     FocusManager.instance.primaryFocus
                                         ?.unfocus();
-                                    
                                     final email = emailController.text.trim();
                                     final password = passwordController.text;
 
@@ -253,7 +266,8 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                     }
 
                                     // Validar formato de email básico
-                                    if (!email.contains('@') || !email.contains('.')) {
+                                    if (!email.contains('@') ||
+                                        !email.contains('.')) {
                                       CustomModal.show(
                                         context: context,
                                         title: 'Email inválido',
@@ -278,7 +292,102 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                       return;
                                     }
 
-                                    // Validar si el email está permitido
+                                    // Con backend: llamar API. Sin backend: validar email permitido y mock.
+                                    if (Environment.useBackend) {
+                                      setState(() => _isLoading = true);
+                                      try {
+                                        final auth = await AuthService()
+                                            .register(
+                                              email: email,
+                                              password: password,
+                                              passwordConfirmation: password,
+                                            );
+                                        if (!mounted) return;
+                                        if (auth.token != null &&
+                                            auth.token!.isNotEmpty) {
+                                          await ref
+                                              .read(sessionServiceProvider)
+                                              .saveSession(
+                                                token: auth.token!,
+                                                user: auth.user,
+                                                expiresAt: auth.expiresAt,
+                                              );
+                                        }
+                                        setUserRoleFromBackend(auth.user.rol);
+                                        ref
+                                            .read(
+                                              currentUserProfileCompleteProvider
+                                                  .notifier,
+                                            )
+                                            .state = auth.user.profileComplete;
+                                        final n = auth.user.nombre.trim();
+                                        final a = auth.user.apellido.trim();
+                                        final initials =
+                                            (n.isNotEmpty && a.isNotEmpty)
+                                                ? '${n[0]}${a[0]}'.toUpperCase()
+                                                : (n.isNotEmpty
+                                                    ? n[0].toUpperCase()
+                                                    : '?');
+                                        ref
+                                            .read(
+                                              currentUserInitialsProvider
+                                                  .notifier,
+                                            )
+                                            .state = initials;
+                                        final displayName =
+                                            '${auth.user.nombre} ${auth.user.apellido}'
+                                                .trim();
+                                        ref
+                                            .read(
+                                              currentUserDisplayNameProvider
+                                                  .notifier,
+                                            )
+                                            .state = displayName.isEmpty
+                                                ? 'Usuario'
+                                                : displayName;
+                                        if (!auth.user.profileComplete &&
+                                            currentUserRole == 'player') {
+                                          ref
+                                              .read(
+                                                showProfileIncompleteModalProvider
+                                                    .notifier,
+                                              )
+                                              .state = true;
+                                        }
+                                        final destination =
+                                            !auth.user.profileComplete &&
+                                                    currentUserRole == 'player'
+                                                ? '/new_player_screen'
+                                                : '/player_screen';
+                                        if (!context.mounted) return;
+                                        context.go(destination);
+                                      } on AuthException catch (e) {
+                                        if (!context.mounted) return;
+                                        CustomModal.show(
+                                          context: context,
+                                          title: 'Error de registro',
+                                          message: e.message,
+                                          type: ModalType.error,
+                                          buttonText: 'Entendido',
+                                        );
+                                      } catch (e) {
+                                        if (!context.mounted) return;
+                                        CustomModal.showNetworkError(
+                                          context,
+                                          detail:
+                                              e.toString().length > 80
+                                                  ? null
+                                                  : e.toString(),
+                                        );
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _isLoading = false);
+                                        }
+                                      }
+                                      return;
+                                    }
+
+                                    // Modo local: validar email permitido
                                     final isAllowed = _isEmailAllowed(email);
                                     if (!isAllowed) {
                                       CustomModal.show(
@@ -292,8 +401,6 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                       return;
                                     }
 
-                                    // Si pasa todas las validaciones, registrar
-                                    // Mostrar mensaje de éxito y navegar
                                     CustomModal.show(
                                       context: context,
                                       title: 'Registro exitoso',
@@ -343,10 +450,7 @@ class _Background extends StatelessWidget {
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color.fromRGBO(0, 0, 0, 0),
-                    _overlayOrange,
-                  ],
+                  colors: [Color.fromRGBO(0, 0, 0, 0), _overlayOrange],
                   stops: [0.0, 1.8],
                   begin: Alignment.center,
                   end: Alignment.topCenter,
@@ -368,10 +472,9 @@ class _Background extends StatelessWidget {
                     tween: Tween(begin: 0, end: 1),
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
-                    builder: (context, value, child) => Opacity(
-                      opacity: value,
-                      child: child,
-                    ),
+                    builder:
+                        (context, value, child) =>
+                            Opacity(opacity: value, child: child),
                     child: child,
                   );
                 },
@@ -382,7 +485,7 @@ class _Background extends StatelessWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                child: Container(color: Colors.black.withOpacity(0.08)),
+                child: Container(color: const Color.fromRGBO(0, 0, 0, 0.08)),
               ),
             ),
           ),
@@ -391,10 +494,7 @@ class _Background extends StatelessWidget {
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color.fromRGBO(0, 0, 0, 0),
-                    _overlayOrange,
-                  ],
+                  colors: [Color.fromRGBO(0, 0, 0, 0), _overlayOrange],
                   stops: [0.0, 1.8],
                   begin: Alignment.center,
                   end: Alignment.topCenter,
@@ -407,4 +507,3 @@ class _Background extends StatelessWidget {
     );
   }
 }
-

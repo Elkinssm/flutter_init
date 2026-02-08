@@ -2,21 +2,18 @@ import 'package:coach_app/config/constants/environment.dart';
 import 'package:dio/dio.dart';
 
 class AuthService {
-  AuthService({
-    Dio? dio,
-    String? host,
-    String? scheme,
-    int? port,
-  })  : _dio = dio ??
-            Dio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 10),
-                receiveTimeout: const Duration(seconds: 10),
-              ),
+  AuthService({Dio? dio, String? host, String? scheme, int? port})
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 8),
             ),
-        _host = host ?? Environment.backendHost,
-        _scheme = scheme ?? Environment.backendScheme,
-        _port = port ?? Environment.backendPort;
+          ),
+      _host = host ?? Environment.backendHost,
+      _scheme = scheme ?? Environment.backendScheme,
+      _port = port ?? Environment.backendPort;
 
   final Dio _dio;
   final String _host;
@@ -31,13 +28,10 @@ class AuthService {
   }) async {
     // Modo local: retornar datos mock sin conectar al backend
     if (!Environment.useBackend) {
-      print('[AUTH SERVICE] Modo LOCAL - Usando datos mock');
-      await Future.delayed(const Duration(milliseconds: 500)); // Simular delay de red
+      await Future.delayed(const Duration(milliseconds: 500));
       return _mockLogin(email, password);
     }
 
-    // Modo backend: conectar al servidor real
-    print('[AUTH SERVICE] Modo BACKEND - Conectando a $_baseUrl/login');
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         '$_baseUrl/login',
@@ -45,14 +39,16 @@ class AuthService {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '',
+            'Accept': 'application/json',
           },
         ),
       );
       return _parseAuthResponse(response.data);
     } on DioException catch (error) {
-      throw AuthException(_extractMessage(error) ??
-          'No se pudo iniciar sesión. Verifica las credenciales o la conexión.');
+      throw AuthException(
+        _extractMessage(error) ??
+            'No se pudo iniciar sesión. Verifica las credenciales o la conexión.',
+      );
     } catch (error) {
       throw AuthException('Error inesperado: $error');
     }
@@ -61,33 +57,57 @@ class AuthService {
   Future<AuthResult> register({
     required String email,
     required String password,
+    String? passwordConfirmation,
   }) async {
     // Modo local: retornar datos mock sin conectar al backend
     if (!Environment.useBackend) {
-      print('[AUTH SERVICE] Modo LOCAL - Usando datos mock para registro');
-      await Future.delayed(const Duration(milliseconds: 500)); // Simular delay de red
+      await Future.delayed(const Duration(milliseconds: 500));
       return _mockRegister(email, password);
     }
 
-    // Modo backend: conectar al servidor real
-    print('[AUTH SERVICE] Modo BACKEND - Conectando a $_baseUrl/register');
+    final confirm = passwordConfirmation ?? password;
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         '$_baseUrl/register',
-        data: {'email': email, 'password': password},
+        data: {
+          'email': email,
+          'password': password,
+          'password_confirmation': confirm,
+        },
         options: Options(
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '',
+            'Accept': 'application/json',
           },
         ),
       );
       return _parseAuthResponse(response.data);
     } on DioException catch (error) {
-      throw AuthException(_extractMessage(error) ??
-          'No se pudo registrar. Verifica la conexión o intenta más tarde.');
+      throw AuthException(
+        _extractMessage(error) ??
+            'No se pudo registrar. Verifica la conexión o intenta más tarde.',
+      );
     } catch (error) {
       throw AuthException('Error inesperado: $error');
+    }
+  }
+
+  /// Cierra sesión en el backend. Solo tiene efecto si [Environment.useBackend] es true.
+  Future<void> logout(String token) async {
+    if (!Environment.useBackend || token.isEmpty) return;
+    try {
+      await _dio.post<void>(
+        '$_baseUrl/logout',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+    } on DioException catch (_) {
+      // Si falla (401, red, etc.) igual limpiamos sesión en el cliente
     }
   }
 
@@ -97,7 +117,8 @@ class AuthService {
     final isAdmin = lower.contains('admin') || lower.contains('demo');
     final isCoach = lower.contains('coach') || lower.contains('entrenador');
     // Perfil incompleto para probar: usuario "incompleto@mail.com" o "perfil@mail.com"
-    final profileComplete = lower != 'incompleto@mail.com' && lower != 'perfil@mail.com';
+    final profileComplete =
+        lower != 'incompleto@mail.com' && lower != 'perfil@mail.com';
 
     final rol = isAdmin ? 'ADMIN' : (isCoach ? 'COACH' : 'PLAYER');
 
@@ -142,19 +163,25 @@ class AuthService {
   AuthResult _parseAuthResponse(Map<String, dynamic>? data) {
     final map = data ?? {};
     final token = map['token']?.toString();
+    final expiresAtRaw = map['expires_at']?.toString();
     final userJson = (map['usuario'] as Map?)?.cast<String, dynamic>() ?? {};
     final user = AuthUser.fromJson(userJson);
     return AuthResult(
       message: map['message']?.toString() ?? 'Operación exitosa',
       token: token,
+      expiresAt: expiresAtRaw,
       user: user,
     );
   }
 
   String? _extractMessage(DioException error) {
     final resp = error.response?.data;
-    if (resp is Map && resp['message'] != null) return resp['message'].toString();
-    if (resp is String && resp.isNotEmpty) return resp;
+    if (resp is Map && resp['message'] != null) {
+      return resp['message'].toString();
+    }
+    if (resp is String && resp.isNotEmpty) {
+      return resp;
+    }
     return error.message;
   }
 }
@@ -164,10 +191,14 @@ class AuthResult {
     required this.message,
     required this.user,
     this.token,
+    this.expiresAt,
   });
 
   final String message;
   final String? token;
+
+  /// ISO 8601 (ej. 2026-02-12T23:31:48+00:00). Para renovar token antes de que expire.
+  final String? expiresAt;
   final AuthUser user;
 }
 
@@ -198,6 +229,14 @@ class AuthUser {
       intentosFallidos: json['intentos_fallidos'] as int? ?? 0,
       profileComplete: json['perfil_completo'] as bool? ?? true,
     );
+  }
+
+  /// Rol normalizado para rutas: ENTRENADOR/ADMIN → coach, JUGADOR → player.
+  String get normalizedRole {
+    final r = rol.toUpperCase();
+    if (r == 'ADMIN' || r == 'ENTRENADOR') return 'coach';
+    if (r == 'JUGADOR') return 'player';
+    return 'player';
   }
 
   final int id;

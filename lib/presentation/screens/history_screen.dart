@@ -1,5 +1,8 @@
+import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../widgets/table/monthly_summaary.dart';
 
@@ -23,12 +26,19 @@ class HistoryScreen extends StatelessWidget {
   }
 }
 
-class _HistoryView extends StatelessWidget {
+class _HistoryView extends ConsumerWidget {
   const _HistoryView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
+    final displayName = ref.watch(currentUserDisplayNameProvider);
+    final resumenAsync = ref.watch(jugadorResumenProvider(null));
+    final asistenciaPercent = resumenAsync.valueOrNull?['asistencia_percent']?.toString() ??
+        resumenAsync.valueOrNull?['asistencia']?.toString() ??
+        '90';
+    final anioStr = resumenAsync.valueOrNull?['anio']?.toString() ??
+        '${DateTime.now().year}';
 
     return Column(
       children: [
@@ -37,7 +47,7 @@ class _HistoryView extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.only(top: size.height * 0.02),
             child: CustomTitleText(
-              text: 'David\nBallesteros',
+              text: displayName.replaceAll(' ', '\n'),
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
               fontWeight: FontWeight.w800,
@@ -76,14 +86,14 @@ class _HistoryView extends StatelessWidget {
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          CustomText(
+                        children: [
+                          const CustomText(
                             text: 'Asistencia',
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),
                           CustomText(
-                            text: '90%',
+                            text: '$asistenciaPercent%',
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),
@@ -96,14 +106,14 @@ class _HistoryView extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          CustomText(
+                        children: [
+                          const CustomText(
                             text: 'Año',
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),
                           CustomText(
-                            text: '2024',
+                            text: anioStr,
                             fontWeight: FontWeight.bold,
                             size: 18,
                           ),

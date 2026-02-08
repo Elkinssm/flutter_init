@@ -1,15 +1,16 @@
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:dio/dio.dart';
 
-/// Simple client to hit the health endpoint used for the test page.
+/// Cliente para probar GET /api/health. Usa [Environment] por defecto (misma URL que login/API).
 class HealthService {
   HealthService({
     Dio? dio,
     String? hostOverride,
-    String scheme = 'http',
-    int port = 8000,
-  }) : host = hostOverride ?? _defaultHost,
-       _scheme = scheme,
-       _port = port,
+    String? schemeOverride,
+    int? portOverride,
+  }) : host = hostOverride ?? Environment.backendHost,
+       _scheme = schemeOverride ?? Environment.backendScheme,
+       _port = portOverride ?? Environment.backendPort,
        _dio =
            dio ??
            Dio(
@@ -24,12 +25,19 @@ class HealthService {
   final String _scheme;
   final int _port;
 
-  static String get _defaultHost => '127.0.0.1';
-
   int get port => _port;
   String get endpoint => '$_scheme://$host:$_port/api/health';
 
   Future<HealthCheckResult> check() async {
+    if (!Environment.useBackend) {
+      return HealthCheckResult(
+        message: 'Modo local (backend desactivado)',
+        raw: {
+          'status': 'local',
+          'message': 'useBackend = false. Activa el backend en Environment para probar conexión.',
+        },
+      );
+    }
     try {
       final response = await _dio.get<Map<String, dynamic>>(endpoint);
       final data = response.data;

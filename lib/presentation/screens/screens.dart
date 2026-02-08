@@ -18,3 +18,4 @@ export 'package:coach_app/presentation/screens/welcome_screen.dart';
 export 'package:coach_app/presentation/widgets/table/monthly_summaary.dart';
 export 'package:coach_app/presentation/screens/test_screen.dart';
 export 'package:coach_app/presentation/screens/health_check_screen.dart';
+export 'package:coach_app/presentation/screens/auth_info_screen.dart';

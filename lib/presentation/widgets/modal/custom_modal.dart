@@ -209,7 +209,7 @@ class CustomModal extends StatelessWidget {
       message:
           'Para que tu experiencia sea única y el profe pueda conocerte mejor, cuéntanos un poco más sobre ti en tu perfil.',
       type: ModalType.info,
-      buttonText: 'Completar Perfil',
+      buttonText: 'Completar perfil',
       messageAlign: TextAlign.center,
       onButtonPressed: () {
         Navigator.of(context).pop();
@@ -221,6 +221,43 @@ class CustomModal extends StatelessWidget {
         onSkip?.call();
       },
       barrierDismissible: false,
+    );
+  }
+
+  /// Error de conexión o servidor. Mensaje unificado.
+  static void showNetworkError(
+    BuildContext context, {
+    String? detail,
+    VoidCallback? onRetry,
+  }) {
+    show(
+      context: context,
+      title: 'Sin conexión',
+      message: detail != null && detail.isNotEmpty
+          ? 'No se pudo cargar la información. $detail'
+          : 'Revisa tu conexión a internet e intenta de nuevo.',
+      type: ModalType.error,
+      buttonText: onRetry != null ? 'Reintentar' : 'Entendido',
+      onButtonPressed: () {
+        Navigator.of(context).pop();
+        onRetry?.call();
+      },
+    );
+  }
+
+  /// No hay datos para mostrar (lista vacía, etc.).
+  static void showEmptyData(
+    BuildContext context, {
+    required String title,
+    String message = 'Aún no hay datos para mostrar.',
+    String buttonText = 'Entendido',
+  }) {
+    show(
+      context: context,
+      title: title,
+      message: message,
+      type: ModalType.info,
+      buttonText: buttonText,
     );
   }
 }

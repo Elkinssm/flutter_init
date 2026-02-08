@@ -1,3 +1,4 @@
+import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/globals.dart';
 import 'package:coach_app/presentation/helpers/loading_observer.dart';
 import 'package:coach_app/presentation/screens/screens.dart';
@@ -7,11 +8,12 @@ import 'transitions_config/custom_transition.dart';
 // Estado de rol devuelto por backend
 String? currentUserRole;
 
+/// Asigna [currentUserRole] según el rol devuelto por la API (ADMIN, ENTRENADOR, JUGADOR).
 void setUserRoleFromBackend(String role) {
-  final normalized = role.toLowerCase();
-  if (normalized.contains('admin') || normalized.contains('coach')) {
+  final r = role.toUpperCase();
+  if (r == 'ADMIN' || r == 'ENTRENADOR') {
     currentUserRole = 'coach';
-  } else if (normalized.contains('player') || normalized.contains('jugador')) {
+  } else if (r == 'JUGADOR') {
     currentUserRole = 'player';
   } else {
     currentUserRole = 'player';
@@ -35,6 +37,7 @@ final appRouter = GoRouter(
       '/login_screen',
       '/register_screen',
       '/health_check',
+      '/auth_info_screen',
     ];
 
     if (publicRoutes.contains(state.uri.path)) {
@@ -141,9 +144,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/daily_attendance_screen',
       name: DailyAttendanceScreen.name,
-      pageBuilder:
-          (context, state) =>
-              CustomTransition.slideLeft(const DailyAttendanceScreen()),
+      pageBuilder: (context, state) {
+        final equipoId = state.extra as int?;
+        return CustomTransition.slideLeft(DailyAttendanceScreen(equipoId: equipoId));
+      },
     ),
     GoRoute(
       path: '/new_player_screen',
@@ -197,6 +201,12 @@ final appRouter = GoRouter(
       path: '/health_check',
       name: HealthCheckScreen.name,
       builder: (context, state) => const HealthCheckScreen(),
+    ),
+    GoRoute(
+      path: '/auth_info_screen',
+      name: AuthInfoScreen.name,
+      builder: (context, state) =>
+          AuthInfoScreen(extra: state.extra as AuthResult?),
     ),
   ],
 );

@@ -1,5 +1,7 @@
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -139,8 +141,9 @@ class _ProfilePanelContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final displayName = ref.watch(currentUserDisplayNameProvider);
-    final initials = ref.watch(currentUserInitialsProvider);
+    final displayName =
+        ref.watch(currentUserDisplayNameProvider).toString().trim();
+    final initials = ref.watch(currentUserInitialsProvider).toString().trim();
 
     return Column(
       children: [
@@ -173,7 +176,7 @@ class _ProfilePanelContent extends ConsumerWidget {
                     radius: 28,
                     backgroundColor: Colors.white,
                     child: Text(
-                      initials,
+                      initials.isEmpty ? '?' : initials,
                       style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -187,7 +190,7 @@ class _ProfilePanelContent extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          displayName,
+                          displayName.isEmpty ? 'Usuario' : displayName,
                           style: GoogleFonts.inter(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -222,7 +225,7 @@ class _ProfilePanelContent extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: _orange.withOpacity(0.12),
+                      color: _orange.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -255,8 +258,14 @@ class _ProfilePanelContent extends ConsumerWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       onClose();
+                      final session = ref.read(sessionServiceProvider);
+                      final token = await session.getToken();
+                      if (token != null && token.isNotEmpty) {
+                        await AuthService().logout(token);
+                      }
+                      await session.clearSession();
                       clearUserRole();
                       if (context.mounted) {
                         context.go('/login_screen');

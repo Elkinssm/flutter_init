@@ -1,5 +1,8 @@
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 // TshirtStatus is re-exported by widgets.dart
 
@@ -7,7 +10,8 @@ enum _BatchAction { allPresent, allAbsent }
 
 class DailyAttendanceScreen extends StatelessWidget {
   static const String name = '/daily_attendance_screen';
-  const DailyAttendanceScreen({super.key});
+  const DailyAttendanceScreen({super.key, this.equipoId});
+  final int? equipoId;
 
   @override
   Widget build(BuildContext context) {
@@ -19,25 +23,23 @@ class DailyAttendanceScreen extends StatelessWidget {
         bottomNavigationBar: CustomBottomAppbar(),
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _DailyAttendanceView(),
+        body: _DailyAttendanceView(equipoId: equipoId),
       ),
     );
   }
 }
 
-class _DailyAttendanceView extends StatefulWidget {
-  const _DailyAttendanceView();
+class _DailyAttendanceView extends ConsumerStatefulWidget {
+  const _DailyAttendanceView({this.equipoId});
+  final int? equipoId;
 
   @override
-  State<_DailyAttendanceView> createState() => _DailyAttendanceViewState();
+  ConsumerState<_DailyAttendanceView> createState() => _DailyAttendanceViewState();
 }
 
-class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
-  static const int totalPlayers = 24;
-  final List<String> playerNames = List.generate(
-    totalPlayers,
-    (i) => 'Camilo Andres',
-  );
+class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
+  static const int _defaultTotalPlayers = 24;
+  late List<String> playerNames;
   int? _highlightedIndex;
   DateTime _selectedDate = DateTime.now();
   final Map<int, TshirtStatus> _status = <int, TshirtStatus>{};
@@ -46,8 +48,8 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
   @override
   void initState() {
     super.initState();
-    // Estado inicial: todos ausentes (amarillo)
-    for (var i = 0; i < totalPlayers; i++) {
+    playerNames = List.generate(_defaultTotalPlayers, (i) => 'Camilo Andres');
+    for (var i = 0; i < _defaultTotalPlayers; i++) {
       _status[i] = TshirtStatus.absent;
     }
   }
@@ -113,6 +115,29 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
 
   @override
   Widget build(BuildContext context) {
+    final equipoId = widget.equipoId;
+    final useApi = Environment.useBackend && equipoId != null;
+    final jugadoresAsync = useApi
+        ? ref.watch(coachJugadoresProvider(equipoId))
+        : null;
+
+    int totalPlayers = _defaultTotalPlayers;
+    List<String> names = playerNames;
+    if (useApi && (jugadoresAsync?.hasValue ?? false)) {
+      final value = (jugadoresAsync?.value) ?? {};
+      final jugadores = (value['jugadores'] as List<dynamic>?) ?? [];
+      if (jugadores.isNotEmpty) {
+        totalPlayers = jugadores.length;
+        names = jugadores.map((e) {
+          final m = e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
+          return m['nombre_completo']?.toString() ?? m['nombre']?.toString() ?? 'Jugador';
+        }).toList();
+        while (names.length < totalPlayers) {
+          names.add('Camilo Andres');
+        }
+      }
+    }
+
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -130,6 +155,10 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
           final itemWidth =
               (constraints.maxWidth - totalSpacing) / crossAxisCount;
           final itemHeight = itemWidth;
+
+          if (useApi && jugadoresAsync?.isLoading == true && names.length == _defaultTotalPlayers) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
           return RepaintBoundary(
             child: Padding(
@@ -192,7 +221,7 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                       left: 8,
                       bottom: 8,
                     ),
-                    itemCount: totalPlayers,
+                    itemCount: names.length,
                     physics: const BouncingScrollPhysics(),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -205,9 +234,9 @@ class _DailyAttendanceViewState extends State<_DailyAttendanceView> {
                       final number = index + 1;
                       return _SelectedIcons(
                         index: index,
-                        name: playerNames[index],
+                        name: names[index],
                         isHighlighted: _highlightedIndex == index,
-                        status: _status[index] ?? TshirtStatus.none,
+                        status: _status[index] ?? TshirtStatus.absent,
                         onHoldStart:
                             () => setState(() => _highlightedIndex = index),
                         onHoldEnd:

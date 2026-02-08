@@ -5,7 +5,8 @@
         android:label="coach_app"
         android:name="${applicationName}"
         android:icon="@mipmap/logo"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

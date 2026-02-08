@@ -1,4 +1,9 @@
-﻿import 'package:coach_app/presentation/providers/carousel_provider.dart';
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/infrastructure/services/auth_service.dart';
+import 'package:coach_app/presentation/providers/carousel_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -202,13 +207,42 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
                 Padding(
                   padding: EdgeInsets.only(bottom: bottomSafe),
                   child: Center(
-                    child: SizedBox(
-                      width: buttonWidth,
-                      height: buttonHeight,
-                      child: OnboardingNextButton(
-                        action: () => context.push('/login_screen'),
-                        text: 'Continuar',
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: buttonWidth,
+                          height: buttonHeight,
+                          child: OnboardingNextButton(
+                            action: () => context.push('/login_screen'),
+                            text: 'Continuar',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => context.push('/health_check'),
+                          child: Text(
+                            'Probar conexión al servidor',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => _quickLogin(context),
+                          child: Text(
+                            'Probar login rápido',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -219,6 +253,59 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
       ),
     );
   }
+
+  /// Flujo mínimo: login → guardar sesión → providers → navegar a coach.
+  Future<void> _quickLogin(BuildContext context) async {
+    try {
+      final auth = await AuthService()
+          .login(
+            email: Environment.testLoginEmail,
+            password: Environment.testLoginPassword,
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw AuthException('Timeout'),
+          );
+      setUserRoleFromBackend(auth.user.rol);
+      if (Environment.useBackend &&
+          auth.token != null &&
+          auth.token!.isNotEmpty) {
+        await ref
+            .read(sessionServiceProvider)
+            .saveSession(
+              token: auth.token!,
+              user: auth.user,
+              expiresAt: auth.expiresAt,
+            )
+            .timeout(const Duration(seconds: 5));
+      }
+      ref.read(currentUserProfileCompleteProvider.notifier).state =
+          auth.user.profileComplete;
+      final n = auth.user.nombre.trim();
+      final a = auth.user.apellido.trim();
+      final initials =
+          (n.isNotEmpty && a.isNotEmpty)
+              ? '${n[0]}${a[0]}'.toUpperCase()
+              : (n.isNotEmpty ? n[0].toUpperCase() : '?');
+      ref.read(currentUserInitialsProvider.notifier).state = initials;
+      ref.read(currentUserDisplayNameProvider.notifier).state =
+          '${auth.user.nombre} ${auth.user.apellido}'.trim().isEmpty
+              ? 'Usuario'
+              : '${auth.user.nombre} ${auth.user.apellido}'.trim();
+      if (!context.mounted) return;
+      context.push('/auth_info_screen', extra: auth);
+    } on AuthException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.message}')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
 }
-
-

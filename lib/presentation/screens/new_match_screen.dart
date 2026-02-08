@@ -140,7 +140,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: const Color.fromRGBO(0, 0, 0, 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -177,7 +177,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: const Color.fromRGBO(0, 0, 0, 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -313,11 +313,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
         children: [
           Container(
             padding: const EdgeInsets.all(14),
-            child: Icon(
-              icon,
-              size: 28,
-              color: iconColor,
-            ),
+            child: Icon(icon, size: 28, color: iconColor),
           ),
           Expanded(
             child: TextField(
@@ -380,15 +376,18 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     size: 24,
                   ),
                 ),
-                items: ['Local / Casa', 'Visitante / Fuera']
-                    .map((tipo) => DropdownMenuItem(
-                          value: tipo,
-                          child: Text(
-                            tipo,
-                            style: GoogleFonts.inter(fontSize: 15),
+                items:
+                    ['Local / Casa', 'Visitante / Fuera']
+                        .map(
+                          (tipo) => DropdownMenuItem(
+                            value: tipo,
+                            child: Text(
+                              tipo,
+                              style: GoogleFonts.inter(fontSize: 15),
+                            ),
                           ),
-                        ))
-                    .toList(),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() => _selectedTipoPartido = value);
                 },
@@ -424,17 +423,14 @@ class _NewMatchViewState extends State<_NewMatchView> {
                 value,
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: isSelected
-                      ? const Color(0xFF0B1926)
-                      : const Color(0xFF9CA3AF),
+                  color:
+                      isSelected
+                          ? const Color(0xFF0B1926)
+                          : const Color(0xFF9CA3AF),
                 ),
               ),
             ),
-            Icon(
-              icon,
-              size: 28,
-              color: iconColor,
-            ),
+            Icon(icon, size: 28, color: iconColor),
           ],
         ),
       ),

@@ -1,10 +1,15 @@
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/providers/calendar_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/register_player_provider.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:coach_app/presentation/providers/selected_value_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 final loadingProvider = StateNotifierProvider<LoadingNotifier, double>((ref) {
   return LoadingNotifier(ref);
@@ -24,6 +29,36 @@ class LoadingNotifier extends StateNotifier<double> {
       await tasks[i];
       state = (i + 1) / tasks.length;
     }
+
+    // Si usamos backend y hay sesión guardada, restaurar rol y redirigir a home
+    if (Environment.useBackend) {
+      final session = ref.read(sessionServiceProvider);
+      if (await session.hasSession()) {
+        final user = await session.getSavedUser();
+        if (user != null) {
+          setUserRoleFromBackend(user.rol);
+          ref.read(currentUserProfileCompleteProvider.notifier).state =
+              user.profileComplete;
+          final n = user.nombre.trim();
+          final a = user.apellido.trim();
+          final initials = (n.isNotEmpty && a.isNotEmpty)
+              ? '${n[0]}${a[0]}'.toUpperCase()
+              : (n.isNotEmpty ? n[0].toUpperCase() : '?');
+          ref.read(currentUserInitialsProvider.notifier).state = initials;
+          final displayName = '${user.nombre} ${user.apellido}'.trim();
+          ref.read(currentUserDisplayNameProvider.notifier).state =
+              displayName.isEmpty ? 'Usuario' : displayName;
+          if (context.mounted) {
+            final destination =
+                currentUserRole == 'coach' ? '/coach_screen' : '/player_screen';
+            context.go(destination);
+            return;
+          }
+        }
+      }
+    }
+
+    if (context.mounted) context.go('/welcome_screen');
   }
 
   Future<void> _preloadImages(BuildContext context) async {

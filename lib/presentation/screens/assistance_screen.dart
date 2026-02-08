@@ -1,4 +1,5 @@
 import 'package:coach_app/presentation/providers/calendar_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +34,7 @@ class _AssitanceView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
+    final displayName = ref.watch(currentUserDisplayNameProvider);
     final assistanceState = ref.watch(assistanceProvider);
     final assistanceNotifier = ref.read(assistanceProvider.notifier);
 
@@ -43,7 +45,7 @@ class _AssitanceView extends ConsumerWidget {
           child: Padding(
             padding: EdgeInsets.only(top: size.height * 0.02),
             child: CustomTitleText(
-              text: 'David\nBallesteros',
+              text: displayName.replaceAll(' ', '\n'),
               size: 28,
               color: const Color.fromRGBO(11, 25, 38, 1),
               fontWeight: FontWeight.w800,

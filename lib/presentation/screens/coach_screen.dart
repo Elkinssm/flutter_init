@@ -1,3 +1,4 @@
+import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -19,16 +20,20 @@ class _CoachScreenState extends State<CoachScreen> {
   @override
   void initState() {
     super.initState();
+    // Retrasar precache para no competir con la primera pintada (evita bloqueos/crash).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      precacheImage(
-        const AssetImage('assets/images/student-icon.png'),
-        context,
-      );
-      precacheImage(const AssetImage('assets/images/edit-icon.png'), context);
-      precacheImage(
-        const AssetImage('assets/images/calendar-icon.png'),
-        context,
-      );
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!mounted) return;
+        precacheImage(
+          const AssetImage('assets/images/student-icon.png'),
+          context,
+        );
+        precacheImage(const AssetImage('assets/images/edit-icon.png'), context);
+        precacheImage(
+          const AssetImage('assets/images/calendar-icon.png'),
+          context,
+        );
+      });
     });
   }
 
@@ -54,7 +59,8 @@ class _CoachScreenState extends State<CoachScreen> {
             endDrawer: const ProfileDrawer(),
             bottomNavigationBar: const CustomBottomAppbar(),
             floatingActionButton: const CustomFloatingActionButton(),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerDocked,
             body: const _CoachView(),
           ),
         );
@@ -63,14 +69,44 @@ class _CoachScreenState extends State<CoachScreen> {
   }
 }
 
-class _CoachView extends StatelessWidget {
+class _CoachView extends ConsumerWidget {
   const _CoachView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dashboardAsync = ref.watch(coachDashboardProvider);
+
+    if (dashboardAsync.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Mostrar error si falla
+    if (dashboardAsync.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error al cargar: ${dashboardAsync.error}'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.invalidate(coachDashboardProvider),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final dashboard = dashboardAsync.valueOrNull;
+    final coachData = dashboard?['coach'] ?? dashboard?['entrenador'];
+    final coachName = coachData is Map ? coachData['nombre']?.toString() : null;
+    final resumen = dashboard?['resumen'] as Map<String, dynamic>?;
+    final totalJugadores = resumen?['total_jugadores']?.toString() ?? '0';
     final sidePad = wp(
       context,
-      isPhone(context)
+      isPhone(context) || isBigPhone(context)
           ? 0.06
           : isSmallTablet(context)
           ? 0.06
@@ -81,107 +117,93 @@ class _CoachView extends StatelessWidget {
     final coachImgW =
         isSmallPhone(context)
             ? wp(context, 0.34)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? wp(context, 0.38)
             : isSmallTablet(context)
             ? wp(context, 0.48)
             : isLargeTablet(context)
             ? wp(context, 0.42)
-            : null;
+            : wp(context, 0.38); // fallback
     final nameSize =
         isSmallPhone(context)
             ? ts(context, 19)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? ts(context, 27)
             : isSmallTablet(context)
             ? ts(context, 35)
             : isLargeTablet(context)
             ? ts(context, 52)
-            : double.nan;
+            : ts(context, 27); // fallback
     final sectionTitleSize = ts(context, 19);
     final asistenciaTitleSize = ts(context, 26);
     final cardW =
         isSmallPhone(context)
             ? wp(context, 0.38)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? wp(context, 0.44)
             : isSmallTablet(context)
             ? wp(context, 0.30)
             : isLargeTablet(context)
             ? wp(context, 0.38)
-            : double.nan;
+            : wp(context, 0.44); // fallback
     final cardH =
         isSmallPhone(context)
             ? hp(context, 0.15)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? hp(context, 0.14)
             : isSmallTablet(context)
             ? hp(context, 0.18)
             : isLargeTablet(context)
             ? hp(context, 0.18)
-            : double.nan;
+            : hp(context, 0.14); // fallback
     final cardTitleSize =
         isSmallPhone(context)
             ? ts(context, 18)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? ts(context, 25)
             : isSmallTablet(context)
             ? ts(context, 25)
             : isLargeTablet(context)
             ? ts(context, 36)
-            : double.nan;
+            : ts(context, 25); // fallback
     final cardSubtitleSize =
         isSmallPhone(context)
             ? ts(context, 18)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? ts(context, 20)
             : isSmallTablet(context)
             ? ts(context, 23)
             : isLargeTablet(context)
             ? ts(context, 33)
-            : double.nan;
+            : ts(context, 20); // fallback
     final cardSpacing =
-        isPhone(context)
+        isPhone(context) || isBigPhone(context)
             ? hp(context, 0.032)
             : isSmallTablet(context)
             ? hp(context, 0.1)
             : isLargeTablet(context)
             ? hp(context, 0.1)
             : hp(context, 0.036);
-    final asistenciaPadH = isPhone(context) ? 5.0 : 14.0;
+    final asistenciaPadH = isPhone(context) || isBigPhone(context) ? 5.0 : 14.0;
     final asistenciaHeight =
         isSmallPhone(context)
             ? hp(context, 0.28)
-            : isPhone(context)
+            : isPhone(context) || isBigPhone(context)
             ? hp(context, 0.128)
             : hp(context, 0.22);
-    final actionItemW =
-        isPhone(context)
-            ? wp(context, 0.34)
-            : isSmallTablet(context)
-            ? hp(context, 0.18)
-            : isLargeTablet(context)
-            ? wp(context, 0.24)
-            : wp(context, 0.30);
     final actionItemH =
-        isPhone(context) ? hp(context, 0.12) : hp(context, 0.12);
+        isPhone(context) || isBigPhone(context)
+            ? hp(context, 0.12)
+            : hp(context, 0.12);
     final actionTextSize =
-        isPhone(context)
+        isPhone(context) || isBigPhone(context)
             ? ts(context, 16)
             : isSmallPhone(context)
             ? ts(context, 2)
             : ts(context, 14);
-    final actionIconH = isPhone(context) ? 24.0 : 28.0;
-    final actionIconW = isPhone(context) ? 27.0 : 31.0;
-    final actionGapH =
-        isPhone(context)
-            ? 30.0
-            : isSmallTablet(context)
-            ? 46.0
-            : isLargeTablet(context)
-            ? 56.0
-            : 30.0;
-    final actionGapW = isPhone(context) ? 22.0 : 16.0;
+    final actionIconH = isPhone(context) || isBigPhone(context) ? 24.0 : 28.0;
+    final actionIconW = isPhone(context) || isBigPhone(context) ? 27.0 : 31.0;
+    final actionGapW = isPhone(context) || isBigPhone(context) ? 22.0 : 16.0;
 
     return SingleChildScrollView(
       child: maxWidthCenter(
@@ -215,16 +237,16 @@ class _CoachView extends StatelessWidget {
                         height:
                             isSmallPhone(context)
                                 ? hp(context, 0.01)
-                                : isPhone(context)
+                                : isPhone(context) || isBigPhone(context)
                                 ? hp(context, 0.014)
                                 : isSmallTablet(context)
                                 ? hp(context, 0.016)
                                 : isLargeTablet(context)
                                 ? hp(context, 0.016)
-                                : double.nan,
+                                : hp(context, 0.014),
                       ),
                       CustomText(
-                        text: 'Jerome Bell',
+                        text: coachName ?? 'Jerome Bell',
                         size: nameSize,
                         fontWeight: FontWeight.w900,
                         color: const Color.fromRGBO(11, 25, 38, 1),
@@ -233,19 +255,19 @@ class _CoachView extends StatelessWidget {
                         height:
                             isSmallPhone(context)
                                 ? hp(context, 0.01)
-                                : isPhone(context)
+                                : isPhone(context) || isBigPhone(context)
                                 ? hp(context, 0.015)
                                 : isSmallTablet(context)
                                 ? hp(context, 0.025)
                                 : isLargeTablet(context)
                                 ? hp(context, 0.026)
-                                : double.nan,
+                                : hp(context, 0.015),
                       ),
                       CustomButtonCard(
                         width: cardW,
                         height: cardH,
                         titleText: 'Estudiantes',
-                        subtitleText: '20',
+                        subtitleText: totalJugadores,
                         titleTextSize: cardTitleSize,
                         subtitleTextSize: cardSubtitleSize,
                         spacing: cardSpacing,
@@ -382,13 +404,13 @@ class _CoachView extends StatelessWidget {
                 height:
                     isSmallPhone(context)
                         ? hp(context, 0.01)
-                        : isPhone(context)
+                        : isPhone(context) || isBigPhone(context)
                         ? hp(context, 0.014)
                         : isSmallTablet(context)
                         ? hp(context, 0.016)
                         : isLargeTablet(context)
                         ? hp(context, 0.016)
-                        : double.nan,
+                        : hp(context, 0.014),
               ),
             ],
           ),

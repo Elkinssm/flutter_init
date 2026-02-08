@@ -1,3 +1,4 @@
+import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,8 @@ class _PlayerScreenPageState extends State<PlayerScreen> {
             endDrawer: const ProfileDrawer(),
             bottomNavigationBar: CustomBottomAppbar(),
             floatingActionButton: CustomFloatingActionButton(),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerDocked,
             body: _PlayerScreen(),
           ),
         );
@@ -93,6 +95,16 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
     final profileComplete = ref.watch(currentUserProfileCompleteProvider);
     final initials = ref.watch(currentUserInitialsProvider);
     final screenHeigth = MediaQuery.of(context).size.height;
+    final dashboardAsync = ref.watch(jugadorDashboardProvider);
+    final dashboardValue = dashboardAsync.valueOrNull;
+    String? jugadorName;
+    if (dashboardValue != null && dashboardValue['jugador'] != null) {
+      final jug = dashboardValue['jugador'];
+      if (jug is Map) {
+        jugadorName = jug['nombre']?.toString();
+      }
+    }
+    final dashboardData = dashboardValue;
 
     if (!profileComplete) {
       return _IncompleteProfileView(
@@ -117,7 +129,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 65),
                     child: CustomText(
-                      text: 'David\nBallesteros',
+                      text: jugadorName ?? 'David\nBallesteros',
                       size: 28,
                       color: Color.fromRGBO(11, 25, 38, 1),
                       fontWeight: FontWeight.w800,
@@ -145,7 +157,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                       child: CustomCards(
                         action: () => context.push('/category_screen'),
                         title: 'Categoría',
-                        subtitle: '2012',
+                        subtitle: _dashboardCategoria(dashboardData) ?? '2012',
                         textButton: 'Ver mi categoría',
                         sizeTextButton: 16,
                       ),
@@ -156,8 +168,10 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                     child: RepaintBoundary(
                       child: CustomCards(
                         action: () => context.push('/history_screen'),
-                        title: 'Los Tigres',
-                        subtitle: '6 categorías',
+                        title: _dashboardEquipo(dashboardData) ?? 'Los Tigres',
+                        subtitle:
+                            _dashboardEquipoSubtitle(dashboardData) ??
+                            '6 categorías',
                         textButton: 'Ver resumen',
                         sizeTextButton: 16,
                       ),
@@ -180,6 +194,26 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
       ],
     );
   }
+}
+
+String? _dashboardCategoria(Map<String, dynamic>? d) {
+  if (d == null) return null;
+  final eq = d['equipo'] as Map<String, dynamic>?;
+  return eq?['categoria']?.toString() ?? eq?['nombre']?.toString();
+}
+
+String? _dashboardEquipo(Map<String, dynamic>? d) {
+  if (d == null) return null;
+  final eq = d['equipo'] as Map<String, dynamic>?;
+  return eq?['nombre']?.toString();
+}
+
+String? _dashboardEquipoSubtitle(Map<String, dynamic>? d) {
+  if (d == null) return null;
+  final eq = d['equipo'] as Map<String, dynamic>?;
+  final count = eq?['categorias'] ?? eq?['jugadores_count'];
+  if (count != null) return '$count categorías';
+  return null;
 }
 
 /// Vista simplificada cuando el perfil está incompleto: avatar con iniciales y CTA.
@@ -269,7 +303,7 @@ class _NextMatchCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: const Color.fromRGBO(0, 0, 0, 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -292,7 +326,7 @@ class _NextMatchCard extends StatelessWidget {
               ),
               Icon(
                 Icons.sports_soccer_outlined,
-                color: const Color(0xFFD94929).withOpacity(0.4),
+                color: const Color.fromRGBO(217, 73, 41, 0.4),
                 size: 32,
               ),
             ],
@@ -391,7 +425,7 @@ class _NextMatchCard extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -432,7 +466,7 @@ class _NextMatchCard extends StatelessWidget {
         height: 32,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           border: Border.all(color: Colors.white, width: 2),
         ),
         child: Icon(Icons.person, size: 18, color: color),
