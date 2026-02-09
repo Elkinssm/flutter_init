@@ -1,5 +1,5 @@
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CategoryCard extends StatelessWidget {
   final int year;
@@ -19,101 +19,85 @@ class CategoryCard extends StatelessWidget {
     this.onTapAssistance,
   });
 
-  static const _cardBg = Color.fromRGBO(245, 240, 230, 1);
-  static const _accent = Color.fromRGBO(173, 111, 57, 1);
-
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: _cardBg,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTapCard,
-        borderRadius: BorderRadius.circular(18),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-          decoration: BoxDecoration(
-            color: _cardBg,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isSelected ? _accent : _cardBg,
-              width: isSelected ? 2.5 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isSelected
-                    ? _accent.withValues(alpha: 0.25)
-                    : Colors.black.withValues(alpha: 0.07),
-                blurRadius: isSelected ? 14 : 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    return InkWell(
+      onTap: onTapCard,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        height: 110,
+        width: double.infinity,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(245, 240, 230, 1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color:
+                isSelected
+                    ? const Color.fromRGBO(173, 111, 57, 1)
+                    : const Color.fromRGBO(245, 240, 230, 1),
+            width: isSelected ? 2 : 1,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: Row(
-            children: [
-              // Icono grande con sombra
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: _accent,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+          boxShadow:
+              isSelected
+                  ? [
                     BoxShadow(
-                      color: _accent.withValues(alpha: 0.3),
-                      blurRadius: 8,
+                      blurRadius: 10,
+                      offset: const Offset(0, 6),
+                      color: Colors.black12,
+                    ),
+                  ]
+                  : [
+                    BoxShadow(
+                      blurRadius: 6,
                       offset: const Offset(0, 3),
+                      color: Colors.black12,
                     ),
                   ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          spacing: 7,
+          children: [
+            Expanded(
+              child: Container(
+                height: 88,
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(224, 222, 217, 1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.groups_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  spacing: 0.01,
                   children: [
-                    Text(
-                      displayLabel ?? '$year',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0B1926),
-                      ),
+                    Image.asset(
+                      'assets/images/members-icon.png',
+                      width: 25,
+                      height: 25,
                     ),
-                    const SizedBox(height: 4),
-                    Row(
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Icon(
-                          Icons.person_rounded,
-                          size: 14,
-                          color: _accent.withValues(alpha: 0.7),
+                        CustomText(
+                          text: displayLabel ?? '$year',
+                          size: 22,
+                          fontWeight: FontWeight.w800,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$members miembros',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
-                          ),
+                        CustomText(
+                          text: '$members Miembros',
+                          size: 13,
+                          fontWeight: FontWeight.w400,
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              // Botón asistencia
-              _AssistanceTag(onTapButton: onTapAssistance),
-            ],
-          ),
+            ),
+            _AssistanceTag(onTapButton: onTapAssistance),
+          ],
         ),
       ),
     );
@@ -124,44 +108,30 @@ class _AssistanceTag extends StatelessWidget {
   final VoidCallback? onTapButton;
   const _AssistanceTag({this.onTapButton});
 
-  static const _accent = Color.fromRGBO(173, 111, 57, 1);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTapButton,
-      borderRadius: BorderRadius.circular(14),
       child: Container(
-        width: 68,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        height: 88,
+        width: 88,
         decoration: BoxDecoration(
-          color: _accent,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: _accent.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          color: Color.fromRGBO(224, 222, 217, 1),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.fact_check_rounded,
-              color: Colors.white,
-              size: 26,
+            CustomText(
+              text: 'Asistencia',
+              size: 13,
+              fontWeight: FontWeight.w400,
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Asistencia',
-              style: GoogleFonts.inter(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: 0.3,
-              ),
+            const SizedBox(height: 5),
+            Image.asset(
+              'assets/images/asistance-icon.png',
+              width: 45,
+              height: 45,
             ),
           ],
         ),

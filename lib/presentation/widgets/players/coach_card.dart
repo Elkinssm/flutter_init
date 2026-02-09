@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CoachCard extends StatelessWidget {
   const CoachCard({super.key});
@@ -7,50 +6,39 @@ class CoachCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F0E6),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: const [
+          color: Color.fromRGBO(213, 229, 244, 1),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
             BoxShadow(
-              color: Colors.black12,
+              color: Colors.black45,
               blurRadius: 4,
-              offset: Offset(0, 2),
+              offset: Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
+        child: const Row(
           children: [
             CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.white,
-              child: CircleAvatar(
-                radius: 18,
-                backgroundImage: const AssetImage('assets/images/player.png'),
-              ),
+              radius: 15,
+              backgroundImage: AssetImage(
+                'assets/images/player.png',
+              ), // Foto del coach
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Jerome Bell',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0B1926),
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   'Entrenador',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFFD94929),
-                  ),
+                  style: TextStyle(color: Color.fromRGBO(217, 73, 41, 1)),
                 ),
               ],
             ),

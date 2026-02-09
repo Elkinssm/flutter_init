@@ -25,7 +25,8 @@ class CustomActionButtonWidget extends ConsumerWidget {
         onPressed?.call();
       },
       child: AnimatedContainer(
-        height: 34,
+        width: 85,
+        height: 30,
         duration: const Duration(milliseconds: 160),
         padding: EdgeInsets.symmetric(vertical: 7, horizontal: 3),
         decoration: BoxDecoration(

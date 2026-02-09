@@ -1,5 +1,3 @@
-import 'package:coach_app/config/constants/environment.dart';
-import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
@@ -7,7 +5,6 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CoachScreen extends StatefulWidget {
   static const String name = '/coach_screen';
@@ -23,10 +20,19 @@ class _CoachScreenState extends State<CoachScreen> {
   @override
   void initState() {
     super.initState();
+    // Retrasar precache para no competir con la primera pintada (evita bloqueos/crash).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
-        precacheImage(const AssetImage('assets/images/coach.png'), context);
+        precacheImage(
+          const AssetImage('assets/images/student-icon.png'),
+          context,
+        );
+        precacheImage(const AssetImage('assets/images/edit-icon.png'), context);
+        precacheImage(
+          const AssetImage('assets/images/calendar-icon.png'),
+          context,
+        );
       });
     });
   }
@@ -74,6 +80,7 @@ class _CoachView extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
+    // Mostrar error si falla
     if (dashboardAsync.hasError) {
       return Center(
         child: Column(
@@ -97,535 +104,313 @@ class _CoachView extends ConsumerWidget {
     final coachName = coachData is Map ? coachData['nombre']?.toString() : null;
     final resumen = dashboard?['resumen'] as Map<String, dynamic>?;
     final totalJugadores = resumen?['total_jugadores']?.toString() ?? '0';
+    final sidePad = wp(
+      context,
+      isPhone(context) || isBigPhone(context)
+          ? 0.06
+          : isSmallTablet(context)
+          ? 0.06
+          : isLargeTablet(context)
+          ? 0.001
+          : 0.01,
+    );
+    final coachImgW =
+        isSmallPhone(context)
+            ? wp(context, 0.34)
+            : isPhone(context) || isBigPhone(context)
+            ? wp(context, 0.38)
+            : isSmallTablet(context)
+            ? wp(context, 0.48)
+            : isLargeTablet(context)
+            ? wp(context, 0.42)
+            : wp(context, 0.38); // fallback
+    final nameSize =
+        isSmallPhone(context)
+            ? ts(context, 19)
+            : isPhone(context) || isBigPhone(context)
+            ? ts(context, 27)
+            : isSmallTablet(context)
+            ? ts(context, 35)
+            : isLargeTablet(context)
+            ? ts(context, 52)
+            : ts(context, 27); // fallback
+    final sectionTitleSize = ts(context, 19);
+    final asistenciaTitleSize = ts(context, 26);
+    final cardW =
+        isSmallPhone(context)
+            ? wp(context, 0.38)
+            : isPhone(context) || isBigPhone(context)
+            ? wp(context, 0.44)
+            : isSmallTablet(context)
+            ? wp(context, 0.30)
+            : isLargeTablet(context)
+            ? wp(context, 0.38)
+            : wp(context, 0.44); // fallback
+    final cardH =
+        isSmallPhone(context)
+            ? hp(context, 0.15)
+            : isPhone(context) || isBigPhone(context)
+            ? hp(context, 0.14)
+            : isSmallTablet(context)
+            ? hp(context, 0.18)
+            : isLargeTablet(context)
+            ? hp(context, 0.18)
+            : hp(context, 0.14); // fallback
+    final cardTitleSize =
+        isSmallPhone(context)
+            ? ts(context, 18)
+            : isPhone(context) || isBigPhone(context)
+            ? ts(context, 25)
+            : isSmallTablet(context)
+            ? ts(context, 25)
+            : isLargeTablet(context)
+            ? ts(context, 36)
+            : ts(context, 25); // fallback
+    final cardSubtitleSize =
+        isSmallPhone(context)
+            ? ts(context, 18)
+            : isPhone(context) || isBigPhone(context)
+            ? ts(context, 20)
+            : isSmallTablet(context)
+            ? ts(context, 23)
+            : isLargeTablet(context)
+            ? ts(context, 33)
+            : ts(context, 20); // fallback
+    final cardSpacing =
+        isPhone(context) || isBigPhone(context)
+            ? hp(context, 0.032)
+            : isSmallTablet(context)
+            ? hp(context, 0.1)
+            : isLargeTablet(context)
+            ? hp(context, 0.1)
+            : hp(context, 0.036);
+    final asistenciaPadH = isPhone(context) || isBigPhone(context) ? 5.0 : 14.0;
+    final asistenciaHeight =
+        isSmallPhone(context)
+            ? hp(context, 0.28)
+            : isPhone(context) || isBigPhone(context)
+            ? hp(context, 0.128)
+            : hp(context, 0.22);
+    final actionItemH =
+        isPhone(context) || isBigPhone(context)
+            ? hp(context, 0.12)
+            : hp(context, 0.12);
+    final actionTextSize =
+        isPhone(context) || isBigPhone(context)
+            ? ts(context, 16)
+            : isSmallPhone(context)
+            ? ts(context, 2)
+            : ts(context, 14);
+    final actionIconH = isPhone(context) || isBigPhone(context) ? 24.0 : 28.0;
+    final actionIconW = isPhone(context) || isBigPhone(context) ? 27.0 : 31.0;
+    final actionGapW = isPhone(context) || isBigPhone(context) ? 22.0 : 16.0;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 100),
       child: maxWidthCenter(
         context: context,
         max: 880,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-
-                  // ── Saludo + foto del coach ──
-                  _CoachGreeting(coachName: coachName ?? 'Jerome Bell'),
-                  const SizedBox(height: 16),
-                  Divider(color: Colors.grey.shade200, thickness: 1),
-                  const SizedBox(height: 16),
-
-                  // ── Tu temporada: métricas con iconos ──
-                  Text(
-                    'Tu temporada',
-                    style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0B1926),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MetricCard(
-                          icon: Icons.groups_rounded,
-                          value: '4',
-                          label: 'EQUIPOS',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _MetricCard(
-                          icon: Icons.person_rounded,
-                          value: totalJugadores,
-                          label: 'JUGADORES',
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _MetricCard(
-                          icon: Icons.category_rounded,
-                          value: '5',
-                          label: 'CATEGORÍAS',
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-                  Divider(color: Colors.grey.shade200, thickness: 1),
-                  const SizedBox(height: 16),
-
-                  // ── Asistencia Semanal ──
-                  _AsistenciaCard(),
-
-                  const SizedBox(height: 16),
-                  Divider(color: Colors.grey.shade200, thickness: 1),
-                  const SizedBox(height: 16),
-
-                  // ── Acciones Rápidas (grid 2×2 cuadradas) ──
-                  Text(
-                    'Acciones rápidas',
-                    style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0B1926),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 1,
-                    children: [
-                      _QuickAction(
-                        icon: Icons.person_add_rounded,
-                        label: 'Crear\njugador',
-                        onTap: () => _showCategoryPicker(context, ref),
-                      ),
-                      _QuickAction(
-                        icon: Icons.shield_rounded,
-                        label: 'Mis\nequipos',
-                        onTap: () => context.push('/my_teams_screen'),
-                      ),
-                      _QuickAction(
-                        icon: Icons.category_rounded,
-                        label: 'Categorías',
-                        onTap: () => context.push('/category_screen'),
-                      ),
-                      _QuickAction(
-                        icon: Icons.fact_check_rounded,
-                        label: 'Asistencia',
-                        onTap: () => context.push('/category_screen'),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCategoryPicker(BuildContext context, WidgetRef ref) {
-    final categoriasAsync = ref.read(coachCategoriasProvider);
-    List<Map<String, dynamic>> items = [];
-
-    if (Environment.useBackend &&
-        categoriasAsync.hasValue &&
-        categoriasAsync.value != null) {
-      final list = categoriasAsync.value!['categorias'] as List<dynamic>? ?? [];
-      items =
-          list.map((e) {
-            final m =
-                e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
-            return m;
-          }).toList();
-    }
-
-    if (items.isEmpty) {
-      items = [
-        {'id': 1, 'categoria': '2015', 'jugadores_count': 32},
-        {'id': 2, 'categoria': '2014', 'jugadores_count': 27},
-        {'id': 3, 'categoria': '2013', 'jugadores_count': 40},
-        {'id': 4, 'categoria': '2012', 'jugadores_count': 55},
-        {'id': 5, 'categoria': '2011', 'jugadores_count': 36},
-      ];
-    }
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: sidePad),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const CustomText(
-                text: 'Selecciona la categoría',
-                fontWeight: FontWeight.w800,
-                size: 18,
-                color: Color.fromRGBO(11, 25, 38, 1),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '¿A qué categoría pertenecerá el nuevo estudiante?',
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 16),
-              ...items.map((cat) {
-                final label =
-                    cat['categoria']?.toString() ??
-                    cat['nombre']?.toString() ??
-                    '—';
-                final count = cat['jugadores_count'] ?? 0;
-                final equipoId = cat['id'] ?? 0;
-                return ListTile(
-                  leading: const Icon(
-                    Icons.groups_rounded,
-                    color: Color(0xFFD94929),
-                  ),
-                  title: Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Text('$count miembros'),
-                  trailing: const Icon(Icons.chevron_right),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    context.push('/new_player_screen', extra: equipoId);
-                  },
-                );
-              }),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════
-//  WIDGETS PRIVADOS
-// ══════════════════════════════════════════════════════════
-
-/// Saludo con énfasis: foto grande + card sutil de fondo.
-class _CoachGreeting extends StatelessWidget {
-  final String coachName;
-  const _CoachGreeting({required this.coachName});
-
-  @override
-  Widget build(BuildContext context) {
-    final hour = DateTime.now().hour;
-    final String greeting;
-    if (hour < 12) {
-      greeting = '¡Buenos días';
-    } else if (hour < 18) {
-      greeting = '¡Buenas tardes';
-    } else {
-      greeting = '¡Buenas noches';
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Foto del coach grande con borde naranja
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD94929), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD94929).withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/coach.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Saludo
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$greeting,',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  coachName,
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0B1926),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD94929).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'TEMPORADA 2026',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFD94929),
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Tarjeta de métrica individual con icono.
-class _MetricCard extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-
-  const _MetricCard({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD94929).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: const Color(0xFFD94929), size: 20),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF0B1926),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6B7280),
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Card de Asistencia Semanal.
-class _AsistenciaCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+              SizedBox(height: isPhone(context) ? 0 : hp(context, 0.01)),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(
-                    Icons.bar_chart_rounded,
-                    color: const Color(0xFFD94929),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Asistencia Semanal',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0B1926),
+                  Flexible(
+                    child: Image.asset(
+                      'assets/images/coach.png',
+                      width: coachImgW,
+                      fit: BoxFit.contain,
                     ),
+                  ),
+                  SizedBox(
+                    width:
+                        isPhone(context)
+                            ? wp(context, 0.04)
+                            : wp(context, 0.01),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height:
+                            isSmallPhone(context)
+                                ? hp(context, 0.01)
+                                : isPhone(context) || isBigPhone(context)
+                                ? hp(context, 0.014)
+                                : isSmallTablet(context)
+                                ? hp(context, 0.016)
+                                : isLargeTablet(context)
+                                ? hp(context, 0.016)
+                                : hp(context, 0.014),
+                      ),
+                      CustomText(
+                        text: coachName ?? 'Jerome Bell',
+                        size: nameSize,
+                        fontWeight: FontWeight.w900,
+                        color: const Color.fromRGBO(11, 25, 38, 1),
+                      ),
+                      SizedBox(
+                        height:
+                            isSmallPhone(context)
+                                ? hp(context, 0.01)
+                                : isPhone(context) || isBigPhone(context)
+                                ? hp(context, 0.015)
+                                : isSmallTablet(context)
+                                ? hp(context, 0.025)
+                                : isLargeTablet(context)
+                                ? hp(context, 0.026)
+                                : hp(context, 0.015),
+                      ),
+                      CustomButtonCard(
+                        width: cardW,
+                        height: cardH,
+                        titleText: 'Estudiantes',
+                        subtitleText: totalJugadores,
+                        titleTextSize: cardTitleSize,
+                        subtitleTextSize: cardSubtitleSize,
+                        spacing: cardSpacing,
+                        onTap: () => context.push('/category_screen'),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              SizedBox(height: hp(context, 0.02)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: wp(context, 0.02),
+                  vertical: asistenciaPadH,
                 ),
-                child: Text(
-                  '+5.2%',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF16A34A),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '92%  Media de asistencia',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(height: 130, child: const AssistanceBarChart()),
-        ],
-      ),
-    );
-  }
-}
-
-/// Card cuadrada de acción rápida con icono grande y sombra.
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 12,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD94929),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromRGBO(229, 240, 246, 1),
+                  boxShadow: const [
                     BoxShadow(
-                      color: const Color(0xFFD94929).withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      color: Colors.black26,
+                      offset: Offset(0, 4),
+                      blurRadius: 4,
+                      spreadRadius: 1,
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 30),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0B1926),
-                  height: 1.2,
+                child: InkWell(
+                  onTap: () => context.push('/daily_attendance_screen'),
+                  child: Column(
+                    children: [
+                      SizedBox(height: isPhone(context) ? 4 : 2),
+                      CustomText(
+                        text: 'Asistencia',
+                        fontWeight: FontWeight.w900,
+                        size: asistenciaTitleSize,
+                        color: const Color.fromRGBO(11, 25, 38, 1),
+                      ),
+                      // SizedBox(height: hp(context, 0.01)),
+                      SizedBox(
+                        height: asistenciaHeight,
+                        child: const AssistanceBarChart(),
+                      ),
+                    ],
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: hp(context, 0.02)),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: wp(context, 0.012)),
+                decoration: const BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 4,
+                      offset: Offset(3, 4),
+                    ),
+                  ],
+                  color: Colors.black,
+                ),
+                height: 3,
+              ),
+              SizedBox(height: hp(context, 0.013)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: wp(context, 0.02)),
+                  child: CustomText(
+                    text: 'Acciones rápidas',
+                    fontWeight: FontWeight.w700,
+                    size: sectionTitleSize,
+                    color: const Color.fromRGBO(11, 25, 38, 1),
+                  ),
+                ),
+              ),
+              SizedBox(height: hp(context, 0.018)),
+              // Primera fila: 2 botones
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: wp(context, 0.02)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: actionItemH,
+                        child: CustomActionButton(
+                          image: 'assets/images/student-icon.png',
+                          text: 'Crear\nEstudiante',
+                          textSize: actionTextSize,
+                          iconH: actionIconH,
+                          iconW: actionIconW,
+                          onTap: () => context.push('/new_player_screen'),
+                          isDisabled: false,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SizedBox(
+                        height: actionItemH,
+                        child: CustomActionButton(
+                          image: 'assets/images/edit-icon.png',
+                          text: 'Editar\nEquipo',
+                          textSize: actionTextSize,
+                          iconH: actionIconH,
+                          iconW: actionIconW,
+                          onTap: () => context.push('/my_teams_screen'),
+                          isDisabled: false,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: actionGapW),
+              // Segunda fila: botón ancho completo
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: wp(context, 0.02)),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: actionItemH,
+                  child: CustomActionButton(
+                    image: 'assets/images/calendar-icon.png',
+                    text: 'Programar Partido',
+                    textSize: actionTextSize,
+                    iconH: actionIconH,
+                    iconW: actionIconW,
+                    onTap: () => context.push('/new_match_screen'),
+                    isDisabled: false,
+                  ),
+                ),
+              ),
+              SizedBox(
+                height:
+                    isSmallPhone(context)
+                        ? hp(context, 0.01)
+                        : isPhone(context) || isBigPhone(context)
+                        ? hp(context, 0.014)
+                        : isSmallTablet(context)
+                        ? hp(context, 0.016)
+                        : isLargeTablet(context)
+                        ? hp(context, 0.016)
+                        : hp(context, 0.014),
               ),
             ],
           ),

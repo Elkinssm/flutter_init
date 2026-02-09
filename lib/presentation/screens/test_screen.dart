@@ -1,10 +1,10 @@
 import 'package:coach_app/config/domain/player.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/widgets/players/coach_card.dart';
+import 'package:coach_app/presentation/widgets/players/player_list_item.dart';
 import 'package:coach_app/presentation/widgets/players/player_photo_marker.dart';
 import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // --- MOCK DATA: Ahora organizado por formación ---
 final Map<String, List<Player>> formations = {
@@ -306,102 +306,55 @@ class _AlignmentTabState extends State<AlignmentTab> {
   String _selectedFormation = '4-3-3';
   List<Player> _currentLineup = formations['4-3-3']!;
 
-  // Orden de los grupos de posición
-  static const _groupOrder = ['PORTERO', 'DEFENSAS', 'MEDIOCAMPISTAS', 'DELANTEROS'];
-
-  Map<String, List<Player>> get _groupedLineup {
-    final map = <String, List<Player>>{};
-    for (final p in _currentLineup) {
-      map.putIfAbsent(p.positionGroup, () => []).add(p);
-    }
-    return map;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final grouped = _groupedLineup;
-
     return Column(
       children: [
-        const SizedBox(height: 6),
-
-        // ── Header: "ESTRATEGIA" + Selector de formación ──
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ESTRATEGIA',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6B7280),
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        'Formación ',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0B1926),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.only(left: 8, right: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD94929),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: DropdownButton<String>(
-                          value: _selectedFormation,
-                          underline: const SizedBox.shrink(),
-                          isExpanded: false,
-                          isDense: true,
-                          borderRadius: BorderRadius.circular(12),
-                          dropdownColor: const Color(0xFFD94929),
-                          menuWidth: 80,
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
-                          items:
-                              formations.keys.map((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: CustomText(
-                                    text: value,
-                                    size: ts(context, 14),
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                );
-                              }).toList(),
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _selectedFormation = newValue;
-                                _currentLineup = formations[newValue]!;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              height: 25,
+              padding: const EdgeInsets.only(right: 3, left: 10),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(203, 213, 225, 1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300, width: 1),
               ),
-            ],
-          ),
+              child: DropdownButton<String>(
+                value: _selectedFormation,
+                underline: const SizedBox.shrink(),
+                isExpanded: false,
+                isDense: true,
+                borderRadius: BorderRadius.circular(12),
+                dropdownColor: const Color.fromRGBO(203, 213, 225, 1),
+                menuWidth: 80,
+                items:
+                    formations.keys.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: CustomText(
+                          text: value,
+                          size: ts(context, 14),
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromRGBO(79, 166, 38, 1),
+                        ),
+                      );
+                    }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      _selectedFormation = newValue;
+                      _currentLineup = formations[newValue]!;
+                    });
+                  }
+                },
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
-
-        // ── Campo de fútbol con jugadores ──
+        const SizedBox(height: 2),
         Container(
           height: 350,
           decoration: const BoxDecoration(
@@ -432,257 +385,12 @@ class _AlignmentTabState extends State<AlignmentTab> {
             },
           ),
         ),
-
-        const SizedBox(height: 12),
-
-        // ── Entrenador ──
-        const CoachCard(),
-
-        const SizedBox(height: 16),
-
-        // ── Lista agrupada por posición ──
-        ..._groupOrder
-            .where((g) => grouped.containsKey(g))
-            .expand((group) => [
-                  // Título del grupo
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        group,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF6B7280),
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  // Jugadores del grupo
-                  ...grouped[group]!.map(
-                    (p) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-                      child: _PlayerRow(player: p),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ]),
-
-        // ── Sección Banquillo ──
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Banquillo',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0B1926),
-                ),
-              ),
-              Text(
-                'Ver todos',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFFD94929),
-                ),
-              ),
-            ],
-          ),
-        ),
         const SizedBox(height: 10),
-
-        SizedBox(
-          height: 90,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: substitutes.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (_, i) {
-              if (i == 0) return _AddPlayerChip();
-              return _BenchPlayerChip(player: substitutes[i - 1]);
-            },
-          ),
-        ),
-
-        const SizedBox(height: 30),
+        const CoachCard(),
+        const SizedBox(height: 10),
+        ...substitutes.map((player) => PlayerListItem(player: player)),
+        const SizedBox(height: 20),
       ],
-    );
-  }
-}
-
-/// Fila de jugador titular agrupada por posición.
-class _PlayerRow extends StatelessWidget {
-  final Player player;
-  const _PlayerRow({required this.player});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F0E6),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Foto
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.white,
-            child: CircleAvatar(
-              radius: 18,
-              backgroundImage: AssetImage(player.photoPath),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.name,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0B1926),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Dorsal ${player.number} · ${player.position}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Chip de jugador suplente en el banquillo.
-class _BenchPlayerChip extends StatelessWidget {
-  final Player player;
-  const _BenchPlayerChip({required this.player});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 64,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: const Color(0xFFD5E5F4),
-                child: CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage(player.photoPath),
-                ),
-              ),
-              Positioned(
-                bottom: -2,
-                right: -2,
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B1926),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: Text(
-                    player.number,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            player.name.split(' ').first.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0B1926),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Botón circular para añadir jugadores al banquillo.
-class _AddPlayerChip extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 64,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey.shade400,
-                width: 1.5,
-              ),
-            ),
-            child: Icon(
-              Icons.add_rounded,
-              size: 26,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Añadir',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade500,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

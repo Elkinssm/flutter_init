@@ -1,3 +1,4 @@
+import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/globals.dart';
 import 'package:coach_app/presentation/helpers/loading_observer.dart';
 import 'package:coach_app/presentation/screens/screens.dart';
@@ -36,6 +37,7 @@ final appRouter = GoRouter(
       '/login_screen',
       '/register_screen',
       '/health_check',
+      '/auth_info_screen',
     ];
 
     if (publicRoutes.contains(state.uri.path)) {
@@ -199,6 +201,12 @@ final appRouter = GoRouter(
       path: '/health_check',
       name: HealthCheckScreen.name,
       builder: (context, state) => const HealthCheckScreen(),
+    ),
+    GoRoute(
+      path: '/auth_info_screen',
+      name: AuthInfoScreen.name,
+      builder: (context, state) =>
+          AuthInfoScreen(extra: state.extra as AuthResult?),
     ),
   ],
 );

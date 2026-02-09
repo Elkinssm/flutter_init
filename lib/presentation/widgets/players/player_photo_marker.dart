@@ -1,109 +1,83 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../../config/domain/player.dart';
+import 'dart:async';
 
-class PlayerPhotoMarker extends StatelessWidget {
+import 'package:flutter/material.dart';
+import '../../../config/domain/player.dart'; // Importamos el modelo
+
+class PlayerPhotoMarker extends StatefulWidget {
   final Player player;
 
   const PlayerPhotoMarker({super.key, required this.player});
 
   @override
+  State<PlayerPhotoMarker> createState() => _PlayerPhotoMarkerState();
+}
+
+class _PlayerPhotoMarkerState extends State<PlayerPhotoMarker> {
+  bool _showLabel = false;
+  Timer? _hideTimer;
+
+  void _handleTap() {
+    setState(() => _showLabel = true);
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) setState(() => _showLabel = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 56,
-      height: 72,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      width: 44,
+      height: 56,
+      child: Stack(
+        clipBehavior: Clip.none, 
+        alignment: Alignment.topCenter,
         children: [
-          // Foto con número superpuesto
-          Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.topCenter,
-            children: [
-              // Borde blanco exterior
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    player.photoPath,
-                    fit: BoxFit.cover,
-                  ),
+          Positioned(
+            top: 0,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _handleTap,
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage: AssetImage(widget.player.photoPath),
                 ),
               ),
-              // Badge con número (arriba izquierda)
-              Positioned(
-                top: -3,
-                left: 2,
+            ),
+          ),
+          Positioned(
+            top: 30, 
+            child: IgnorePointer(
+              ignoring: true,
+              child: AnimatedOpacity(
+                opacity: _showLabel ? 1 : 0,
+                duration: const Duration(milliseconds: 180),
                 child: Container(
-                  width: 16,
-                  height: 16,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0B1926),
-                    shape: BoxShape.circle,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    player.number,
-                    style: GoogleFonts.inter(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w700,
+                    widget.player.name,
+                    style: const TextStyle(
                       color: Colors.white,
-                      height: 1,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 3),
-          // Abreviación de posición
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0B1926).withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(6),
             ),
-            child: Text(
-              player.positionAbbr,
-              style: GoogleFonts.inter(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                height: 1.1,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 1),
-          // Nombre corto
-          Text(
-            player.name,
-            style: GoogleFonts.inter(
-              fontSize: 7.5,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
