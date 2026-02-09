@@ -48,22 +48,21 @@ class Environment {
 
   // ========== CREDENCIALES PARA PROBAR EN LOCAL ==========
   //
-  // LOGIN (usuarios ya creados por seeders):
-  // +----------+---------------------+-------------+
-  // | Rol      | Email               | Contraseña  |
-  // +----------+---------------------+-------------+
-  // | Admin    | admin@demo.com      | secret123   |
-  // | Coach    | coach@demo.com      | secret123   |
-  // | Jugador  | jugador1@demo.com   | secret123   |
-  // +----------+---------------------+-------------+
+  // LOGIN — El rol se detecta por la parte ANTES del @:
+  //   - "admin" en el nombre → ADMIN (redirige a coach_screen)
+  //   - "coach" o "entrenador" en el nombre → COACH (redirige a coach_screen)
+  //   - Cualquier otro → PLAYER (redirige a player_screen)
   //
-  // REGISTRO (emails NUEVOS, que no existan en el backend):
-  // +---------------------+-------------+
-  // | Email               | Contraseña  |
-  // +---------------------+-------------+
-  // | nuevo@email.com     | secret123   |
-  // | jugador2@demo.com   | secret123   |
-  // | test@test.com       | secret123   |
-  // +---------------------+-------------+
-  // Tras registrar → usuario JUGADOR, perfil incompleto → Completar perfil.
+  // +----------+-------------------------+-------------+
+  // | Rol      | Email                   | Contraseña  |
+  // +----------+-------------------------+-------------+
+  // | Admin    | admin@demo.com          | secret123   |
+  // | Coach    | coach@demo.com          | secret123   |
+  // | Jugador  | jugador1@demo.com       | secret123   |
+  // | Jugador  | incompleto@mail.com     | secret123   | → perfil incompleto
+  // | Jugador  | perfil@mail.com         | secret123   | → perfil incompleto
+  // +----------+-------------------------+-------------+
+  //
+  // REGISTRO — Cualquier email válido funciona en modo local.
+  // El registro crea sesión automáticamente y redirige a player_screen.
 }

@@ -7,12 +7,13 @@ import 'transitions_config/custom_transition.dart';
 // Estado de rol devuelto por backend
 String? currentUserRole;
 
-/// Asigna [currentUserRole] según el rol devuelto por la API (ADMIN, ENTRENADOR, JUGADOR).
+/// Asigna [currentUserRole] según el rol devuelto por la API o mock.
+/// Acepta roles del backend (ADMIN, ENTRENADOR, JUGADOR) y mock (COACH, PLAYER).
 void setUserRoleFromBackend(String role) {
   final r = role.toUpperCase();
-  if (r == 'ADMIN' || r == 'ENTRENADOR') {
+  if (r == 'ADMIN' || r == 'ENTRENADOR' || r == 'COACH') {
     currentUserRole = 'coach';
-  } else if (r == 'JUGADOR') {
+  } else if (r == 'JUGADOR' || r == 'PLAYER') {
     currentUserRole = 'player';
   } else {
     currentUserRole = 'player';

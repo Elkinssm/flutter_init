@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/nav_loading.dart';
@@ -86,17 +85,8 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
     super.dispose();
   }
 
-  // Diccionario de correos permitidos para simular registro sin backend
-  bool _isEmailAllowed(String email) {
-    const allowedEmails = {
-      'valid@mail.com',
-      'demo@mail.com',
-      'test@mail.com',
-      'incompleto@mail.com', // Para probar modal de perfil incompleto
-      'perfil@mail.com',
-    };
-    return allowedEmails.contains(email.toLowerCase().trim());
-  }
+  // En modo local (sin backend) cualquier email con formato válido puede registrarse.
+  // No es necesario limitar a una lista fija ya que son datos mock.
 
   @override
   Widget build(BuildContext context) {
@@ -292,127 +282,97 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                       return;
                                     }
 
-                                    // Con backend: llamar API. Sin backend: validar email permitido y mock.
-                                    if (Environment.useBackend) {
-                                      setState(() => _isLoading = true);
-                                      try {
-                                        final auth = await AuthService()
-                                            .register(
-                                              email: email,
-                                              password: password,
-                                              passwordConfirmation: password,
+                                    // Tanto con backend como en modo local, llamamos AuthService.register
+                                    // (que internamente usa mock si useBackend == false).
+                                    setState(() => _isLoading = true);
+                                    try {
+                                      final auth = await AuthService().register(
+                                        email: email,
+                                        password: password,
+                                        passwordConfirmation: password,
+                                      );
+                                      if (!mounted) return;
+                                      if (auth.token != null &&
+                                          auth.token!.isNotEmpty) {
+                                        await ref
+                                            .read(sessionServiceProvider)
+                                            .saveSession(
+                                              token: auth.token!,
+                                              user: auth.user,
+                                              expiresAt: auth.expiresAt,
                                             );
-                                        if (!mounted) return;
-                                        if (auth.token != null &&
-                                            auth.token!.isNotEmpty) {
-                                          await ref
-                                              .read(sessionServiceProvider)
-                                              .saveSession(
-                                                token: auth.token!,
-                                                user: auth.user,
-                                                expiresAt: auth.expiresAt,
-                                              );
-                                        }
-                                        setUserRoleFromBackend(auth.user.rol);
-                                        ref
-                                            .read(
-                                              currentUserProfileCompleteProvider
-                                                  .notifier,
-                                            )
-                                            .state = auth.user.profileComplete;
-                                        final n = auth.user.nombre.trim();
-                                        final a = auth.user.apellido.trim();
-                                        final initials =
-                                            (n.isNotEmpty && a.isNotEmpty)
-                                                ? '${n[0]}${a[0]}'.toUpperCase()
-                                                : (n.isNotEmpty
-                                                    ? n[0].toUpperCase()
-                                                    : '?');
-                                        ref
-                                            .read(
-                                              currentUserInitialsProvider
-                                                  .notifier,
-                                            )
-                                            .state = initials;
-                                        final displayName =
-                                            '${auth.user.nombre} ${auth.user.apellido}'
-                                                .trim();
-                                        ref
-                                            .read(
-                                              currentUserDisplayNameProvider
-                                                  .notifier,
-                                            )
-                                            .state = displayName.isEmpty
-                                                ? 'Usuario'
-                                                : displayName;
-                                        if (!auth.user.profileComplete &&
-                                            currentUserRole == 'player') {
-                                          ref
-                                              .read(
-                                                showProfileIncompleteModalProvider
-                                                    .notifier,
-                                              )
-                                              .state = true;
-                                        }
-                                        final destination =
-                                            !auth.user.profileComplete &&
-                                                    currentUserRole == 'player'
-                                                ? '/new_player_screen'
-                                                : '/player_screen';
-                                        if (!context.mounted) return;
-                                        context.go(destination);
-                                      } on AuthException catch (e) {
-                                        if (!context.mounted) return;
-                                        CustomModal.show(
-                                          context: context,
-                                          title: 'Error de registro',
-                                          message: e.message,
-                                          type: ModalType.error,
-                                          buttonText: 'Entendido',
-                                        );
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        CustomModal.showNetworkError(
-                                          context,
-                                          detail:
-                                              e.toString().length > 80
-                                                  ? null
-                                                  : e.toString(),
-                                        );
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() => _isLoading = false);
-                                        }
                                       }
-                                      return;
-                                    }
-
-                                    // Modo local: validar email permitido
-                                    final isAllowed = _isEmailAllowed(email);
-                                    if (!isAllowed) {
+                                      setUserRoleFromBackend(auth.user.rol);
+                                      ref
+                                          .read(
+                                            currentUserProfileCompleteProvider
+                                                .notifier,
+                                          )
+                                          .state = auth.user.profileComplete;
+                                      final n = auth.user.nombre.trim();
+                                      final a = auth.user.apellido.trim();
+                                      final initials =
+                                          (n.isNotEmpty && a.isNotEmpty)
+                                              ? '${n[0]}${a[0]}'.toUpperCase()
+                                              : (n.isNotEmpty
+                                                  ? n[0].toUpperCase()
+                                                  : '?');
+                                      ref
+                                          .read(
+                                            currentUserInitialsProvider
+                                                .notifier,
+                                          )
+                                          .state = initials;
+                                      final displayName =
+                                          '${auth.user.nombre} ${auth.user.apellido}'
+                                              .trim();
+                                      ref
+                                          .read(
+                                            currentUserDisplayNameProvider
+                                                .notifier,
+                                          )
+                                          .state = displayName.isEmpty
+                                              ? 'Usuario'
+                                              : displayName;
+                                      if (!auth.user.profileComplete &&
+                                          currentUserRole == 'player') {
+                                        ref
+                                            .read(
+                                              showProfileIncompleteModalProvider
+                                                  .notifier,
+                                            )
+                                            .state = true;
+                                      }
+                                      final destination =
+                                          !auth.user.profileComplete &&
+                                                  currentUserRole == 'player'
+                                              ? '/new_player_screen'
+                                              : '/player_screen';
+                                      if (!context.mounted) return;
+                                      context.go(destination);
+                                    } on AuthException catch (e) {
+                                      if (!context.mounted) return;
                                       CustomModal.show(
                                         context: context,
-                                        title: 'Registro no permitido',
-                                        message:
-                                            'El email ingresado no está permitido para registro. Por favor contacta al administrador.',
+                                        title: 'Error de registro',
+                                        message: e.message,
                                         type: ModalType.error,
                                         buttonText: 'Entendido',
                                       );
-                                      return;
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      CustomModal.showNetworkError(
+                                        context,
+                                        detail:
+                                            e.toString().length > 80
+                                                ? null
+                                                : e.toString(),
+                                      );
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() => _isLoading = false);
+                                      }
                                     }
-
-                                    CustomModal.show(
-                                      context: context,
-                                      title: 'Registro exitoso',
-                                      message:
-                                          'Tu cuenta ha sido registrada correctamente. Bienvenido!',
-                                      type: ModalType.success,
-                                      buttonText: 'Continuar',
-                                      onButtonPressed: () {
-                                        Navigator.of(context).pop();
-                                        context.go('/login_screen');
-                                      },
-                                    );
                                   },
                                 ),
                               ),

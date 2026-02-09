@@ -114,8 +114,10 @@ class AuthService {
   // Datos mock para modo local - LOGIN
   AuthResult _mockLogin(String email, String password) {
     final lower = email.toLowerCase();
-    final isAdmin = lower.contains('admin') || lower.contains('demo');
-    final isCoach = lower.contains('coach') || lower.contains('entrenador');
+    // Usar solo la parte antes del @ para detectar rol y evitar falsos positivos con el dominio
+    final localPart = lower.split('@').first;
+    final isAdmin = localPart.contains('admin');
+    final isCoach = localPart.contains('coach') || localPart.contains('entrenador');
     // Perfil incompleto para probar: usuario "incompleto@mail.com" o "perfil@mail.com"
     final profileComplete =
         lower != 'incompleto@mail.com' && lower != 'perfil@mail.com';
@@ -231,11 +233,11 @@ class AuthUser {
     );
   }
 
-  /// Rol normalizado para rutas: ENTRENADOR/ADMIN → coach, JUGADOR → player.
+  /// Rol normalizado para rutas: ADMIN/ENTRENADOR/COACH → coach, JUGADOR/PLAYER → player.
   String get normalizedRole {
     final r = rol.toUpperCase();
-    if (r == 'ADMIN' || r == 'ENTRENADOR') return 'coach';
-    if (r == 'JUGADOR') return 'player';
+    if (r == 'ADMIN' || r == 'ENTRENADOR' || r == 'COACH') return 'coach';
+    if (r == 'JUGADOR' || r == 'PLAYER') return 'player';
     return 'player';
   }
 
