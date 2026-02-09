@@ -121,19 +121,18 @@ class StudentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22),
-      child: SizedBox(
-        height: 70.5,
-        child: Row(
-          children: [
-            InkWell(
-              onTap:
-                  () => context.pushNamed(
-                    PlayerStatusScreen.name,
-                    extra: {'name': s.name, 'image': s.image},
-                  ),
-              child: Stack(
+    return InkWell(
+      onTap: () => context.pushNamed(
+        PlayerStatusScreen.name,
+        extra: {'name': s.name, 'image': s.image},
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 22),
+        child: SizedBox(
+          height: 70.5,
+          child: Row(
+            children: [
+              Stack(
                 children: [
                   Container(
                     width: 64,
@@ -170,58 +169,63 @@ class StudentTile extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap:
-                        () => context.pushNamed(
-                          PlayerStatusScreen.name,
-                          extra: {'name': s.name, 'image': s.image},
-                        ),
-                    child: CustomText(
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
                       text: s.name,
                       size: 16,
                       fontWeight: FontWeight.w700,
                     ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        _StatChip(
+                          text: '${s.number}',
+                          color: Color.fromRGBO(79, 166, 38, 1),
+                          kind: StatChipKind.circle,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 6),
+                        _StatChip(
+                          text: s.position,
+                          color: Color.fromRGBO(173, 111, 57, 1),
+                          kind: StatChipKind.circle,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 6),
+                        _StatChip(
+                          text: s.weight,
+                          color: Color.fromRGBO(212, 175, 55, 1),
+                          kind: StatChipKind.pill,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomText(
+                    text: '${s.percent}%',
+                    size: 20,
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _StatChip(
-                        text: '${s.number}',
-                        color: Color.fromRGBO(79, 166, 38, 1),
-                        kind: StatChipKind.circle,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 6),
-                      _StatChip(
-                        text: s.position,
-                        color: Color.fromRGBO(173, 111, 57, 1),
-                        kind: StatChipKind.circle,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 6),
-                      _StatChip(
-                        text: s.weight,
-                        color: Color.fromRGBO(212, 175, 55, 1),
-                        kind: StatChipKind.pill,
-                      ),
-                    ],
+                  const SizedBox(height: 2),
+                  CustomText(
+                    text: 'Asistencia',
+                    size: 10,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[600],
                   ),
                 ],
               ),
-            ),
-            CustomText(
-              text: '${s.percent}%',
-              size: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

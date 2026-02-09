@@ -25,7 +25,7 @@ class Environment {
   /// Modo de operación:
   /// - true: Se conecta al backend real
   /// - false: Usa datos locales/mock (sin conexión al backend)
-  static const bool useBackend = true; // Cambia a false para modo local
+  static const bool useBackend = false; // Cambia a false para modo local
 
   // Configuración del backend (solo se usa si useBackend = true)
   // Para Android emulador, usa '10.0.2.2'

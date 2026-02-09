@@ -19,14 +19,15 @@ class SelectedCategoryScreen extends StatelessWidget {
         floatingActionButton: CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         resizeToAvoidBottomInset: false,
-        body: _SelectedCategoryView(),
+        body: _SelectedCategoryView(equipoId: year),
       ),
     );
   }
 }
 
 class _SelectedCategoryView extends StatelessWidget {
-  const _SelectedCategoryView();
+  final int equipoId;
+  const _SelectedCategoryView({required this.equipoId});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +60,7 @@ class _SelectedCategoryView extends StatelessWidget {
               CustomButtonCard(
                 width: 110,
                 height: 110,
-                titleText: 'Torneos\nactivos',
+                titleText: 'Equipos',
                 subtitleText: '2',
                 titleTextSize: 17,
                 subtitleTextSize: 22,
@@ -87,7 +88,7 @@ class _SelectedCategoryView extends StatelessWidget {
                 CustomIconCard(
                   width: 82,
                   height: 96,
-                  titleText: 'Ver\ntorneos',
+                  titleText: 'Ver\nequipos',
                   titleTextSize: 12,
                   spacing: 4,
                   imagePath: 'assets/images/tournaments-icon.png',
@@ -102,12 +103,12 @@ class _SelectedCategoryView extends StatelessWidget {
                   spacing: 4,
                   imagePath: 'assets/images/check-list-icon.png',
                   imageSize: 24,
-                  onTap: () => context.push('/daily_attendance_screen'),
+                  onTap: () => context.push('/daily_attendance_screen', extra: equipoId),
                 ),
                 CustomIconCard(
                   width: 82,
                   height: 96,
-                  titleText: 'Ingresar\ndatos',
+                  titleText: 'Crear\njugador',
                   titleTextSize: 12,
                   spacing: 4,
                   imagePath: 'assets/images/plus-icon.png',

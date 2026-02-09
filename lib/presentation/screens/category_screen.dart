@@ -7,6 +7,7 @@ import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CategoryScreen extends StatefulWidget {
   static const String name = '/category_screen';
@@ -118,34 +119,59 @@ class _CategoryViewState extends ConsumerState<_CategoryView> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 3),
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 15),
-        physics: items.length > 5 ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          final c = items[index];
-          final isSelected = selectedIndex == index;
-          return CategoryCard(
-            year: c.id,
-            members: c.members,
-            isSelected: isSelected,
-            displayLabel: c.displayLabel,
-            onTapCard: () {
-              setState(() => selectedIndex = index);
-              Future.delayed(const Duration(milliseconds: 120), () {
-                if (!context.mounted) return;
-                context.pushNamed(SelectedCategoryScreen.name, extra: c.id);
-              });
-            },
-            onTapAssistance: () {
-              context.push('/daily_attendance_screen', extra: c.id);
-            },
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      itemCount: items.length + 1, // +1 para el header
+      separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 4 : 12),
+      physics: const BouncingScrollPhysics(),
+      itemBuilder: (context, index) {
+        // Header
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Selecciona una categoría',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${items.length} categorías · ${items.fold<int>(0, (sum, c) => sum + c.members)} jugadores en total',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        final i = index - 1;
+        final c = items[i];
+        final isSelected = selectedIndex == i;
+        return CategoryCard(
+          year: c.id,
+          members: c.members,
+          isSelected: isSelected,
+          displayLabel: c.displayLabel,
+          onTapCard: () {
+            setState(() => selectedIndex = i);
+            Future.delayed(const Duration(milliseconds: 120), () {
+              if (!context.mounted) return;
+              context.pushNamed(SelectedCategoryScreen.name, extra: c.id);
+            });
+          },
+          onTapAssistance: () {
+            context.push('/daily_attendance_screen', extra: c.id);
+          },
+        );
+      },
     );
   }
 }

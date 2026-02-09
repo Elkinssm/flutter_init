@@ -31,18 +31,14 @@ class _PlayerScreenPageState extends State<PlayerScreen> {
           top: false,
           child: Scaffold(
             key: _scaffoldKey,
-            extendBodyBehindAppBar: true,
-            backgroundColor: Color.fromRGBO(249, 248, 247, 1),
-            appBar: const CustomAppbar(
-              title: 'Jugador',
-              backgroundColor: Colors.transparent,
-            ),
+            backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
+            appBar: const CustomAppbar(title: 'Jugador'),
             endDrawer: const ProfileDrawer(),
-            bottomNavigationBar: CustomBottomAppbar(),
-            floatingActionButton: CustomFloatingActionButton(),
+            bottomNavigationBar: const CustomBottomAppbar(),
+            floatingActionButton: const CustomFloatingActionButton(),
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerDocked,
-            body: _PlayerScreen(),
+            body: const _PlayerScreen(),
           ),
         );
       },
@@ -69,13 +65,6 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
 
   void _precacheImages() {
     precacheImage(const AssetImage('assets/images/player.png'), context);
-    precacheImage(const AssetImage('assets/images/group14.png'), context);
-    precacheImage(
-      const AssetImage('assets/images/performance-icon.png'),
-      context,
-    );
-    precacheImage(const AssetImage('assets/images/strong-icon.png'), context);
-    precacheImage(const AssetImage('assets/images/person-icon.png'), context);
   }
 
   void _checkProfileIncomplete() {
@@ -94,7 +83,6 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
   Widget build(BuildContext context) {
     final profileComplete = ref.watch(currentUserProfileCompleteProvider);
     final initials = ref.watch(currentUserInitialsProvider);
-    final screenHeigth = MediaQuery.of(context).size.height;
     final dashboardAsync = ref.watch(jugadorDashboardProvider);
     final dashboardValue = dashboardAsync.valueOrNull;
     String? jugadorName;
@@ -113,88 +101,72 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
       );
     }
 
-    return Column(
-      children: [
-        Stack(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 100),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(
-                right: 20,
-                left: 20,
-                top: screenHeigth * 0.065,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 65),
-                    child: CustomText(
-                      text: jugadorName ?? 'David\nBallesteros',
-                      size: 28,
-                      color: Color.fromRGBO(11, 25, 38, 1),
-                      fontWeight: FontWeight.w800,
-                      spacingText: 0.9,
-                    ),
-                  ),
-                  Image.asset(
-                    'assets/images/player.png',
-                    width: 175,
-                    cacheWidth: 175,
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+
+            // ── Perfil del jugador ──
+            _PlayerProfileCard(
+              name: jugadorName ?? 'David Ballesteros',
             ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: screenHeigth * 0.28,
-                left: 20,
-                right: 20,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: RepaintBoundary(
-                      child: CustomCards(
-                        action: () => context.push('/category_screen'),
-                        title: 'Categoría',
-                        subtitle: _dashboardCategoria(dashboardData) ?? '2012',
-                        textButton: 'Ver mi categoría',
-                        sizeTextButton: 16,
-                      ),
-                    ),
+
+            const SizedBox(height: 16),
+
+            // ── Info rápida: Categoría y Equipo ──
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoCard(
+                    icon: Icons.category_rounded,
+                    title: _dashboardCategoria(dashboardData) ?? '2012',
+                    subtitle: 'Categoría',
+                    actionLabel: 'Ver categoría',
+                    onTap: () {
+                      final catId = _dashboardCategoriaId(dashboardData) ?? 2012;
+                      context.pushNamed('/selected_category_screen', extra: catId);
+                    },
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: RepaintBoundary(
-                      child: CustomCards(
-                        action: () => context.push('/history_screen'),
-                        title: _dashboardEquipo(dashboardData) ?? 'Los Tigres',
-                        subtitle:
-                            _dashboardEquipoSubtitle(dashboardData) ??
-                            '6 categorías',
-                        textButton: 'Ver resumen',
-                        sizeTextButton: 16,
-                      ),
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _InfoCard(
+                    icon: Icons.bar_chart_rounded,
+                    title: _dashboardEquipo(dashboardData) ?? 'Los Tigres',
+                    subtitle: 'Mi equipo',
+                    actionLabel: 'Ver asistencia',
+                    onTap: () => context.push('/history_screen'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+
+            const SizedBox(height: 16),
+
+            // ── Asistencia (tocable) ──
+            _AttendanceCard(
+              onTap: () => context.push('/category_screen'),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ── Próximo Encuentro ──
+            const _NextMatchCard(),
+
+            const SizedBox(height: 20),
           ],
         ),
-        const SizedBox(height: 15),
-        const CustomSupportStats(),
-        const SizedBox(height: 18),
-        // Tarjeta de Próximo Encuentro
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: _NextMatchCard(),
-        ),
-        const SizedBox(height: 20),
-      ],
+      ),
     );
   }
 }
+
+// ══════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════
 
 String? _dashboardCategoria(Map<String, dynamic>? d) {
   if (d == null) return null;
@@ -208,15 +180,453 @@ String? _dashboardEquipo(Map<String, dynamic>? d) {
   return eq?['nombre']?.toString();
 }
 
-String? _dashboardEquipoSubtitle(Map<String, dynamic>? d) {
+
+int? _dashboardCategoriaId(Map<String, dynamic>? d) {
   if (d == null) return null;
   final eq = d['equipo'] as Map<String, dynamic>?;
-  final count = eq?['categorias'] ?? eq?['jugadores_count'];
-  if (count != null) return '$count categorías';
-  return null;
+  final cat = eq?['categoria_id'] ?? eq?['categoria'];
+  if (cat is int) return cat;
+  return int.tryParse(cat?.toString() ?? '');
 }
 
-/// Vista simplificada cuando el perfil está incompleto: avatar con iniciales y CTA.
+// ══════════════════════════════════════════════════════════
+//  WIDGETS
+// ══════════════════════════════════════════════════════════
+
+/// Card de perfil del jugador con foto y nombre.
+class _PlayerProfileCard extends StatelessWidget {
+  final String name;
+  const _PlayerProfileCard({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Foto
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFD94929), width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD94929).withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/player.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Nombre
+          Text(
+            name,
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0B1926),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          // Rol
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD94929).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'JUGADOR',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFD94929),
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card de info (Categoría / Equipo) con más énfasis.
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String actionLabel;
+  final VoidCallback onTap;
+
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.actionLabel = 'Ver detalle',
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFFD94929).withValues(alpha: 0.12),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Icono grande naranja sólido
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD94929),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD94929).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 28),
+              ),
+              const SizedBox(height: 14),
+              // Título grande
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0B1926),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF6B7280),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              // Botón "Ver detalle"
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD94929).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      actionLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFD94929),
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: Color(0xFFD94929),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Card de asistencia modernizada y tocable.
+class _AttendanceCard extends StatelessWidget {
+  final VoidCallback? onTap;
+  const _AttendanceCard({this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icono
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.fact_check_rounded,
+                  color: Color(0xFF16A34A),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Asistencia',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0B1926),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: 0.90,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF16A34A),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Porcentaje
+              Text(
+                '90%',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF16A34A),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.grey.shade400,
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tarjeta de Próximo Encuentro.
+class _NextMatchCard extends StatelessWidget {
+  const _NextMatchCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Próximo Encuentro',
+                style: GoogleFonts.inter(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0B1926),
+                ),
+              ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD94929).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.sports_soccer_rounded,
+                  color: Color(0xFFD94929),
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Evento
+          _buildInfoRow(
+            icon: Icons.emoji_events_rounded,
+            iconColor: const Color(0xFFD94929),
+            label: 'EVENTO',
+            value: 'Partido de Liga',
+          ),
+          Divider(color: Colors.grey.shade100, height: 24),
+          // Fecha y Hora
+          Row(
+            children: [
+              Expanded(
+                child: _buildInfoRow(
+                  icon: Icons.calendar_month_rounded,
+                  iconColor: const Color(0xFFD94929),
+                  label: 'FECHA',
+                  value: 'Sáb, 14 Oct',
+                ),
+              ),
+              Expanded(
+                child: _buildInfoRow(
+                  icon: Icons.access_time_rounded,
+                  iconColor: const Color(0xFF0B1926),
+                  label: 'HORA',
+                  value: '10:30 AM',
+                ),
+              ),
+            ],
+          ),
+          Divider(color: Colors.grey.shade100, height: 24),
+          // Ubicación
+          _buildInfoRow(
+            icon: Icons.location_on_rounded,
+            iconColor: const Color(0xFFD94929),
+            label: 'UBICACIÓN',
+            value: 'Cancha Principal - Sede Norte',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: iconColor, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF9CA3AF),
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0B1926),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+}
+
+/// Vista simplificada cuando el perfil está incompleto.
 class _IncompleteProfileView extends StatelessWidget {
   const _IncompleteProfileView({
     required this.initials,
@@ -286,190 +696,6 @@ class _IncompleteProfileView extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _NextMatchCard extends StatelessWidget {
-  const _NextMatchCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F5EF),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(0, 0, 0, 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Próximo Encuentro',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFD94929),
-                ),
-              ),
-              Icon(
-                Icons.sports_soccer_outlined,
-                color: const Color.fromRGBO(217, 73, 41, 0.4),
-                size: 32,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Evento
-          _buildInfoRow(
-            icon: Icons.exit_to_app_outlined,
-            iconColor: const Color(0xFFD94929),
-            label: 'EVENTO',
-            value: 'Partido de Liga',
-          ),
-          const SizedBox(height: 16),
-          // Fecha y Hora
-          Row(
-            children: [
-              _buildInfoRow(
-                icon: Icons.calendar_month_outlined,
-                iconColor: const Color(0xFFD94929),
-                label: 'FECHA',
-                value: 'Sábado, 14 Oct',
-              ),
-              const SizedBox(width: 24),
-              _buildInfoRow(
-                icon: Icons.access_time,
-                iconColor: const Color(0xFF0B1926),
-                label: 'HORA',
-                value: '10:30 AM',
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Ubicación
-          _buildInfoRow(
-            icon: Icons.location_on_outlined,
-            iconColor: const Color(0xFFD94929),
-            label: 'UBICACIÓN',
-            value: 'Cancha Principal - Sede Norte',
-          ),
-          const SizedBox(height: 20),
-          // Confirmados
-          Row(
-            children: [
-              // Avatares apilados
-              SizedBox(
-                width: 70,
-                height: 32,
-                child: Stack(
-                  children: [
-                    _buildAvatar(0, Colors.green),
-                    _buildAvatar(1, Colors.orange),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '+12',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6B7280),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Confirmados para asistir',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String value,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF9CA3AF),
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0B1926),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvatar(int index, Color color) {
-    return Positioned(
-      left: index * 20.0,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color.withValues(alpha: 0.3),
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: Icon(Icons.person, size: 18, color: color),
       ),
     );
   }

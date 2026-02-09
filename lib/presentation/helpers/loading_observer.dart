@@ -28,12 +28,10 @@ class LoadingNavObserver extends NavigatorObserver {
     });
   }
 
-  /// No mostrar overlay cuando viene de login/registro o de la pantalla de info login.
+  /// No mostrar overlay cuando viene de login/registro.
   bool _isComingFromAuth(Route? previousRoute) {
     final name = previousRoute?.settings.name?.toString() ?? '';
-    return name == '/login_screen' ||
-        name == '/register_screen' ||
-        name == '/auth_info_screen';
+    return name == '/login_screen' || name == '/register_screen';
   }
 
   /// No mostrar overlay cuando el destino es la pantalla principal (Coach/Player).

@@ -1,7 +1,7 @@
-﻿import 'package:coach_app/presentation/screens/player_status_screen.dart';
-import 'package:coach_app/presentation/widgets/texts/custom_text.dart';
+import 'package:coach_app/presentation/screens/player_status_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // local model Students
 class Students {
@@ -21,35 +21,21 @@ class Students {
 class SelectedListviewPlayers extends StatelessWidget {
   const SelectedListviewPlayers({super.key});
 
+  static int get playerCount => _students.length;
+
   @override
   Widget build(BuildContext context) {
-    final kb = MediaQuery.of(context).viewInsets.bottom;
-
     return ListView.separated(
-      itemCount: _students.length + 1,
-      padding: EdgeInsets.only(bottom: kb + 74),
+      itemCount: _students.length,
+      padding: const EdgeInsets.only(bottom: 80),
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder:
-          (_, __) => Container(
-            height: 2,
-            margin: const EdgeInsets.symmetric(vertical: 3),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE3503B),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-          ),
-      itemBuilder: (_, i) {
-        if (i < _students.length) {
-          return StudentTiles(s: _students[i]);
-        }
-        return const SizedBox.shrink();
-      },
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        thickness: 0.8,
+        color: Colors.grey.shade300,
+      ),
+      itemBuilder: (_, i) => StudentTiles(s: _students[i]),
     );
   }
 }
@@ -99,162 +85,113 @@ class StudentTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 82,
-      child: Row(
-        spacing: 4,
-        children: [
-          InkWell(
-            onTap:
-                () => context.pushNamed(
-                  PlayerStatusScreen.name,
-                  extra: {'name': s.name, 'image': s.image},
-                ),
-            child: Stack(
+    return InkWell(
+      onTap: () => context.pushNamed(
+        PlayerStatusScreen.name,
+        extra: {'name': s.name, 'image': s.image},
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            // Foto
+            Stack(
               children: [
                 Container(
-                  width: 64,
-                  height: 65.5,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Color.fromRGBO(27, 71, 56, 1),
-                      width: 1,
+                      color: const Color(0xFFE0D6C8),
+                      width: 1.5,
                     ),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
-                        blurRadius: 1,
-                        offset: const Offset(0, 3),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
                         color: Colors.black12,
                       ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  width: 64,
-                  height: 70,
                   child: ClipOval(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 1),
-                      child: Image.asset(
-                        s.image,
-                        fit: BoxFit.cover,
-                        cacheWidth: 128,
-                        cacheHeight: 128,
-                      ),
+                    child: Image.asset(
+                      s.image,
+                      fit: BoxFit.cover,
+                      cacheWidth: 128,
+                      cacheHeight: 128,
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 3,
-              children: [
-                InkWell(
-                  onTap:
-                      () => context.pushNamed(
-                        PlayerStatusScreen.name,
-                        extra: {'name': s.name, 'image': s.image},
-                      ),
-                  child: CustomText(
-                    text: s.name,
-                    size: 16,
-                    fontWeight: FontWeight.w700,
+            const SizedBox(width: 14),
+
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.name,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0B1926),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    _StatChips(
-                      text: '${s.number}',
-                      color: Color.fromRGBO(79, 166, 38, 1),
-                      kind: StatChipKinds.circle,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 20),
-                    _StatChips(
-                      text: s.position,
-                      color: Color.fromRGBO(173, 111, 57, 1),
-                      kind: StatChipKinds.circle,
-                      size: 24,
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '# ${s.number}',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF4FA626),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          '·',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD94929).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          s.position,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFD94929),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
-enum StatChipKinds { circle, pill }
-
-class _StatChips extends StatelessWidget {
-  final String text;
-  final Color color;
-  final StatChipKinds kind;
-  final double? size;
-
-  const _StatChips({
-    required this.text,
-    required this.color,
-    required this.kind,
-    this.size,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const bg = Color(0xFFD5E5F4);
-
-    if (kind == StatChipKinds.circle) {
-      return Container(
-        padding: EdgeInsets.zero,
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: bg,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 4,
-              offset: Offset(0, 4),
+            // Chevron
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF9CA3AF),
+              size: 22,
             ),
           ],
         ),
-        child: CustomText(
-          text: text,
-          size: 13.5,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.2),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 4)),
-        ],
-      ),
-      child: CustomText(
-        text: text,
-        size: 13.5,
-        fontWeight: FontWeight.w400,
-        color: color,
       ),
     );
   }
 }
-
