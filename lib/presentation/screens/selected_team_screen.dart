@@ -1,3 +1,4 @@
+import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/presentation/helpers/hepler_aligment.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/selected_buttons_provider.dart';
@@ -9,8 +10,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class SelectedTeamScreen extends ConsumerStatefulWidget {
   static const String name = '/selected_team_screen';
-  const SelectedTeamScreen({super.key, required this.teamName});
+  const SelectedTeamScreen({super.key, required this.teamName, this.equipoId});
   final String teamName;
+  final int? equipoId;
 
   @override
   ConsumerState<SelectedTeamScreen> createState() => _SelectedTeamScreenState();
@@ -49,14 +51,16 @@ class _SelectedTeamScreenState extends ConsumerState<SelectedTeamScreen> {
         bottomNavigationBar: const CustomBottomAppbar(),
         floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _SelectedTeamView(),
+        body: _SelectedTeamView(teamName: widget.teamName, equipoId: widget.equipoId),
       ),
     );
   }
 }
 
 class _SelectedTeamView extends ConsumerWidget {
-  const _SelectedTeamView();
+  const _SelectedTeamView({required this.teamName, this.equipoId});
+  final String teamName;
+  final int? equipoId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,7 +75,7 @@ class _SelectedTeamView extends ConsumerWidget {
         content = Expanded(child: HeplerAligment());
         break;
       case 'Partidos':
-        content = const _PartidosSection();
+        content = _PartidosSection(equipoId: equipoId);
         break;
       default:
         content = const SizedBox();
@@ -213,101 +217,164 @@ class _TeamOverviewSection extends StatelessWidget {
 
 /// Sección de Partidos: crear partido + próximos + historial.
 class _PartidosSection extends StatelessWidget {
-  const _PartidosSection();
+  const _PartidosSection({this.equipoId});
+  final int? equipoId;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 5),
+    return Consumer(
+      builder: (context, ref, _) {
+        final partidosAsync = equipoId == null
+            ? ref.watch(coachPartidosProvider)
+            : ref.watch(coachPartidosByEquipoProvider(equipoId!));
 
-            // ── Botón crear partido ──
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  context.pushNamed('/new_match_screen');
-                },
-                icon: const Icon(Icons.add_circle_outline, size: 22),
-                label: Text(
-                  'Crear partido',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+        final partidos = ((partidosAsync.valueOrNull?['partidos'] as List<dynamic>?) ?? const [])
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+
+        final now = DateTime.now();
+        final proximos = <Map<String, dynamic>>[];
+        final historico = <Map<String, dynamic>>[];
+
+        for (final p in partidos) {
+          final fecha = DateTime.tryParse(p['fecha']?.toString() ?? '');
+          final tieneResultado = (p['resultado']?.toString().trim().isNotEmpty ?? false);
+          if (tieneResultado) {
+            historico.add(p);
+          } else if (fecha == null || !fecha.isBefore(now)) {
+            proximos.add(p);
+          } else {
+            historico.add(p);
+          }
+        }
+
+        return Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 5),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: () => context.pushNamed('/new_match_screen', extra: equipoId),
+                    icon: const Icon(Icons.add_circle_outline, size: 22),
+                    label: Text(
+                      'Crear partido',
+                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD94929),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 2,
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD94929),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 2,
-                ),
-              ),
+                const SizedBox(height: 24),
+                const CustomText(text: 'Próximos partidos', fontWeight: FontWeight.w700, size: 16),
+                const SizedBox(height: 10),
+                if (partidosAsync.isLoading && partidosAsync.valueOrNull == null)
+                  const Center(child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: CircularProgressIndicator(),
+                  ))
+                else if (proximos.isEmpty)
+                  Text('No hay próximos partidos', style: GoogleFonts.inter(color: const Color(0xFF6B7280)))
+                else ...proximos.take(5).map((p) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: CustomNextMatchCard(
+                        image: 'assets/images/manchester_icon.png',
+                        teamName: 'Vs ${p['rival'] ?? 'Rival'} (${(p['es_local'] == true) ? 'local' : 'visitante'})',
+                        date: _formatPartidoDate(p['fecha']?.toString(), p['hora']?.toString()),
+                      ),
+                    )),
+                const SizedBox(height: 24),
+                const CustomText(text: 'Historial de partidos', fontWeight: FontWeight.w700, size: 16),
+                const SizedBox(height: 10),
+                if (historico.isEmpty)
+                  Text('Sin historial todavía', style: GoogleFonts.inter(color: const Color(0xFF6B7280)))
+                else ...historico.take(10).map((p) {
+                  final resultado = p['resultado']?.toString() ?? '--';
+                  final diff = _resultDiff(resultado);
+                  bool? isVictory;
+                  if (diff == null) {
+                    isVictory = null;
+                  } else if (diff > 0) {
+                    isVictory = true;
+                  } else if (diff < 0) {
+                    isVictory = false;
+                  } else {
+                    isVictory = null;
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _MatchHistoryTile(
+                      rival: 'Vs ${p['rival'] ?? 'Rival'}',
+                      date: _formatShortDate(p['fecha']?.toString()),
+                      resultado: resultado,
+                      isVictory: isVictory,
+                    ),
+                  );
+                }),
+                const SizedBox(height: 20),
+              ],
             ),
-
-            const SizedBox(height: 24),
-
-            // ── Próximos partidos ──
-            const CustomText(
-              text: 'Próximos partidos',
-              fontWeight: FontWeight.w700,
-              size: 16,
-            ),
-            const SizedBox(height: 10),
-            CustomNextMatchCard(
-              image: 'assets/images/manchester_icon.png',
-              teamName: 'Vs Manchester (local)',
-              date: 'Sábado 10 Abril, 4:00 pm',
-            ),
-            const SizedBox(height: 3),
-            CustomNextMatchCard(
-              image: 'assets/images/paris_icon.png',
-              teamName: 'Vs Paris (visitante)',
-              date: 'Sábado 22 Abril, 2:00 pm',
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── Historial de partidos ──
-            const CustomText(
-              text: 'Historial de partidos',
-              fontWeight: FontWeight.w700,
-              size: 16,
-            ),
-            const SizedBox(height: 10),
-
-            _MatchHistoryTile(
-              rival: 'Vs Real Madrid',
-              date: '12 Mar 2026',
-              resultado: '2 - 1',
-              isVictory: true,
-            ),
-            const SizedBox(height: 8),
-            _MatchHistoryTile(
-              rival: 'Vs Bayern Munich',
-              date: '28 Feb 2026',
-              resultado: '0 - 3',
-              isVictory: false,
-            ),
-            const SizedBox(height: 8),
-            _MatchHistoryTile(
-              rival: 'Vs Juventus',
-              date: '14 Feb 2026',
-              resultado: '1 - 1',
-              isVictory: null, // Empate
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  static String _formatPartidoDate(String? rawDate, String? rawHora) {
+    final d = DateTime.tryParse(rawDate ?? '');
+    if (d == null) return rawDate ?? 'Fecha por definir';
+    final months = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+    final weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    String hora = '';
+    if ((rawHora ?? '').isNotEmpty) {
+      final hh = rawHora!.split(':');
+      if (hh.length >= 2) {
+        var h = int.tryParse(hh[0]) ?? 0;
+        final m = hh[1];
+        final isPm = h >= 12;
+        if (h == 0) h = 12;
+        if (h > 12) h -= 12;
+        hora = ', $h:$m ${isPm ? 'pm' : 'am'}';
+      }
+    }
+    return '${weekdays[d.weekday - 1]} ${d.day} ${months[d.month - 1]}$hora';
+  }
+
+  static String _formatShortDate(String? rawDate) {
+    final d = DateTime.tryParse(rawDate ?? '');
+    if (d == null) return rawDate ?? '--';
+    const m = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return '${d.day} ${m[d.month - 1]} ${d.year}';
+  }
+
+  static int? _resultDiff(String resultado) {
+    final parts = resultado.split('-').map((e) => e.trim()).toList();
+    if (parts.length != 2) return null;
+    final a = int.tryParse(parts[0]);
+    final b = int.tryParse(parts[1]);
+    if (a == null || b == null) return null;
+    return a - b;
   }
 }
 

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class LoadingScreen extends ConsumerStatefulWidget {
-  static const String name = 'loading_screen';
+  static const String name = '/loading_screen';
   const LoadingScreen({super.key});
 
   @override

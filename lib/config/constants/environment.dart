@@ -25,7 +25,7 @@ class Environment {
   /// Modo de operación:
   /// - true: Se conecta al backend real
   /// - false: Usa datos locales/mock (sin conexión al backend)
-  static const bool useBackend = false; // Cambia a false para modo local
+  static const bool useBackend = true; // Cambia a false para modo local
 
   // Configuración del backend (solo se usa si useBackend = true)
   // Para Android emulador, usa '10.0.2.2'
@@ -34,6 +34,10 @@ class Environment {
   static const String backendHost = '10.0.2.2'; // Cambia según tu caso
   static const String backendScheme = 'http';
   static const int backendPort = 8000;
+
+  /// Logs HTTP en consola (request/response/error) para depurar consumo de API.
+  /// Recomendado: true en desarrollo, false en producción.
+  static const bool enableHttpLogs = true;
 
   // URLs del backend
   static String get baseUrl => '$backendScheme://$backendHost:$backendPort';

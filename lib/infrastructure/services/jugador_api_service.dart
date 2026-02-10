@@ -34,8 +34,66 @@ class JugadorApiService {
   Future<Map<String, dynamic>?> getResumen({int? anio}) async {
     if (!Environment.useBackend) return null;
     try {
-      final path = anio != null ? '/jugador/resumen?año=$anio' : '/jugador/resumen';
-      final response = await _dio.get<Map<String, dynamic>>(path);
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/jugador/resumen',
+        queryParameters: anio != null ? {'año': anio} : null,
+      );
+      return response.data;
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// GET /api/jugador/estadisticas — Opcional: ?temporada_id=1
+  Future<Map<String, dynamic>?> getEstadisticas({int? temporadaId}) async {
+    if (!Environment.useBackend) return null;
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/jugador/estadisticas',
+        queryParameters: temporadaId != null ? {'temporada_id': temporadaId} : null,
+      );
+      return response.data;
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// GET /api/jugador/mediciones — Opcional: ?tipo_metrica_id=1
+  Future<Map<String, dynamic>?> getMediciones({int? tipoMetricaId}) async {
+    if (!Environment.useBackend) return null;
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/jugador/mediciones',
+        queryParameters: tipoMetricaId != null ? {'tipo_metrica_id': tipoMetricaId} : null,
+      );
+      return response.data;
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// GET /api/jugador/logros — Opcional: ?temporada_id=1
+  Future<Map<String, dynamic>?> getLogros({int? temporadaId}) async {
+    if (!Environment.useBackend) return null;
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/jugador/logros',
+        queryParameters: temporadaId != null ? {'temporada_id': temporadaId} : null,
+      );
+      return response.data;
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// GET /api/jugador/partidos — Opcional: ?estado=proximos|pasados|todos
+  Future<Map<String, dynamic>?> getPartidos({String? estado}) async {
+    if (!Environment.useBackend) return null;
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/jugador/partidos',
+        queryParameters: estado != null ? {'estado': estado} : null,
+      );
       return response.data;
     } on DioException {
       rethrow;
@@ -60,4 +118,20 @@ final jugadorCategoriaActualProvider = FutureProvider<Map<String, dynamic>?>((re
 /// Resumen (asistencia/estadísticas) del jugador. [anio] opcional.
 final jugadorResumenProvider = FutureProvider.family<Map<String, dynamic>?, int?>((ref, anio) {
   return ref.read(jugadorApiServiceProvider).getResumen(anio: anio);
+});
+
+final jugadorEstadisticasProvider = FutureProvider<Map<String, dynamic>?>((ref) {
+  return ref.read(jugadorApiServiceProvider).getEstadisticas();
+});
+
+final jugadorMedicionesProvider = FutureProvider<Map<String, dynamic>?>((ref) {
+  return ref.read(jugadorApiServiceProvider).getMediciones();
+});
+
+final jugadorLogrosProvider = FutureProvider<Map<String, dynamic>?>((ref) {
+  return ref.read(jugadorApiServiceProvider).getLogros();
+});
+
+final jugadorPartidosProvider = FutureProvider<Map<String, dynamic>?>((ref) {
+  return ref.read(jugadorApiServiceProvider).getPartidos();
 });

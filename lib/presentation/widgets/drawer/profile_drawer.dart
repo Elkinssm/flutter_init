@@ -1,4 +1,5 @@
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/session_provider.dart';
@@ -267,6 +268,7 @@ class _ProfilePanelContent extends ConsumerWidget {
                       }
                       await session.clearSession();
                       clearUserRole();
+                      ref.read(currentUserRoleProvider.notifier).state = null;
                       if (context.mounted) {
                         context.go('/login_screen');
                       }

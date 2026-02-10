@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  static const String name = 'tutorial_screen';
+  static const String name = '/welcome_screen';
   const WelcomeScreen({super.key});
 
   @override

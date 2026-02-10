@@ -1,16 +1,10 @@
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/infrastructure/services/api_logger.dart';
 import 'package:dio/dio.dart';
 
 class AuthService {
   AuthService({Dio? dio, String? host, String? scheme, int? port})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              connectTimeout: const Duration(seconds: 5),
-              receiveTimeout: const Duration(seconds: 8),
-            ),
-          ),
+    : _dio = dio ?? _buildDio(),
       _host = host ?? Environment.backendHost,
       _scheme = scheme ?? Environment.backendScheme,
       _port = port ?? Environment.backendPort;
@@ -19,6 +13,19 @@ class AuthService {
   final String _host;
   final String _scheme;
   final int _port;
+
+  static Dio _buildDio() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 8),
+      ),
+    );
+    dio.interceptors.add(
+      ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
+    );
+    return dio;
+  }
 
   String get _baseUrl => '$_scheme://$_host:$_port/api';
 
@@ -108,6 +115,75 @@ class AuthService {
       );
     } on DioException catch (_) {
       // Si falla (401, red, etc.) igual limpiamos sesión en el cliente
+    }
+  }
+
+  /// Solicita envío de correo para recuperación de contraseña.
+  Future<String> forgotPassword({required String email}) async {
+    if (!Environment.useBackend) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return 'Si el email está registrado, recibirás un enlace para restablecer tu contraseña.';
+    }
+
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '$_baseUrl/forgot-password',
+        data: {'email': email},
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      return response.data?['message']?.toString() ??
+          'Si el email está registrado, recibirás un enlace para restablecer tu contraseña.';
+    } on DioException catch (error) {
+      throw AuthException(
+        _extractMessage(error) ??
+            'No fue posible procesar la recuperación de contraseña.',
+      );
+    } catch (error) {
+      throw AuthException('Error inesperado: $error');
+    }
+  }
+
+  /// Restablece contraseña usando token enviado por correo.
+  Future<String> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    if (!Environment.useBackend) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.';
+    }
+
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '$_baseUrl/reset-password',
+        data: {
+          'email': email,
+          'token': token,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      return response.data?['message']?.toString() ??
+          'Contraseña restablecida correctamente. Ya puedes iniciar sesión.';
+    } on DioException catch (error) {
+      throw AuthException(
+        _extractMessage(error) ?? 'No fue posible restablecer la contraseña.',
+      );
+    } catch (error) {
+      throw AuthException('Error inesperado: $error');
     }
   }
 

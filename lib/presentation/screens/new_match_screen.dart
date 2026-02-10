@@ -1,11 +1,15 @@
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NewMatchScreen extends StatelessWidget {
   static const String name = '/new_match_screen';
-  const NewMatchScreen({super.key});
+  const NewMatchScreen({super.key, this.equipoId});
+  final int? equipoId;
 
   @override
   Widget build(BuildContext context) {
@@ -21,30 +25,34 @@ class NewMatchScreen extends StatelessWidget {
         floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         resizeToAvoidBottomInset: true,
-        body: const _NewMatchView(),
+        body: _NewMatchView(equipoId: equipoId),
       ),
     );
   }
 }
 
-class _NewMatchView extends StatefulWidget {
-  const _NewMatchView();
+class _NewMatchView extends ConsumerStatefulWidget {
+  const _NewMatchView({this.equipoId});
+  final int? equipoId;
 
   @override
-  State<_NewMatchView> createState() => _NewMatchViewState();
+  ConsumerState<_NewMatchView> createState() => _NewMatchViewState();
 }
 
-class _NewMatchViewState extends State<_NewMatchView> {
+class _NewMatchViewState extends ConsumerState<_NewMatchView> {
   final _rivalController = TextEditingController();
   final _lugarController = TextEditingController();
+  final _competenciaController = TextEditingController();
   String? _selectedTipoPartido;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  bool _saving = false;
 
   @override
   void dispose() {
     _rivalController.dispose();
     _lugarController.dispose();
+    _competenciaController.dispose();
     super.dispose();
   }
 
@@ -231,6 +239,15 @@ class _NewMatchViewState extends State<_NewMatchView> {
                   icon: Icons.location_on_rounded,
                   iconColor: const Color(0xFFD94929),
                 ),
+                const SizedBox(height: 20),
+                _buildLabel('COMPETENCIA'),
+                const SizedBox(height: 8),
+                _buildInputField(
+                  controller: _competenciaController,
+                  hintText: 'Ej: Liga Juvenil 2026',
+                  icon: Icons.emoji_events_outlined,
+                  iconColor: const Color(0xFFD94929),
+                ),
               ],
             ),
           ),
@@ -241,20 +258,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
-              onPressed: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-                CustomModal.show(
-                  context: context,
-                  title: 'Partido creado',
-                  message: 'El partido ha sido programado exitosamente.',
-                  type: ModalType.success,
-                  buttonText: 'Aceptar',
-                  onButtonPressed: () {
-                    Navigator.of(context).pop();
-                    context.pop();
-                  },
-                );
-              },
+              onPressed: _saving ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD94929),
                 foregroundColor: Colors.white,
@@ -269,7 +273,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                   const Icon(Icons.add_circle_outline, size: 24),
                   const SizedBox(width: 10),
                   Text(
-                    'Crear Partido',
+                    _saving ? 'Guardando...' : 'Crear Partido',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -283,6 +287,94 @@ class _NewMatchViewState extends State<_NewMatchView> {
         ],
       ),
     );
+  }
+
+  Future<void> _submit() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    if (widget.equipoId == null) {
+      CustomModal.show(
+        context: context,
+        title: 'Falta equipo',
+        message: 'Debes entrar desde un equipo para crear el partido.',
+        type: ModalType.warning,
+      );
+      return;
+    }
+    if (_rivalController.text.trim().isEmpty ||
+        _selectedTipoPartido == null ||
+        _selectedDate == null) {
+      CustomModal.show(
+        context: context,
+        title: 'Campos obligatorios',
+        message: 'Completa rival, tipo de partido y fecha.',
+        type: ModalType.warning,
+      );
+      return;
+    }
+
+    final fecha =
+        '${_selectedDate!.year.toString().padLeft(4, '0')}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+    String? hora;
+    if (_selectedTime != null) {
+      hora =
+          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
+    }
+
+    final body = <String, dynamic>{
+      'equipo_id': widget.equipoId,
+      'rival_nombre': _rivalController.text.trim(),
+      'es_local': _selectedTipoPartido == 'Local / Casa',
+      'fecha': fecha,
+    };
+    if ((hora ?? '').isNotEmpty) body['hora'] = hora;
+    if (_lugarController.text.trim().isNotEmpty) body['lugar'] = _lugarController.text.trim();
+    if (_competenciaController.text.trim().isNotEmpty) {
+      body['competencia'] = _competenciaController.text.trim();
+    }
+
+    if (!Environment.useBackend) {
+      CustomModal.show(
+        context: context,
+        title: 'Partido creado',
+        message: 'Guardado en modo local (mock).',
+        type: ModalType.success,
+        onButtonPressed: () {
+          Navigator.of(context).pop();
+          context.pop();
+        },
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      final res = await ref.read(coachApiServiceProvider).postPartido(body);
+      ref.invalidate(coachPartidosProvider);
+      ref.invalidate(coachPartidosByEquipoProvider(widget.equipoId!));
+
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'Partido creado',
+        message: res['message']?.toString() ?? 'El partido fue programado.',
+        type: ModalType.success,
+        onButtonPressed: () {
+          Navigator.of(context).pop();
+          context.pop();
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      CustomModal.show(
+        context: context,
+        title: 'No se pudo crear',
+        message: '$e',
+        type: ModalType.error,
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   Widget _buildLabel(String text) {

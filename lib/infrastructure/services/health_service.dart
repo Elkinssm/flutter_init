@@ -1,4 +1,5 @@
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/infrastructure/services/api_logger.dart';
 import 'package:dio/dio.dart';
 
 /// Cliente para probar GET /api/health. Usa [Environment] por defecto (misma URL que login/API).
@@ -11,19 +12,25 @@ class HealthService {
   }) : host = hostOverride ?? Environment.backendHost,
        _scheme = schemeOverride ?? Environment.backendScheme,
        _port = portOverride ?? Environment.backendPort,
-       _dio =
-           dio ??
-           Dio(
-             BaseOptions(
-               connectTimeout: const Duration(seconds: 5),
-               receiveTimeout: const Duration(seconds: 5),
-             ),
-           );
+       _dio = dio ?? _buildDio();
 
   final Dio _dio;
   final String host;
   final String _scheme;
   final int _port;
+
+  static Dio _buildDio() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+      ),
+    );
+    dio.interceptors.add(
+      ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
+    );
+    return dio;
+  }
 
   int get port => _port;
   String get endpoint => '$_scheme://$host:$_port/api/health';

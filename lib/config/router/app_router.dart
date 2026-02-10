@@ -151,16 +151,18 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/new_player_screen',
       name: NewPlayerScreen.name,
-      pageBuilder:
-          (context, state) =>
-              CustomTransition.slideLeft(const NewPlayerScreen()),
+      pageBuilder: (context, state) {
+        final equipoId = state.extra as int?;
+        return CustomTransition.slideLeft(NewPlayerScreen(equipoId: equipoId));
+      },
     ),
     GoRoute(
       path: '/new_match_screen',
       name: NewMatchScreen.name,
-      pageBuilder:
-          (context, state) =>
-              CustomTransition.slideLeft(const NewMatchScreen()),
+      pageBuilder: (context, state) {
+        final equipoId = state.extra as int?;
+        return CustomTransition.slideLeft(NewMatchScreen(equipoId: equipoId));
+      },
     ),
     GoRoute(
       path: '/player_status_screen',
@@ -169,9 +171,10 @@ final appRouter = GoRouter(
         final data = state.extra as Map<String, dynamic>? ?? {};
         final name = data['name'] ?? '';
         final image = data['image'] ?? '';
+        final jugadorId = data['jugador_id'] as int?;
 
         return CustomTransition.slideLeft(
-          PlayerStatusScreen(names: name, image: image),
+          PlayerStatusScreen(names: name, image: image, jugadorId: jugadorId),
         );
       },
     ),
@@ -185,9 +188,17 @@ final appRouter = GoRouter(
       path: '/selected_team_screen',
       name: SelectedTeamScreen.name,
       pageBuilder: (context, state) {
-        final teamName = state.extra as String;
+        final extra = state.extra;
+        String teamName = 'Equipo';
+        int? equipoId;
+        if (extra is Map<String, dynamic>) {
+          teamName = extra['teamName']?.toString() ?? 'Equipo';
+          equipoId = extra['equipoId'] as int?;
+        } else if (extra is String) {
+          teamName = extra;
+        }
         return CustomTransition.slideLeft(
-          SelectedTeamScreen(teamName: teamName),
+          SelectedTeamScreen(teamName: teamName, equipoId: equipoId),
         );
       },
     ),

@@ -1,4 +1,5 @@
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
 import 'package:coach_app/presentation/providers/auth_role_provider.dart';
@@ -70,12 +71,11 @@ class _CategoryViewState extends ConsumerState<_CategoryView> {
 
   @override
   Widget build(BuildContext context) {
-    final role = ref.watch(currentUserRoleProvider);
+    final role = ref.watch(currentUserRoleProvider) ?? currentUserRole;
     final isCoach = role == 'coach';
-    final jugadorAsync = ref.watch(jugadorCategoriasProvider);
-    final coachAsync = ref.watch(coachCategoriasProvider);
-
-    final async = isCoach ? coachAsync : jugadorAsync;
+    final async = isCoach
+        ? ref.watch(coachCategoriasProvider)
+        : ref.watch(jugadorCategoriasProvider);
     List<_CategoryItem> items = _localFallback;
     if (Environment.useBackend && async.hasValue && async.value != null) {
       final data = async.value!;
@@ -83,7 +83,9 @@ class _CategoryViewState extends ConsumerState<_CategoryView> {
       items = list.map((e) {
         final m = e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
         final id = m['id'] is int ? m['id'] as int : int.tryParse(m['id']?.toString() ?? '0') ?? 0;
-        final members = m['jugadores_count'] is int ? m['jugadores_count'] as int : int.tryParse(m['jugadores_count']?.toString() ?? '0') ?? 0;
+        final membersRaw = m['total_miembros'] ?? m['jugadores_count'];
+        final members =
+            membersRaw is int ? membersRaw : int.tryParse(membersRaw?.toString() ?? '0') ?? 0;
         final label = m['categoria']?.toString() ?? m['nombre']?.toString() ?? '$id';
         return _CategoryItem(id: id, members: members, displayLabel: label);
       }).toList();

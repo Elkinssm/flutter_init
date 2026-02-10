@@ -3,6 +3,7 @@ import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/globals.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
+import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/session_provider.dart';
@@ -76,6 +77,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
           );
 
       setUserRoleFromBackend(auth.user.rol);
+      ref.read(currentUserRoleProvider.notifier).state = currentUserRole;
       final userRole = currentUserRole;
       if (!mounted) return;
 

@@ -1,5 +1,6 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/providers/calendar_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
@@ -37,6 +38,7 @@ class LoadingNotifier extends StateNotifier<double> {
         final user = await session.getSavedUser();
         if (user != null) {
           setUserRoleFromBackend(user.rol);
+          ref.read(currentUserRoleProvider.notifier).state = currentUserRole;
           ref.read(currentUserProfileCompleteProvider.notifier).state =
               user.profileComplete;
           final n = user.nombre.trim();
@@ -57,6 +59,8 @@ class LoadingNotifier extends StateNotifier<double> {
         }
       }
     }
+
+    ref.read(currentUserRoleProvider.notifier).state = currentUserRole;
 
     if (context.mounted) context.go('/welcome_screen');
   }

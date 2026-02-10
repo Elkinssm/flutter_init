@@ -43,6 +43,17 @@ class SessionService {
     await prefs.setString(_kUser, jsonEncode(userMap));
   }
 
+  /// Actualiza solo el token (y opcionalmente expires_at) tras refresh.
+  Future<void> updateToken(String token, {String? expiresAt}) async {
+    final prefs = await _storage;
+    await prefs.setString(_kToken, token);
+    if (expiresAt != null) {
+      await prefs.setString(_kExpiresAt, expiresAt);
+    } else {
+      await prefs.remove(_kExpiresAt);
+    }
+  }
+
   /// Elimina sesión (logout).
   Future<void> clearSession() async {
     final prefs = await _storage;

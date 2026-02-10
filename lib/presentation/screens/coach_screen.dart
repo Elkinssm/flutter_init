@@ -66,6 +66,15 @@ class _CoachScreenState extends State<CoachScreen> {
 class _CoachView extends ConsumerWidget {
   const _CoachView();
 
+  static const _chartColors = <Color>[
+    Color.fromRGBO(2, 99, 255, 1),
+    Color.fromRGBO(255, 119, 35, 1),
+    Color.fromRGBO(142, 48, 225, 1),
+    Color.fromRGBO(29, 185, 84, 1),
+    Color.fromRGBO(255, 99, 132, 1),
+    Color.fromRGBO(54, 162, 235, 1),
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(coachDashboardProvider);
@@ -96,7 +105,40 @@ class _CoachView extends ConsumerWidget {
     final coachData = dashboard?['coach'] ?? dashboard?['entrenador'];
     final coachName = coachData is Map ? coachData['nombre']?.toString() : null;
     final resumen = dashboard?['resumen'] as Map<String, dynamic>?;
-    final totalJugadores = resumen?['total_jugadores']?.toString() ?? '0';
+    final totalJugadores = resumen?['total_jugadores']?.toString() ?? '2';
+    final totalEquipos = resumen?['total_equipos']?.toString() ?? '2';
+    final totalCategorias =
+        resumen?['total_categorias']?.toString() ?? totalEquipos;
+
+    final asistenciaMesRaw =
+        ((dashboard?['asistencia_por_mes'] ?? dashboard?['asistencia_mensual'])
+                as List<dynamic>?) ??
+            const [];
+    final asistenciaSeries = asistenciaMesRaw.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final item = entry.value;
+      final m = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+      final mesRaw = m['mes']?.toString() ?? 'Mes';
+      final mesLabel = _toMonthLabel(mesRaw);
+      final percentageRaw = m['porcentaje_asistencia'] ?? m['porcentaje'];
+      final value = (percentageRaw is num)
+          ? percentageRaw.toDouble()
+          : double.tryParse(percentageRaw?.toString() ?? '') ?? 0;
+      return AssistanceChartPoint(
+        label: mesLabel,
+        value: value,
+        color: _chartColors[idx % _chartColors.length],
+      );
+    }).toList();
+
+    final mediaAsistencia = asistenciaSeries.isNotEmpty
+        ? asistenciaSeries
+                .map((e) => e.value)
+                .reduce((a, b) => a + b) /
+            asistenciaSeries.length
+        : 92.0;
+    final mediaText = '${mediaAsistencia.toStringAsFixed(0)}%';
+    final trend = _computeTrend(asistenciaSeries);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 100),
@@ -134,7 +176,7 @@ class _CoachView extends ConsumerWidget {
                       Expanded(
                         child: _MetricCard(
                           icon: Icons.groups_rounded,
-                          value: '4',
+                          value: totalEquipos,
                           label: 'EQUIPOS',
                         ),
                       ),
@@ -150,7 +192,7 @@ class _CoachView extends ConsumerWidget {
                       Expanded(
                         child: _MetricCard(
                           icon: Icons.category_rounded,
-                          value: '5',
+                          value: totalCategorias,
                           label: 'CATEGORÍAS',
                         ),
                       ),
@@ -162,7 +204,12 @@ class _CoachView extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   // ── Asistencia Semanal ──
-                  _AsistenciaCard(),
+                  _AsistenciaCard(
+                    mediaText: mediaText,
+                    trendText: trend.text,
+                    trendColor: trend.color,
+                    chartData: asistenciaSeries,
+                  ),
 
                   const SizedBox(height: 16),
                   Divider(color: Colors.grey.shade200, thickness: 1),
@@ -220,20 +267,70 @@ class _CoachView extends ConsumerWidget {
     );
   }
 
-  void _showCategoryPicker(BuildContext context, WidgetRef ref) {
-    final categoriasAsync = ref.read(coachCategoriasProvider);
+  static String _toMonthLabel(String raw) {
+    const monthNames = <String, String>{
+      '01': 'Enero',
+      '02': 'Febrero',
+      '03': 'Marzo',
+      '04': 'Abril',
+      '05': 'Mayo',
+      '06': 'Junio',
+      '07': 'Julio',
+      '08': 'Agosto',
+      '09': 'Septiembre',
+      '10': 'Octubre',
+      '11': 'Noviembre',
+      '12': 'Diciembre',
+    };
+
+    // Soporta "2026-02" o "2026-02-01"
+    final parts = raw.split('-');
+    if (parts.length >= 2) {
+      return monthNames[parts[1]] ?? raw;
+    }
+    return raw;
+  }
+
+  static _TrendData _computeTrend(List<AssistanceChartPoint> points) {
+    if (points.length < 2) {
+      return const _TrendData(text: '+0.0%', color: Color(0xFF6B7280));
+    }
+    final last = points[points.length - 1].value;
+    final prev = points[points.length - 2].value;
+    final diff = last - prev;
+    final sign = diff >= 0 ? '+' : '';
+    final color = diff >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    return _TrendData(text: '$sign${diff.toStringAsFixed(1)}%', color: color);
+  }
+
+  Future<void> _showCategoryPicker(BuildContext context, WidgetRef ref) async {
     List<Map<String, dynamic>> items = [];
 
-    if (Environment.useBackend &&
-        categoriasAsync.hasValue &&
-        categoriasAsync.value != null) {
-      final list = categoriasAsync.value!['categorias'] as List<dynamic>? ?? [];
-      items =
-          list.map((e) {
-            final m =
-                e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
-            return m;
-          }).toList();
+    if (Environment.useBackend) {
+      var loaderShown = false;
+      try {
+        loaderShown = true;
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (_) => const Center(child: CircularProgressIndicator()),
+        );
+
+        final data = await ref.read(coachApiServiceProvider).getCategorias();
+        final list = data?['categorias'] as List<dynamic>? ?? [];
+        items = list.map((e) {
+          final m =
+              e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
+          return m;
+        }).toList();
+      } catch (_) {
+        // Si falla backend, usar fallback local
+      } finally {
+        if (loaderShown && context.mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+      }
     }
 
     if (items.isEmpty) {
@@ -283,7 +380,7 @@ class _CoachView extends ConsumerWidget {
                     cat['categoria']?.toString() ??
                     cat['nombre']?.toString() ??
                     '—';
-                final count = cat['jugadores_count'] ?? 0;
+                final count = cat['total_miembros'] ?? cat['jugadores_count'] ?? 0;
                 final equipoId = cat['id'] ?? 0;
                 return ListTile(
                   leading: const Icon(
@@ -486,6 +583,18 @@ class _MetricCard extends StatelessWidget {
 
 /// Card de Asistencia Semanal.
 class _AsistenciaCard extends StatelessWidget {
+  const _AsistenciaCard({
+    required this.mediaText,
+    required this.trendText,
+    required this.trendColor,
+    required this.chartData,
+  });
+
+  final String mediaText;
+  final String trendText;
+  final Color trendColor;
+  final List<AssistanceChartPoint> chartData;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -525,15 +634,15 @@ class _AsistenciaCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                  color: trendColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '+5.2%',
+                  trendText,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF16A34A),
+                    color: trendColor,
                   ),
                 ),
               ),
@@ -541,7 +650,7 @@ class _AsistenciaCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '92%  Media de asistencia',
+            '$mediaText  Media de asistencia',
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w400,
@@ -549,11 +658,17 @@ class _AsistenciaCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          SizedBox(height: 130, child: const AssistanceBarChart()),
+          SizedBox(height: 130, child: AssistanceBarChart(data: chartData)),
         ],
       ),
     );
   }
+}
+
+class _TrendData {
+  const _TrendData({required this.text, required this.color});
+  final String text;
+  final Color color;
 }
 
 /// Card cuadrada de acción rápida con icono grande y sombra.

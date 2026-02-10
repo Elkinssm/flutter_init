@@ -1,7 +1,11 @@
+import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/infrastructure/services/coach_api_service.dart';
+import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/screens/selected_team_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -37,27 +41,30 @@ class _MyTeamsView extends StatefulWidget {
 class _MyTeamsViewState extends State<_MyTeamsView> {
   String _selectedFilter = 'Todos';
 
-  // Datos mock de equipos (después se reemplaza con datos del backend)
-  final _allTeams = [
+  static final _mockTeams = [
     _TeamData(
+      id: 1,
       image: 'assets/images/club_roma.png',
       name: 'Futbol Club Roma',
       players: 6,
       category: 'Sub-21',
     ),
     _TeamData(
+      id: 2,
       image: 'assets/images/ajaz_fc.png',
       name: 'Ajax Fc',
       players: 6,
       category: 'Sub-21',
     ),
     _TeamData(
+      id: 3,
       image: 'assets/images/manchester_icon.png',
       name: 'Manchester FC',
       players: 8,
       category: 'Sub-20',
     ),
     _TeamData(
+      id: 4,
       image: 'assets/images/paris_icon.png',
       name: 'Paris Academy',
       players: 10,
@@ -65,136 +72,188 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
     ),
   ];
 
-  List<_TeamData> get _filteredTeams {
-    if (_selectedFilter == 'Todos') return _allTeams;
-    return _allTeams.where((t) => t.category == _selectedFilter).toList();
-  }
-
-  List<String> get _categories {
-    final cats = _allTeams.map((t) => t.category).toSet().toList()..sort();
-    return ['Todos', ...cats];
-  }
-
-  int get _totalPlayers =>
-      _allTeams.fold<int>(0, (sum, t) => sum + t.players);
-
   @override
   Widget build(BuildContext context) {
-    final teams = _filteredTeams;
+    return Consumer(
+      builder: (context, ref, _) {
+        final categoriasAsync = ref.watch(coachCategoriasProvider);
+        final dashboardAsync = ref.watch(coachDashboardProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 100),
-      child: maxWidthCenter(
-        context: context,
-        max: 880,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 14),
+        List<_TeamData> allTeams = _mockTeams;
+        if (Environment.useBackend) {
+          final raw = categoriasAsync.valueOrNull?['categorias'] as List<dynamic>? ?? const [];
+          if (raw.isNotEmpty) {
+            final mapped = raw
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .map((m) => _TeamData(
+                      id: (m['id'] as num?)?.toInt() ?? 0,
+                      image: _fallbackAssetForId((m['id'] as num?)?.toInt() ?? 0),
+                      name: m['nombre']?.toString() ?? 'Equipo',
+                      players: (m['total_miembros'] as num?)?.toInt() ?? 0,
+                      category: m['categoria']?.toString() ?? 'Sin categoría',
+                      logoUrl: _normalizeImageUrl(m['escudo_url']?.toString()),
+                    ))
+                .toList();
+            if (mapped.isNotEmpty) {
+              allTeams = mapped;
+            }
+          }
+        }
 
-              // ── Panel de Control ──
-              _SummaryBanner(
-                totalTeams: _allTeams.length,
-                totalPlayers: _totalPlayers,
-              ),
+        final categories = _buildCategories(allTeams);
+        if (!categories.contains(_selectedFilter)) {
+          _selectedFilter = 'Todos';
+        }
 
-              const SizedBox(height: 18),
+        final teams = _selectedFilter == 'Todos'
+            ? allTeams
+            : allTeams.where((t) => t.category == _selectedFilter).toList();
 
-              // ── Filtros por categoría ──
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    final cat = _categories[i];
-                    final isActive = cat == _selectedFilter;
-                    return _FilterChip(
-                      label: cat,
-                      isActive: isActive,
-                      onTap: () => setState(() => _selectedFilter = cat),
-                    );
-                  },
+        final totalPlayers = allTeams.fold<int>(0, (sum, t) => sum + t.players);
+        final totalTeams = allTeams.length;
+        final totalEntrenos = _extractEntrenos(dashboardAsync.valueOrNull);
+
+        if (Environment.useBackend &&
+            categoriasAsync.isLoading &&
+            categoriasAsync.valueOrNull == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (Environment.useBackend &&
+            categoriasAsync.hasError &&
+            categoriasAsync.valueOrNull == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 42),
+                const SizedBox(height: 8),
+                Text('Error cargando equipos: ${categoriasAsync.error}'),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(coachCategoriasProvider),
+                  child: const Text('Reintentar'),
                 ),
-              ),
+              ],
+            ),
+          );
+        }
 
-              const SizedBox(height: 18),
-
-              // ── Grid de equipos ──
-              if (teams.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: Text(
-                      'No hay equipos en esta categoría',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: maxWidthCenter(
+            context: context,
+            max: 880,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 14),
+                  _SummaryBanner(
+                    totalTeams: totalTeams,
+                    totalPlayers: totalPlayers,
+                    totalEntrenos: totalEntrenos,
                   ),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: teams.length + 1, // +1 para la tarjeta "Crear"
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.9,
-                  ),
-                  itemBuilder: (_, i) {
-                    // Última tarjeta = botón crear
-                    if (i == teams.length) {
-                      return _CreateTeamCard(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Crear equipo (próximamente)'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      );
-                    }
-
-                    final t = teams[i];
-                    return _TeamGridCard(
-                      team: t,
-                      onTap: () {
-                        context.pushNamed(
-                          SelectedTeamScreen.name,
-                          extra: t.name,
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    height: 36,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (_, i) {
+                        final cat = categories[i];
+                        final isActive = cat == _selectedFilter;
+                        return _FilterChip(
+                          label: cat,
+                          isActive: isActive,
+                          onTap: () => setState(() => _selectedFilter = cat),
                         );
                       },
-                    );
-                  },
-                ),
-            ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  if (teams.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: Text(
+                          'No hay equipos en esta categoría',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: teams.length + 1,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.9,
+                      ),
+                      itemBuilder: (_, i) {
+                        if (i == teams.length) {
+                          return _CreateTeamCard(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Crear equipo (próximamente)'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                          );
+                        }
+
+                        final t = teams[i];
+                        return _TeamGridCard(
+                          team: t,
+                          onTap: () {
+                            context.pushNamed(
+                              SelectedTeamScreen.name,
+                              extra: {
+                                'teamName': t.name,
+                                'equipoId': t.id,
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 // ── Modelo local ──
 class _TeamData {
+  final int id;
   final String image;
   final String name;
   final int players;
   final String category;
+  final String? logoUrl;
 
   const _TeamData({
+    required this.id,
     required this.image,
     required this.name,
     required this.players,
     required this.category,
+    this.logoUrl,
   });
 }
 
@@ -202,10 +261,12 @@ class _TeamData {
 class _SummaryBanner extends StatelessWidget {
   final int totalTeams;
   final int totalPlayers;
+  final int totalEntrenos;
 
   const _SummaryBanner({
     required this.totalTeams,
     required this.totalPlayers,
+    required this.totalEntrenos,
   });
 
   @override
@@ -256,7 +317,7 @@ class _SummaryBanner extends StatelessWidget {
               _divider(),
               _SummaryItem(value: '$totalPlayers', label: 'Jugadores'),
               _divider(),
-              const _SummaryItem(value: '4', label: 'Entrenos'),
+              _SummaryItem(value: '$totalEntrenos', label: 'Entrenos'),
             ],
           ),
         ],
@@ -406,15 +467,24 @@ class _TeamGridCard extends StatelessWidget {
               child: ClipOval(
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    team.image,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.shield,
-                      size: 32,
-                      color: Color(0xFFD94929),
-                    ),
-                  ),
+                  child: (team.logoUrl ?? '').isNotEmpty
+                      ? Image.network(
+                          team.logoUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            team.image,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : Image.asset(
+                          team.image,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.shield,
+                            size: 32,
+                            color: Color(0xFFD94929),
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -469,6 +539,53 @@ class _TeamGridCard extends StatelessWidget {
       ),
     );
   }
+}
+
+List<String> _buildCategories(List<_TeamData> teams) {
+  final cats = teams.map((t) => t.category).toSet().toList()..sort();
+  return ['Todos', ...cats];
+}
+
+int _extractEntrenos(Map<String, dynamic>? dashboard) {
+  final resumen = dashboard?['resumen'];
+  if (resumen is Map) {
+    final r = Map<String, dynamic>.from(resumen);
+    final total = (r['total_entrenamientos'] as num?)?.toInt();
+    if (total != null) return total;
+  }
+  final proximos = dashboard?['proximos_entrenamientos'];
+  if (proximos is List) return proximos.length;
+  return 4;
+}
+
+String _fallbackAssetForId(int id) {
+  const assets = [
+    'assets/images/club_roma.png',
+    'assets/images/ajaz_fc.png',
+    'assets/images/manchester_icon.png',
+    'assets/images/paris_icon.png',
+  ];
+  return assets[id.abs() % assets.length];
+}
+
+String? _normalizeImageUrl(String? raw) {
+  final v = (raw ?? '').trim();
+  if (v.isEmpty || v.toLowerCase() == 'null') return null;
+  if (v.startsWith('http://localhost')) {
+    return v.replaceFirst(
+      'http://localhost',
+      '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+    );
+  }
+  if (v.startsWith('https://localhost')) {
+    return v.replaceFirst(
+      'https://localhost',
+      '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+    );
+  }
+  if (v.startsWith('http://') || v.startsWith('https://')) return v;
+  if (v.startsWith('/')) return '${Environment.baseUrl}$v';
+  return '${Environment.baseUrl}/$v';
 }
 
 // ── Tarjeta para crear nuevo equipo ──
