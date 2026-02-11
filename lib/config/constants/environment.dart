@@ -27,13 +27,28 @@ class Environment {
   /// - false: Usa datos locales/mock (sin conexión al backend)
   static const bool useBackend = true; // Cambia a false para modo local
 
-  // Configuración del backend (solo se usa si useBackend = true)
-  // Para Android emulador, usa '10.0.2.2'
-  // Para dispositivo físico, usa tu IP local (ej: '192.168.20.24')
-  // Para pruebas en la misma máquina, usa '127.0.0.1'
-  static const String backendHost = '10.0.2.2'; // Cambia según tu caso
-  static const String backendScheme = 'http';
-  static const int backendPort = 8000;
+  /// Selector de backend cuando `useBackend = true`.
+  /// - `BackendTarget.local`: emulador Android/local network
+  /// - `BackendTarget.prod`: API productiva (Render)
+  static const BackendTarget backendTarget = BackendTarget.prod;
+
+  // Configuración local (emulador Android por defecto)
+  static const String localBackendHost = '10.0.2.2';
+  static const String localBackendScheme = 'http';
+  static const int localBackendPort = 8000;
+
+  // Configuración productiva
+  static const String prodBackendHost = 'coachapp-uy5w.onrender.com';
+  static const String prodBackendScheme = 'https';
+  static const int prodBackendPort = 443;
+
+  // API compatible con el resto del proyecto
+  static String get backendHost =>
+      backendTarget == BackendTarget.prod ? prodBackendHost : localBackendHost;
+  static String get backendScheme =>
+      backendTarget == BackendTarget.prod ? prodBackendScheme : localBackendScheme;
+  static int get backendPort =>
+      backendTarget == BackendTarget.prod ? prodBackendPort : localBackendPort;
 
   /// Logs HTTP en consola (request/response/error) para depurar consumo de API.
   /// Recomendado: true en desarrollo, false en producción.
@@ -49,6 +64,12 @@ class Environment {
   /// Credenciales para el botón "Probar login rápido" (solo desarrollo).
   static const String testLoginEmail = 'coach@demo.com';
   static const String testLoginPassword = 'secret123';
+
+  /// Contacto de soporte por WhatsApp (formato internacional sin + ni espacios).
+  /// Ejemplo Colombia: 573001234567
+  static const String supportWhatsAppNumber = '573146170183';
+  static const String supportWhatsAppMessage =
+      'Hola, necesito ayuda con Training Once+';
 
   // ========== CREDENCIALES PARA PROBAR EN LOCAL ==========
   //
@@ -70,3 +91,5 @@ class Environment {
   // REGISTRO — Cualquier email válido funciona en modo local.
   // El registro crea sesión automáticamente y redirige a player_screen.
 }
+
+enum BackendTarget { local, prod }

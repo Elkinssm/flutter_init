@@ -135,6 +135,29 @@ class CoachApiService {
     }
   }
 
+  /// GET /api/coach/jugadores/{jugador_id}/asistencia/calendario?year=YYYY&month=M[&equipo_id=ID]
+  Future<Map<String, dynamic>?> getJugadorAsistenciaCalendario(
+    int jugadorId, {
+    required int year,
+    required int month,
+    int? equipoId,
+  }) async {
+    if (!Environment.useBackend) return null;
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/coach/jugadores/$jugadorId/asistencia/calendario',
+        queryParameters: <String, dynamic>{
+          'year': year,
+          'month': month,
+          if (equipoId != null) 'equipo_id': equipoId,
+        },
+      );
+      return response.data;
+    } on DioException {
+      rethrow;
+    }
+  }
+
   /// PUT /api/coach/jugadores/{id}
   Future<Map<String, dynamic>> putJugador(int jugadorId, Map<String, dynamic> body) async {
     final response = await _dio.put<Map<String, dynamic>>('/coach/jugadores/$jugadorId', data: body);

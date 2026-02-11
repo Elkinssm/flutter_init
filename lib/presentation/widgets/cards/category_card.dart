@@ -128,11 +128,14 @@ class _AssistanceTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    final tagWidth = (screenW * 0.20).clamp(84.0, 108.0);
+
     return InkWell(
       onTap: onTapButton,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        width: 68,
+        width: tagWidth,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
           color: _accent,
@@ -156,11 +159,14 @@ class _AssistanceTag extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Asistencia',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                fontSize: 9,
+                fontSize: tagWidth < 92 ? 9.5 : 10,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
-                letterSpacing: 0.3,
+                letterSpacing: 0.2,
               ),
             ),
           ],

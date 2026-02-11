@@ -85,9 +85,7 @@ class _HistoryViewState extends ConsumerState<_HistoryView> {
   Widget build(BuildContext context) {
     final displayName = ref.watch(currentUserDisplayNameProvider);
     final resumenAsync = ref.watch(jugadorResumenProvider(null));
-    final asistenciaPercent = resumenAsync.valueOrNull?['asistencia_percent']?.toString() ??
-        resumenAsync.valueOrNull?['asistencia']?.toString() ??
-        '$_percentTotal';
+    final asistenciaPercent = _extractAsistenciaPercent(resumenAsync.valueOrNull);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
@@ -325,6 +323,26 @@ class _HistoryViewState extends ConsumerState<_HistoryView> {
         ],
       ),
     );
+  }
+
+  String _extractAsistenciaPercent(Map<String, dynamic>? resumen) {
+    if (resumen == null) return '$_percentTotal';
+
+    final direct = resumen['asistencia_percent'] ?? resumen['porcentaje'];
+    if (direct is num) return direct.toStringAsFixed(0);
+    final directParsed = num.tryParse(direct?.toString() ?? '');
+    if (directParsed != null) return directParsed.toStringAsFixed(0);
+
+    final asistenciaRaw = resumen['asistencia'];
+    if (asistenciaRaw is Map) {
+      final asistencia = Map<String, dynamic>.from(asistenciaRaw);
+      final nested = asistencia['porcentaje'] ?? asistencia['asistencia_percent'];
+      if (nested is num) return nested.toStringAsFixed(0);
+      final nestedParsed = num.tryParse(nested?.toString() ?? '');
+      if (nestedParsed != null) return nestedParsed.toStringAsFixed(0);
+    }
+
+    return '$_percentTotal';
   }
 
   Future<void> _sharePdf(String playerName) async {

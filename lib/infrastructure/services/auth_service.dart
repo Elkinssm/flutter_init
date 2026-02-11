@@ -118,6 +118,14 @@ class AuthService {
     }
   }
 
+  /// Login rápido de prueba usando credenciales definidas en [Environment].
+  Future<AuthResult> testLogin() {
+    return login(
+      email: Environment.testLoginEmail,
+      password: Environment.testLoginPassword,
+    );
+  }
+
   /// Solicita envío de correo para recuperación de contraseña.
   Future<String> forgotPassword({required String email}) async {
     if (!Environment.useBackend) {

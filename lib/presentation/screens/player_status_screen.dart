@@ -16,6 +16,45 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+final playerMonthAttendanceProvider =
+    FutureProvider.family<
+      Map<DateTime, String>,
+      ({int equipoId, int jugadorId, int year, int month})
+    >((ref, params) async {
+      final api = ref.read(coachApiServiceProvider);
+      final result = <DateTime, String>{};
+
+      final data = await api.getJugadorAsistenciaCalendario(
+        params.jugadorId,
+        year: params.year,
+        month: params.month,
+        equipoId: params.equipoId,
+      );
+      if (data == null) return result;
+
+      final rows = (data['dias'] as List<dynamic>?) ??
+          (data['asistencias'] as List<dynamic>?) ??
+          const <dynamic>[];
+
+      for (final item in rows) {
+        if (item is! Map) continue;
+        final row = Map<String, dynamic>.from(item);
+        final rawDate = row['fecha'] ?? row['date'] ?? row['fecha_entrenamiento'];
+        final raw = rawDate?.toString() ?? '';
+        if (raw.isEmpty) continue;
+        final iso = raw.length >= 10 ? raw.substring(0, 10) : raw;
+        final dt = DateTime.tryParse(iso);
+        if (dt == null) continue;
+        final key = DateTime(dt.year, dt.month, dt.day);
+        final rawStatus =
+            (row['estado'] ?? row['asistencia_estado'])?.toString().toUpperCase();
+        result[key] =
+            (rawStatus == null || rawStatus.isEmpty) ? 'PENDIENTE' : rawStatus;
+      }
+
+      return result;
+    });
+
 class PlayerStatusScreen extends ConsumerStatefulWidget {
   static const String name = '/player_status_screen';
   final String names;
@@ -146,10 +185,11 @@ class _PlayerStatusScreenState extends ConsumerState<PlayerStatusScreen> {
         throw Exception('No se recibió URL de foto en la respuesta de upload.');
       }
 
-      await coachApi.putJugador(widget.jugadorId!, {'foto_url': fotoUrl});
+      final normalized = _normalizePhotoRef(fotoUrl!);
+
+      await coachApi.putJugador(widget.jugadorId!, {'foto_url': normalized});
 
       if (!mounted) return;
-      final normalized = _normalizePhotoRef(fotoUrl!);
       setState(() => _photoRef = normalized);
       ref.read(playerPhotoOverridesProvider.notifier).update((state) {
         final copy = Map<int, String>.from(state);
@@ -178,16 +218,7 @@ class _PlayerStatusScreenState extends ConsumerState<PlayerStatusScreen> {
   }
 
   String _normalizePhotoRef(String raw) {
-    final value = raw.trim();
-    if (value.startsWith('http://localhost')) {
-      return value.replaceFirst('http://localhost', '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}');
-    }
-    if (value.startsWith('https://localhost')) {
-      return value.replaceFirst('https://localhost', '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}');
-    }
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
-    if (value.startsWith('/')) return '${Environment.baseUrl}$value';
-    return '${Environment.baseUrl}/$value';
+    return _normalizePhotoUrl(raw);
   }
 }
 
@@ -225,9 +256,27 @@ class _PlayerStatusView extends ConsumerWidget {
     final primerEquipo = equipos.isNotEmpty && equipos.first is Map
         ? Map<String, dynamic>.from(equipos.first as Map)
         : <String, dynamic>{};
+    final equipoId = (primerEquipo['id'] as num?)?.toInt();
+    final monthAttendanceAsync =
+        (Environment.useBackend &&
+            jugadorId != null &&
+            equipoId != null)
+        ? ref.watch(
+            playerMonthAttendanceProvider((
+              equipoId: equipoId,
+              jugadorId: jugadorId!,
+              year: assistanceState.focusedDay.year,
+              month: assistanceState.focusedDay.month,
+            )),
+          )
+        : null;
     final asistencia = detail['asistencia'] is Map
         ? Map<String, dynamic>.from(detail['asistencia'])
         : <String, dynamic>{};
+    final attendanceByDay = <DateTime, String>{
+      ..._extractAttendanceByDay(detail),
+      ...(monthAttendanceAsync?.valueOrNull ?? const <DateTime, String>{}),
+    };
 
     final nombreBackend = jugador['nombre_completo']?.toString();
     final nombreFinal = (nombreBackend ?? '').trim().isNotEmpty
@@ -358,6 +407,8 @@ class _PlayerStatusView extends ConsumerWidget {
               _Calendar(
                 assistanceState: assistanceState,
                 assistanceNotifier: assistanceNotifier,
+                attendanceByDay: attendanceByDay,
+                isLoading: monthAttendanceAsync?.isLoading ?? false,
               ),
             ],
           ),
@@ -386,32 +437,116 @@ class _PlayerStatusView extends ConsumerWidget {
   static String? _normalizePhoto(String? raw) {
     final value = (raw ?? '').trim();
     if (value.isEmpty || value.toLowerCase() == 'null') return null;
-    if (value.startsWith('http://localhost')) {
-      return value.replaceFirst(
-        'http://localhost',
-        '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
-      );
-    }
-    if (value.startsWith('https://localhost')) {
-      return value.replaceFirst(
-        'https://localhost',
-        '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
-      );
-    }
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
-    if (value.startsWith('/')) return '${Environment.baseUrl}$value';
-    return '${Environment.baseUrl}/$value';
+    return _normalizePhotoUrl(value);
   }
+
+  static Map<DateTime, String> _extractAttendanceByDay(
+    Map<String, dynamic> detail,
+  ) {
+    final result = <DateTime, String>{};
+
+    final candidates = <dynamic>[
+      detail['asistencias'],
+      detail['asistencia_detalle'],
+      detail['historial_asistencia'],
+      (detail['asistencia'] is Map)
+          ? (detail['asistencia'] as Map)['detalles']
+          : null,
+      (detail['asistencia'] is Map)
+          ? (detail['asistencia'] as Map)['asistencias']
+          : null,
+      (detail['asistencia'] is Map)
+          ? (detail['asistencia'] as Map)['por_dia']
+          : null,
+    ];
+
+    for (final source in candidates) {
+      if (source is! List) continue;
+      for (final item in source) {
+        if (item is! Map) continue;
+        final row = Map<String, dynamic>.from(item);
+        final rawDate =
+            row['fecha'] ?? row['fecha_entrenamiento'] ?? row['date'];
+        final dt = _parseDate(rawDate?.toString());
+        if (dt == null) continue;
+
+        final rawStatus = (row['estado'] ?? row['asistencia_estado'])
+            ?.toString()
+            .toUpperCase();
+        final normalizedStatus =
+            (rawStatus == null || rawStatus.isEmpty) ? 'PENDIENTE' : rawStatus;
+
+        // Si hay múltiples fuentes, la primera que tenga estado para el día gana.
+        result.putIfAbsent(dt, () => normalizedStatus);
+      }
+    }
+
+    return result;
+  }
+
+  static DateTime? _parseDate(String? value) {
+    final v = (value ?? '').trim();
+    if (v.isEmpty) return null;
+    final normalized = v.length >= 10 ? v.substring(0, 10) : v;
+    final dt = DateTime.tryParse(normalized);
+    if (dt == null) return null;
+    return DateTime(dt.year, dt.month, dt.day);
+  }
+}
+
+String _normalizePhotoUrl(String raw) {
+  final value = raw.trim();
+  if (value.isEmpty || value.toLowerCase() == 'null') return '';
+
+  final uri = Uri.tryParse(value);
+  if (uri != null && uri.hasScheme && uri.host.isNotEmpty) {
+    final isLocalHost =
+        uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == '10.0.2.2';
+    final normalizedPath = _normalizePhotoPath(uri.path);
+    if (isLocalHost) {
+      return '${
+          Environment.baseUrl
+      }$normalizedPath${uri.hasQuery ? '?${uri.query}' : ''}';
+    }
+    if (normalizedPath != uri.path) {
+      return uri.replace(path: normalizedPath).toString();
+    }
+    return value;
+  }
+
+  final normalizedPath = _normalizePhotoPath(value);
+  return '${Environment.baseUrl}$normalizedPath';
+}
+
+String _normalizePhotoPath(String path) {
+  var p = path.trim();
+  if (p.isEmpty) return p;
+
+  p = p.replaceFirst('/test_app/storage/', '/storage/');
+  p = p.replaceFirst('test_app/storage/', 'storage/');
+  p = p.replaceFirst('/api/storage/', '/storage/');
+  p = p.replaceFirst('api/storage/', 'storage/');
+
+  if (p.startsWith('/fotos/')) p = '/storage$p';
+  if (p.startsWith('fotos/')) p = '/storage/$p';
+  if (p.startsWith('storage/')) p = '/$p';
+  if (!p.startsWith('/')) p = '/$p';
+
+  return p;
 }
 
 class _Calendar extends StatelessWidget {
   const _Calendar({
     required this.assistanceState,
     required this.assistanceNotifier,
+    required this.attendanceByDay,
+    required this.isLoading,
   });
 
   final Assistance2State assistanceState;
   final AssistanceNotifier assistanceNotifier;
+  final Map<DateTime, String> attendanceByDay;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -433,6 +568,15 @@ class _Calendar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8, 4, 8, 8),
+              child: LinearProgressIndicator(
+                minHeight: 3,
+                color: Color(0xFFD94929),
+                backgroundColor: Color(0xFFD9D9D9),
+              ),
+            ),
           TableCalendar(
             pageAnimationEnabled: true,
             pageAnimationDuration: const Duration(milliseconds: 300),
@@ -470,39 +614,39 @@ class _Calendar extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 color: const Color(0xFF0B1926),
               ),
+              todayTextStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0B1926),
+              ),
+              selectedTextStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0B1926),
+              ),
               todayDecoration: const BoxDecoration(
-                color: Color(0xFF55A06F),
+                color: Colors.transparent,
                 shape: BoxShape.circle,
               ),
               selectedDecoration: const BoxDecoration(
-                color: Color.fromRGBO(232, 64, 54, 1),
+                color: Colors.transparent,
                 shape: BoxShape.circle,
               ),
             ),
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
-                final isAttended = assistanceState.attendedDays.any(
-                  (d) => d.year == day.year && d.month == day.month && d.day == day.day,
+                return _buildDayCell(day, isSelected: false);
+              },
+              todayBuilder: (context, day, focusedDay) {
+                final isSelected = isSameDay(assistanceState.selectedDay, day);
+                return _buildDayCell(
+                  day,
+                  isSelected: isSelected,
+                  forcePlain: true,
                 );
-                if (isAttended) {
-                  return Center(
-                    child: Container(
-                      width: 27,
-                      height: 27,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF55A06F),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${day.day}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return null;
+              },
+              selectedBuilder: (context, day, focusedDay) {
+                return _buildDayCell(day, isSelected: true, forcePlain: true);
               },
             ),
             onDaySelected: (selectedDay, focusedDay) {
@@ -512,8 +656,101 @@ class _Calendar extends StatelessWidget {
               assistanceNotifier.changeMonth(focusedDay);
             },
           ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: const [
+              _LegendItem(label: 'Presente', color: Color(0xFF55A06F)),
+              _LegendItem(label: 'Ausente', color: Color(0xFFD2AF35)),
+              _LegendItem(label: 'Pendiente', color: Color(0xFF34495E)),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  static Color? _statusColor(String? status) {
+    final normalized = (status ?? '').toUpperCase();
+    switch (normalized) {
+      case 'PRESENTE':
+        return const Color(0xFF55A06F);
+      // Igualar semántica con camisas en Asistencia diaria:
+      // AUSENTE/TARDANZA/JUSTIFICADO se muestran como "ausente" (amarillo).
+      case 'AUSENTE':
+      case 'TARDANZA':
+      case 'JUSTIFICADO':
+        return const Color(0xFFD2AF35);
+      case 'PENDIENTE':
+        return const Color(0xFF34495E);
+      default:
+        return null;
+    }
+  }
+
+  Widget? _buildDayCell(
+    DateTime day, {
+    required bool isSelected,
+    bool forcePlain = false,
+  }) {
+    final key = DateTime(day.year, day.month, day.day);
+    final status = attendanceByDay[key];
+    final fill = _statusColor(status);
+
+    if (fill == null && !isSelected && !forcePlain) return null;
+
+    return Center(
+      child: Container(
+        width: 27,
+        height: 27,
+        decoration: BoxDecoration(
+          color: fill ?? Colors.transparent,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(color: const Color(0xFFD94929), width: 2)
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            '${day.day}',
+            style: TextStyle(
+              color: fill == null ? const Color(0xFF0B1926) : Colors.white,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF374957),
+          ),
+        ),
+      ],
     );
   }
 }

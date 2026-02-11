@@ -170,7 +170,11 @@ class _CategoryViewState extends ConsumerState<_CategoryView> {
             });
           },
           onTapAssistance: () {
-            context.push('/daily_attendance_screen', extra: c.id);
+            if (isCoach) {
+              context.push('/daily_attendance_screen', extra: c.id);
+            } else {
+              context.push('/history_screen');
+            }
           },
         );
       },

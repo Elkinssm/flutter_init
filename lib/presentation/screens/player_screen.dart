@@ -125,10 +125,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                     title: _dashboardCategoria(dashboardData) ?? '2012',
                     subtitle: 'Categoría',
                     actionLabel: 'Ver categoría',
-                    onTap: () {
-                      final catId = _dashboardCategoriaId(dashboardData) ?? 2012;
-                      context.pushNamed('/selected_category_screen', extra: catId);
-                    },
+                    onTap: () => context.push('/category_screen'),
                   ),
                 ),
                 const SizedBox(width: 12),

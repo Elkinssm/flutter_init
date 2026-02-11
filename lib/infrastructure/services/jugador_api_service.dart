@@ -115,6 +115,11 @@ final jugadorCategoriaActualProvider = FutureProvider<Map<String, dynamic>?>((re
   return ref.read(jugadorApiServiceProvider).getCategoriaActual();
 });
 
+final jugadorCategoriaByIdProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
+  return ref.read(jugadorApiServiceProvider).getCategoriaById(equipoId);
+});
+
 /// Resumen (asistencia/estadísticas) del jugador. [anio] opcional.
 final jugadorResumenProvider = FutureProvider.family<Map<String, dynamic>?, int?>((ref, anio) {
   return ref.read(jugadorApiServiceProvider).getResumen(anio: anio);

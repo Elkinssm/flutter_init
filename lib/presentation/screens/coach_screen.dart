@@ -4,6 +4,7 @@ import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -84,13 +85,24 @@ class _CoachView extends ConsumerWidget {
     }
 
     if (dashboardAsync.hasError) {
+      final errorText = _friendlyError(dashboardAsync.error);
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Error al cargar: ${dashboardAsync.error}'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                errorText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.invalidate(coachDashboardProvider),
@@ -301,6 +313,27 @@ class _CoachView extends ConsumerWidget {
     final sign = diff >= 0 ? '+' : '';
     final color = diff >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
     return _TrendData(text: '$sign${diff.toStringAsFixed(1)}%', color: color);
+  }
+
+  static String _friendlyError(Object? error) {
+    if (error is DioException) {
+      final code = error.response?.statusCode;
+      final data = error.response?.data;
+      if (code == 403) {
+        if (data is Map && data['message'] != null) {
+          return data['message'].toString();
+        }
+        return 'No tienes permisos para acceder a esta vista.';
+      }
+      if (data is Map && data['message'] != null) {
+        return data['message'].toString();
+      }
+      if (code != null) {
+        return 'No se pudo cargar el dashboard (HTTP $code).';
+      }
+      return 'No se pudo cargar el dashboard. Revisa tu conexión.';
+    }
+    return 'No se pudo cargar el dashboard. Intenta nuevamente.';
   }
 
   Future<void> _showCategoryPicker(BuildContext context, WidgetRef ref) async {

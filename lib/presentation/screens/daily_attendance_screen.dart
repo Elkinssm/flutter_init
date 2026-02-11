@@ -1,5 +1,7 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
+import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/presentation/helpers/nav_loading.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -169,27 +171,38 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
     }
 
     final backendStatusByJugadorId = <int, TshirtStatus>{};
+    final backendStatusByIndex = <TshirtStatus>[];
     if (useApi && (asistenciaAsync?.hasValue ?? false)) {
       final value = asistenciaAsync?.value ?? {};
       final rows = (value['jugadores'] as List<dynamic>?) ?? const [];
       for (final row in rows) {
         final m = row is Map ? Map<String, dynamic>.from(row) : <String, dynamic>{};
-        final rawId = m['jugador_id'];
+        final rawId = m['jugador_id'] ?? m['id'];
         final id =
             rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
-        if (id <= 0) continue;
-        final estado = m['estado']?.toString().toUpperCase();
+        final estado =
+            (m['estado'] ?? m['asistencia_estado'])?.toString().toUpperCase();
         final parsed = switch (estado) {
           'PRESENTE' => TshirtStatus.present,
           'AUSENTE' || 'TARDANZA' || 'JUSTIFICADO' => TshirtStatus.absent,
           _ => TshirtStatus.none,
         };
-        backendStatusByJugadorId[id] = parsed;
+        backendStatusByIndex.add(parsed);
+        if (id > 0) backendStatusByJugadorId[id] = parsed;
       }
     }
 
-    final seed = '${equipoId ?? 0}|$_apiDate|${ids.join(',')}|${backendStatusByJugadorId.hashCode}';
-    if (_statusSeed != seed) {
+    final backendSignature =
+        ids
+            .map(
+              (id) =>
+                  '$id:${(backendStatusByJugadorId[id] ?? TshirtStatus.none).index}',
+            )
+            .join(',');
+    final seed = '${equipoId ?? 0}|$_apiDate|${ids.join(',')}|$backendSignature';
+    final canReseedFromBackend =
+        !useApi || (asistenciaAsync?.hasValue ?? false) || _statusSeed.isEmpty;
+    if (_statusSeed != seed && canReseedFromBackend) {
       _status
         ..clear()
         ..addEntries(
@@ -197,6 +210,7 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
             final id = i < ids.length ? ids[i] : 0;
             final st =
                 backendStatusByJugadorId[id] ??
+                (i < backendStatusByIndex.length ? backendStatusByIndex[i] : null) ??
                 (useApi ? TshirtStatus.none : TshirtStatus.absent);
             return MapEntry(i, st);
           }),
@@ -513,7 +527,12 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
                           buttonText: 'Aceptar',
                           onButtonPressed: () {
                             Navigator.of(context).pop();
-                            if (context.mounted) context.go('/coach_screen');
+                            if (!context.mounted) return;
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/selected_category_screen', extra: equipoId);
+                            }
                           },
                         );
                         return;
@@ -546,6 +565,7 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
                       }
 
                       setState(() => _submitting = true);
+                      NavLoading.instance.begin(thresholdMs: 0);
                       try {
                         await ref
                             .read(coachApiServiceProvider)
@@ -554,6 +574,21 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
                               fecha: _apiDate,
                               asistencias: asistencias,
                             );
+                        // Refrescar asistencia del día y esperar para dejar cache coherente.
+                        await ref.refresh(
+                          coachAsistenciaProvider(
+                            (equipoId: equipoId, fecha: _apiDate),
+                          ).future,
+                        );
+                        // Refrescar datos relacionados para volver con estado actualizado.
+                        ref.invalidate(coachJugadoresProvider(equipoId));
+                        ref.invalidate(
+                          coachAsistenciaResumenProvider(
+                            (equipoId: equipoId, anio: _selectedDate.year),
+                          ),
+                        );
+                        ref.invalidate(coachDashboardProvider);
+
                         if (!mounted) return;
                         CustomModal.show(
                           context: context,
@@ -563,7 +598,12 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
                           buttonText: 'Aceptar',
                           onButtonPressed: () {
                             Navigator.of(context).pop();
-                            if (context.mounted) context.go('/coach_screen');
+                            if (!context.mounted) return;
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/selected_category_screen', extra: equipoId);
+                            }
                           },
                         );
                       } catch (e) {
@@ -576,6 +616,7 @@ class _DailyAttendanceViewState extends ConsumerState<_DailyAttendanceView> {
                           buttonText: 'Entendido',
                         );
                       } finally {
+                        NavLoading.instance.end();
                         if (mounted) setState(() => _submitting = false);
                       }
                     },

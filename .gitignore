@@ -77,3 +77,4 @@ coverage/
 *.mocks.dart
 
 .fake
+/docs

@@ -2,6 +2,7 @@ import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/globals.dart';
+import 'package:coach_app/presentation/helpers/nav_loading.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/providers/keyboard_visibility_provider.dart';
@@ -55,6 +56,8 @@ class _LoginViewState extends ConsumerState<_LoginView> {
   Future<void> _submit() async {
     if (!isButtonEnabled || isLoading) return;
     FocusManager.instance.primaryFocus?.unfocus();
+    NavLoading.instance.begin(thresholdMs: 0);
+    var loginSucceeded = false;
 
     setState(() {
       isLoading = true;
@@ -112,13 +115,18 @@ class _LoginViewState extends ConsumerState<_LoginView> {
 
       final destination =
           userRole == 'coach' ? '/coach_screen' : '/player_screen';
+      loginSucceeded = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final ctx = rootNavKey.currentContext;
         if (ctx != null && ctx.mounted) {
           GoRouter.of(ctx).go(destination);
+          NavLoading.instance.end();
+        } else {
+          NavLoading.instance.end();
         }
       });
     } on AuthException catch (error) {
+      NavLoading.instance.end();
       if (!mounted) return;
       CustomModal.show(
         context: context,
@@ -128,6 +136,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         buttonText: 'Entendido',
       );
     } catch (error, _) {
+      NavLoading.instance.end();
       if (!mounted) return;
       CustomModal.showNetworkError(
         context,
@@ -135,6 +144,9 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         onRetry: () => _submit(),
       );
     } finally {
+      if (!loginSucceeded) {
+        NavLoading.instance.end();
+      }
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -142,6 +154,14 @@ class _LoginViewState extends ConsumerState<_LoginView> {
         });
       }
     }
+  }
+
+  Future<void> _submitTestLogin() async {
+    if (isLoading) return;
+    emailController.text = Environment.testLoginEmail;
+    passwordController.text = Environment.testLoginPassword;
+    _checkFields();
+    await _submit();
   }
 
   @override
@@ -287,6 +307,15 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                               ),
                             ),
+                            if (!isKeyboardVisible) ...[
+                              const SizedBox(height: 8),
+                              Center(
+                                child: TextButton(
+                                  onPressed: isLoading ? null : _submitTestLogin,
+                                  child: const Text('Probar login rápido'),
+                                ),
+                              ),
+                            ],
                             SizedBox(height: bottomCTA),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,

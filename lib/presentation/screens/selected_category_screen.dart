@@ -1,5 +1,7 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
+import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
+import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/providers/player_photo_overrides_provider.dart';
 import 'package:coach_app/presentation/screens/player_status_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -36,7 +38,11 @@ class _SelectedCategoryView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jugadoresAsync = ref.watch(coachJugadoresProvider(equipoId));
+    final role = ref.watch(currentUserRoleProvider);
+    final isCoach = role == 'coach';
+    final jugadoresAsync = isCoach
+        ? ref.watch(coachJugadoresProvider(equipoId))
+        : ref.watch(jugadorCategoriaByIdProvider(equipoId));
     final photoOverrides = ref.watch(playerPhotoOverridesProvider);
 
     if (jugadoresAsync.isLoading) {
@@ -65,7 +71,11 @@ class _SelectedCategoryView extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
               ElevatedButton(
-                onPressed: () => ref.invalidate(coachJugadoresProvider(equipoId)),
+                onPressed: () => ref.invalidate(
+                  isCoach
+                      ? coachJugadoresProvider(equipoId)
+                      : jugadorCategoriaByIdProvider(equipoId),
+                ),
                 child: const Text('Reintentar'),
               ),
             ],
@@ -149,23 +159,27 @@ class _SelectedCategoryView extends ConsumerWidget {
                 CustomIconCard(
                   width: 100,
                   height: 96,
-                  titleText: 'Ver\nasistencias',
+                  titleText: isCoach ? 'Ver\nasistencias' : 'Mi\nasistencia',
                   titleTextSize: 12,
                   spacing: 4,
                   imagePath: 'assets/images/check-list-icon.png',
                   imageSize: 24,
-                  onTap: () => context.push('/daily_attendance_screen', extra: equipoId),
+                  onTap: () => context.push(
+                    isCoach ? '/daily_attendance_screen' : '/history_screen',
+                    extra: isCoach ? equipoId : null,
+                  ),
                 ),
-                CustomIconCard(
-                  width: 100,
-                  height: 96,
-                  titleText: 'Crear\njugador',
-                  titleTextSize: 12,
-                  spacing: 4,
-                  imagePath: 'assets/images/plus-icon.png',
-                  imageSize: 24,
-                  onTap: () => context.push('/new_player_screen', extra: equipoId),
-                ),
+                if (isCoach)
+                  CustomIconCard(
+                    width: 100,
+                    height: 96,
+                    titleText: 'Crear\njugador',
+                    titleTextSize: 12,
+                    spacing: 4,
+                    imagePath: 'assets/images/plus-icon.png',
+                    imageSize: 24,
+                    onTap: () => context.push('/new_player_screen', extra: equipoId),
+                  ),
               ],
             ),
           ),
@@ -232,6 +246,7 @@ class _SelectedCategoryView extends ConsumerWidget {
                           return _JugadorTile(
                             jugador: j,
                             photoOverride: overrideUrl,
+                            canOpenDetail: isCoach,
                           );
                         },
                       ),
@@ -252,10 +267,12 @@ class _JugadorTile extends StatelessWidget {
   const _JugadorTile({
     required this.jugador,
     this.photoOverride,
+    this.canOpenDetail = true,
   });
 
   final Map<String, dynamic> jugador;
   final String? photoOverride;
+  final bool canOpenDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -276,15 +293,17 @@ class _JugadorTile extends StatelessWidget {
     final asistencia = (jugador['asistencia_porcentaje'] as num?)?.toDouble();
 
     return InkWell(
-      onTap: () => context.pushNamed(
-        PlayerStatusScreen.name,
-        extra: {
-          'name': displayName.isEmpty ? 'Jugador' : displayName,
-          'image': _normalizeFotoUrl(jugador['foto_url']?.toString()) ??
-              'assets/images/student-eg1-icon.png',
-          'jugador_id': (jugador['id'] as num?)?.toInt(),
-        },
-      ),
+      onTap: !canOpenDetail
+          ? null
+          : () => context.pushNamed(
+                PlayerStatusScreen.name,
+                extra: {
+                  'name': displayName.isEmpty ? 'Jugador' : displayName,
+                  'image': _normalizeFotoUrl(jugador['foto_url']?.toString()) ??
+                      'assets/images/student-eg1-icon.png',
+                  'jugador_id': (jugador['id'] as num?)?.toInt(),
+                },
+              ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 22),
         child: SizedBox(
