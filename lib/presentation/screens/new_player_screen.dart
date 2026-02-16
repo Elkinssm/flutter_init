@@ -103,6 +103,16 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       // Si falla lectura de sesión, continuamos con carga normal.
     }
 
+    // Precargar desde /mi-perfil (fuente de verdad al editar perfil).
+    if (Environment.useBackend && _isPlayerMode) {
+      try {
+        final miPerfil = await ref.read(miPerfilServiceProvider).getMiPerfil();
+        _prefillFromMiPerfil(miPerfil);
+      } catch (_) {
+        // Si falla, seguimos con sesión + metadatos.
+      }
+    }
+
     if (!Environment.useBackend) {
       _equipos = [
         {'id': 1, 'nombre': 'Juveniles A', 'categoria': 'U17'},
@@ -125,7 +135,11 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       Map<String, dynamic>? posicionesData;
       if (_isPlayerMode) {
         final publicApi = ref.read(publicApiServiceProvider);
-        categoriasData = await publicApi.getEscuelas();
+        categoriasData = await publicApi.getEquiposDisponibles();
+        categoriasData ??= await publicApi.getEquipos();
+        if (categoriasData == null) {
+          throw Exception('No fue posible cargar equipos públicos.');
+        }
         posicionesData = await publicApi.getPosiciones();
       } else {
         final coachApi = ref.read(coachApiServiceProvider);
@@ -136,12 +150,12 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       final categoriasRaw = _isPlayerMode
           ? _extractListFromPayload(
               categoriasData,
-              preferredKeys: const ['escuelas', 'data'],
+              preferredKeys: const ['equipos', 'data'],
             )
           : (categoriasData?['categorias'] as List<dynamic>? ?? const []);
       _equipos = categoriasRaw
           .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
+          .map((e) => _normalizeEquipoForForm(Map<String, dynamic>.from(e)))
           .toList();
 
       final posicionesRaw = _extractListFromPayload(
@@ -163,7 +177,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       CustomModal.showNetworkError(
         context,
         detail: _isPlayerMode
-            ? 'No fue posible cargar escuelas/posiciones.'
+            ? 'No fue posible cargar equipos/categorías del backend.'
             : 'No fue posible cargar equipos/posiciones.',
       );
     } finally {
@@ -182,6 +196,15 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     }
     final dataNode = data['data'];
     if (dataNode is List) return dataNode;
+    if (dataNode is Map) {
+      final nested = Map<String, dynamic>.from(dataNode);
+      for (final key in preferredKeys) {
+        final v = nested[key];
+        if (v is List) return v;
+      }
+      final items = nested['items'];
+      if (items is List) return items;
+    }
     return const [];
   }
 
@@ -191,6 +214,118 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       if (e['id'] == id) return e['categoria']?.toString();
     }
     return null;
+  }
+
+  Map<String, dynamic> _normalizeEquipoForForm(Map<String, dynamic> raw) {
+    final id = raw['id'] ?? raw['equipo_id'];
+    final nombre = (raw['nombre'] ??
+            raw['equipo'] ??
+            raw['nombre_equipo'] ??
+            raw['equipo_nombre'] ??
+            '')
+        .toString()
+        .trim();
+    final rawCategoria = raw['categoria'] ??
+        raw['categoria_nombre'] ??
+        raw['nombre_categoria'] ??
+        raw['categoria_codigo'];
+    final categoria = rawCategoria is Map
+        ? (rawCategoria['nombre'] ??
+                rawCategoria['codigo'] ??
+                rawCategoria['categoria'] ??
+                '')
+            .toString()
+            .trim()
+        : (rawCategoria ?? '').toString().trim();
+
+    return {
+      ...raw,
+      'id': id,
+      'nombre': nombre.isEmpty ? 'Equipo' : nombre,
+      'categoria': categoria,
+    };
+  }
+
+  void _prefillFromMiPerfil(Map<String, dynamic>? payload) {
+    if (payload == null) return;
+
+    final usuario = payload['usuario'] is Map
+        ? Map<String, dynamic>.from(payload['usuario'])
+        : <String, dynamic>{};
+    final jugador = payload['jugador'] is Map
+        ? Map<String, dynamic>.from(payload['jugador'])
+        : <String, dynamic>{};
+    final equipoActual = payload['equipo_actual'] is Map
+        ? Map<String, dynamic>.from(payload['equipo_actual'])
+        : <String, dynamic>{};
+
+    final nombre = (usuario['nombre'] ?? jugador['nombre'] ?? '').toString().trim();
+    final apellido = (usuario['apellido'] ?? jugador['apellido'] ?? '').toString().trim();
+    final email = (usuario['email'] ?? jugador['email'] ?? '').toString().trim();
+
+    if (nombre.isNotEmpty && _nombreCtrl.text.trim().isEmpty) {
+      _nombreCtrl.text = nombre;
+    }
+    if (apellido.isNotEmpty && _apellidoCtrl.text.trim().isEmpty) {
+      _apellidoCtrl.text = apellido;
+    }
+    if (email.isNotEmpty && _emailCtrl.text.trim().isEmpty) {
+      _emailCtrl.text = email;
+    }
+
+    final fecha = (jugador['fecha_nacimiento'] ?? '').toString().trim();
+    if (fecha.isNotEmpty && _fechaCtrl.text.trim().isEmpty) {
+      _fechaCtrl.text = fecha;
+    }
+
+    final telefono = (jugador['telefono_contacto'] ?? '').toString().trim();
+    if (telefono.isNotEmpty && _telefonoCtrl.text.trim().isEmpty) {
+      _telefonoCtrl.text = telefono;
+    }
+
+    final salud = (jugador['estado_salud'] ?? '').toString().trim();
+    if (salud.isNotEmpty && _saludCtrl.text.trim().isEmpty) {
+      _saludCtrl.text = salud;
+    }
+
+    final equipoIdRaw = jugador['equipo_id'] ?? jugador['equipo_actual_id'] ?? jugador['equipo'];
+    final equipoIdVal = equipoIdRaw is int ? equipoIdRaw : int.tryParse(equipoIdRaw?.toString() ?? '');
+    final equipoActualIdRaw = equipoActual['id'];
+    final equipoActualIdVal = equipoActualIdRaw is int
+        ? equipoActualIdRaw
+        : int.tryParse(equipoActualIdRaw?.toString() ?? '');
+    if (equipoIdVal != null) {
+      _equipoId = equipoIdVal;
+    } else if (equipoActualIdVal != null) {
+      _equipoId = equipoActualIdVal;
+    }
+
+    final dorsalRaw = jugador['dorsal_actual'] ?? jugador['dorsal'];
+    final dorsalVal = dorsalRaw is int ? dorsalRaw : int.tryParse(dorsalRaw?.toString() ?? '');
+    if (dorsalVal != null) _dorsal = dorsalVal;
+
+    final alturaRaw = jugador['altura_cm'];
+    final alturaVal = alturaRaw is int ? alturaRaw : int.tryParse(alturaRaw?.toString() ?? '');
+    if (alturaVal != null) _alturaCm = alturaVal;
+
+    final pesoRaw = jugador['peso_kg'];
+    final pesoVal = pesoRaw is num ? pesoRaw.toDouble() : double.tryParse(pesoRaw?.toString() ?? '');
+    if (pesoVal != null) _pesoKg = pesoVal;
+
+    final pie = (jugador['pie_habil'] ?? '').toString().trim();
+    if (pie.isNotEmpty) _pieHabil = pie;
+
+    final posRaw = jugador['posicion_id'];
+    final posVal = posRaw is int ? posRaw : int.tryParse(posRaw?.toString() ?? '');
+    if (posVal != null) _posicionId = posVal;
+
+    final categoria = (jugador['categoria'] ?? jugador['categoria_nombre'] ?? '').toString().trim();
+    final categoriaRoot = (equipoActual['categoria'] ?? '').toString().trim();
+    if (categoria.isNotEmpty) {
+      _categoria = categoria;
+    } else if (categoriaRoot.isNotEmpty) {
+      _categoria = categoriaRoot;
+    }
   }
 
   List<String> _categoriasDisponibles() {
@@ -294,17 +429,20 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     final equipoOk = _equipoId != null;
     final posicionOk = !_isPlayerMode || _posicionId != null;
     final fechaOk = !_isPlayerMode || _fechaCtrl.text.trim().isNotEmpty;
+    final categoriaOk = !_isPlayerMode || ((_categoria ?? '').trim().isNotEmpty);
     setState(() {
       _equipoError = equipoOk
           ? null
-          : (_isPlayerMode ? 'Selecciona una escuela' : 'Selecciona un equipo');
+          : 'Selecciona un equipo';
     });
-    if (!formOk || !equipoOk || !posicionOk || !fechaOk) {
+    if (!formOk || !equipoOk || !posicionOk || !fechaOk || !categoriaOk) {
       if (_isPlayerMode && mounted) {
         CustomModal.show(
           context: context,
           title: 'Faltan datos',
-          message: 'Completa fecha de nacimiento y posición para continuar.',
+          message: !categoriaOk
+              ? 'El backend no está enviando categoría por equipo. No se puede completar el perfil hasta corregir ese dato.'
+              : 'Completa fecha de nacimiento y posición para continuar.',
           type: ModalType.warning,
           buttonText: 'Entendido',
         );
@@ -351,7 +489,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         final body = <String, dynamic>{
           'nombre': _nombreCtrl.text.trim(),
           'apellido': _apellidoCtrl.text.trim(),
-          'escuela_id': _equipoId,
+          'equipo_id': _equipoId,
           'posicion_id': _posicionId ?? (_posiciones.isNotEmpty ? _posiciones.first['id'] : null),
           'fecha_nacimiento': _fechaCtrl.text.trim(),
           'anio_vinculacion': DateTime.now().year,
@@ -378,6 +516,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
           await miPerfilApi.putMiPerfilFoto(fotoFile);
         }
         ref.invalidate(miPerfilProvider);
+        ref.invalidate(jugadorDashboardProvider);
         ref.read(currentUserProfileCompleteProvider.notifier).state = true;
         final fullName =
             '${_nombreCtrl.text.trim()} ${_apellidoCtrl.text.trim()}'.trim();
@@ -643,8 +782,8 @@ class _NewPlayerView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              _FieldLabel(text: isPlayerMode ? 'Escuela' : 'Equipo'),
-              if (!isPlayerMode && !lockEquipo) ...[
+              const _FieldLabel(text: 'Equipo'),
+              if (!lockEquipo && categorias.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 const _FieldLabel(text: 'Categoría'),
                 _SelectField<String>(
@@ -663,14 +802,25 @@ class _NewPlayerView extends StatelessWidget {
                 const SizedBox(height: 12),
                 const _FieldLabel(text: 'Equipo'),
               ],
+              if (!lockEquipo && categorias.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 4, bottom: 6),
+                  child: Text(
+                    'No llegaron categorías desde backend para los equipos.',
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               lockEquipo
                   ? _LockedField(
                       text: _equipoLabelById(equipos, equipoId) ?? 'Equipo asignado',
                     )
                   : _SelectField<int>(
                       value: equipoId,
-                      hint: isPlayerMode ? 'Selecciona escuela' : 'Selecciona equipo',
-                      items: (isPlayerMode ? equipos : equiposFiltrados)
+                      hint: 'Selecciona equipo',
+                      items: (categorias.isEmpty ? equipos : equiposFiltrados)
                           .map((e) => DropdownMenuItem<int>(
                                 value: e['id'] as int,
                                 child: Text(_equipoLabel(e)),
@@ -678,6 +828,28 @@ class _NewPlayerView extends StatelessWidget {
                           .toList(),
                       onChanged: onEquipoChanged,
                     ),
+              if (equipoId != null)
+                Builder(
+                  builder: (_) {
+                    final selected = _equipoById(equipos, equipoId);
+                    final categoriaSel =
+                        (selected?['categoria']?.toString() ?? '').trim();
+                    final escuelaSel =
+                        (selected?['escuela_nombre']?.toString() ?? '').trim();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 4),
+                      child: Text(
+                        'Categoría: ${categoriaSel.isEmpty ? '--' : categoriaSel}'
+                        '${escuelaSel.isEmpty ? '' : '   •   Escuela: $escuelaSel'}',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               if ((equipoError ?? '').isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 6, left: 4),
@@ -856,6 +1028,17 @@ class _NewPlayerView extends StatelessWidget {
     final nombre = e['nombre']?.toString() ?? 'Equipo';
     final categoria = e['categoria']?.toString() ?? '';
     return categoria.isEmpty ? nombre : '$nombre - $categoria';
+  }
+
+  static Map<String, dynamic>? _equipoById(
+    List<Map<String, dynamic>> equipos,
+    int? id,
+  ) {
+    if (id == null) return null;
+    for (final e in equipos) {
+      if (e['id'] == id) return e;
+    }
+    return null;
   }
 
   static String? _equipoLabelById(List<Map<String, dynamic>> equipos, int? id) {

@@ -1,4 +1,6 @@
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/infrastructure/services/mi_perfil_service.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -94,6 +96,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
   Widget build(BuildContext context) {
     final profileComplete = ref.watch(currentUserProfileCompleteProvider);
     final displayName = ref.watch(currentUserDisplayNameProvider).trim();
+    final miPerfilData = ref.watch(miPerfilProvider).valueOrNull;
     final dashboardAsync = ref.watch(jugadorDashboardProvider);
     final dashboardValue = dashboardAsync.valueOrNull;
     String? jugadorName;
@@ -109,6 +112,10 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
         : (displayName.isNotEmpty && displayName != 'Usuario'
             ? displayName
             : 'Jugador');
+    final photoUrl = _resolvePlayerPhotoUrl(
+      dashboardData: dashboardData,
+      miPerfilData: miPerfilData,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 100),
@@ -130,6 +137,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
             // ── Perfil del jugador ──
             _PlayerProfileCard(
               name: resolvedName,
+              photoUrl: photoUrl,
             ),
 
             const SizedBox(height: 16),
@@ -319,14 +327,19 @@ class _ProfileIncompleteBanner extends StatelessWidget {
 
 String? _dashboardCategoria(Map<String, dynamic>? d) {
   if (d == null) return null;
-  final eq = d['equipo'] as Map<String, dynamic>?;
-  return eq?['categoria']?.toString() ?? eq?['nombre']?.toString();
+  final rawEq = d['equipo_actual'] ?? d['equipo'];
+  if (rawEq is! Map) return null;
+  final eq = Map<String, dynamic>.from(rawEq);
+  return (eq['categoria'] ?? eq['categoria_nombre'] ?? eq['nombre_categoria'])
+      ?.toString();
 }
 
 String? _dashboardEquipo(Map<String, dynamic>? d) {
   if (d == null) return null;
-  final eq = d['equipo'] as Map<String, dynamic>?;
-  return eq?['nombre']?.toString();
+  final rawEq = d['equipo_actual'] ?? d['equipo'];
+  if (rawEq is! Map) return null;
+  final eq = Map<String, dynamic>.from(rawEq);
+  return (eq['nombre'] ?? eq['equipo'] ?? eq['nombre_equipo'])?.toString();
 }
 
 int? _dashboardAttendancePercent(Map<String, dynamic>? d) {
@@ -363,7 +376,9 @@ Map<String, String?> _dashboardNextMatch(Map<String, dynamic>? d) {
 
 int? _dashboardCategoriaId(Map<String, dynamic>? d) {
   if (d == null) return null;
-  final eq = d['equipo'] as Map<String, dynamic>?;
+  final rawEq = d['equipo_actual'] ?? d['equipo'];
+  if (rawEq is! Map) return null;
+  final eq = Map<String, dynamic>.from(rawEq);
   final cat = eq?['categoria_id'] ?? eq?['categoria'];
   if (cat is int) return cat;
   return int.tryParse(cat?.toString() ?? '');
@@ -376,7 +391,11 @@ int? _dashboardCategoriaId(Map<String, dynamic>? d) {
 /// Card de perfil del jugador con foto y nombre.
 class _PlayerProfileCard extends StatelessWidget {
   final String name;
-  const _PlayerProfileCard({required this.name});
+  final String? photoUrl;
+  const _PlayerProfileCard({
+    required this.name,
+    this.photoUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -412,18 +431,13 @@ class _PlayerProfileCard extends StatelessWidget {
               ],
             ),
             child: ClipOval(
-              child: Container(
-                color: const Color.fromRGBO(214, 229, 239, 1),
-                alignment: Alignment.center,
-                child: Text(
-                  _initialsFromName(name),
-                  style: GoogleFonts.inter(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF22423A),
-                  ),
-                ),
-              ),
+              child: (photoUrl ?? '').isNotEmpty
+                  ? Image.network(
+                      photoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _initialsAvatar(name),
+                    )
+                  : _initialsAvatar(name),
             ),
           ),
           const SizedBox(height: 14),
@@ -470,6 +484,69 @@ class _PlayerProfileCard extends StatelessWidget {
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
+
+  static Widget _initialsAvatar(String name) {
+    return Container(
+      color: const Color.fromRGBO(214, 229, 239, 1),
+      alignment: Alignment.center,
+      child: Text(
+        _initialsFromName(name),
+        style: GoogleFonts.inter(
+          fontSize: 34,
+          fontWeight: FontWeight.w800,
+          color: const Color(0xFF22423A),
+        ),
+      ),
+    );
+  }
+}
+
+String? _resolvePlayerPhotoUrl({
+  required Map<String, dynamic>? dashboardData,
+  required Map<String, dynamic>? miPerfilData,
+}) {
+  String? raw;
+
+  final jug = dashboardData?['jugador'];
+  if (jug is Map) {
+    raw = jug['foto_url']?.toString();
+  }
+
+  if ((raw ?? '').trim().isEmpty) {
+    final user = miPerfilData?['usuario'];
+    if (user is Map) {
+      raw = user['foto_url']?.toString();
+    }
+  }
+
+  if ((raw ?? '').trim().isEmpty) {
+    final jugador = miPerfilData?['jugador'];
+    if (jugador is Map) {
+      raw = jugador['foto_url']?.toString();
+    }
+  }
+
+  return _normalizeImageUrl(raw);
+}
+
+String? _normalizeImageUrl(String? raw) {
+  final v = (raw ?? '').trim();
+  if (v.isEmpty || v.toLowerCase() == 'null') return null;
+  if (v.startsWith('http://localhost')) {
+    return v.replaceFirst(
+      'http://localhost',
+      '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+    );
+  }
+  if (v.startsWith('https://localhost')) {
+    return v.replaceFirst(
+      'https://localhost',
+      '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+    );
+  }
+  if (v.startsWith('http://') || v.startsWith('https://')) return v;
+  if (v.startsWith('/')) return '${Environment.baseUrl}$v';
+  return '${Environment.baseUrl}/$v';
 }
 
 /// Card de info (Categoría / Equipo) con más énfasis.
