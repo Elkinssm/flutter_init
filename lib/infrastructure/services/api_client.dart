@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/api_logger.dart';
@@ -13,6 +15,7 @@ import 'package:go_router/go_router.dart';
 /// interceptor que añade Bearer token desde sesión; en 401 intenta refresh token y reintenta la petición.
 final apiClientProvider = Provider<Dio>((ref) {
   final session = ref.read(sessionServiceProvider);
+  Completer<String?>? refreshCompleter;
   final dio = Dio(
     BaseOptions(
       baseUrl: Environment.apiUrl,
@@ -37,41 +40,72 @@ final apiClientProvider = Provider<Dio>((ref) {
         if (error.response?.statusCode != 401) {
           return handler.next(error);
         }
+
         final opts = error.requestOptions;
+        if (opts.path.contains('/refresh-token')) {
+          await _clearAndGoLogin(ref, session);
+          return handler.next(error);
+        }
+
+        final wasRetried = opts.extra['__retried_after_refresh'] == true;
+        if (wasRetried) {
+          await _clearAndGoLogin(ref, session);
+          return handler.next(error);
+        }
+
         final currentToken = await session.getToken();
         if (currentToken == null || currentToken.isEmpty) {
           await _clearAndGoLogin(ref, session);
           return handler.next(error);
         }
+
         try {
-          final refreshDio = Dio(BaseOptions(baseUrl: Environment.apiUrl));
-          refreshDio.interceptors.add(
-            ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
-          );
-          final r = await refreshDio.post<Map<String, dynamic>>(
-            '/refresh-token',
-            options: Options(
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $currentToken',
-              },
-            ),
-          );
-          final data = r.data;
-          final newToken = data?['token']?.toString();
-          final expiresAt = data?['expires_at']?.toString();
-          if (newToken != null && newToken.isNotEmpty) {
-            await session.updateToken(newToken, expiresAt: expiresAt);
-            opts.headers['Authorization'] = 'Bearer $newToken';
+          if (refreshCompleter == null || refreshCompleter!.isCompleted) {
+            refreshCompleter = Completer<String?>();
+            () async {
+              try {
+                final refreshDio = Dio(BaseOptions(baseUrl: Environment.apiUrl));
+                refreshDio.interceptors.add(
+                  ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
+                );
+                final r = await refreshDio.post<Map<String, dynamic>>(
+                  '/refresh-token',
+                  options: Options(
+                    headers: {
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer $currentToken',
+                    },
+                  ),
+                );
+                final data = r.data;
+                final newToken = data?['token']?.toString();
+                final expiresAt = data?['expires_at']?.toString();
+                if (newToken != null && newToken.isNotEmpty) {
+                  await session.updateToken(newToken, expiresAt: expiresAt);
+                  refreshCompleter?.complete(newToken);
+                  return;
+                }
+                refreshCompleter?.complete(null);
+              } catch (_) {
+                refreshCompleter?.complete(null);
+              }
+            }();
+          }
+
+          final refreshedToken = await refreshCompleter!.future;
+          if (refreshedToken != null && refreshedToken.isNotEmpty) {
+            opts.headers['Authorization'] = 'Bearer $refreshedToken';
+            opts.extra['__retried_after_refresh'] = true;
             final response = await dio.fetch(opts);
             return handler.resolve(response);
           }
         } catch (_) {
-          // Refresh falló: cerrar sesión y redirigir
+          // refresh flow falló: cerrar sesión y redirigir
         }
+
         await _clearAndGoLogin(ref, session);
-        handler.next(error);
+        return handler.next(error);
       },
     ),
   );

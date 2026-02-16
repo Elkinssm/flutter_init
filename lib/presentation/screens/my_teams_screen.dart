@@ -1,6 +1,7 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/screens/selected_team_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -79,7 +80,7 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
         final categoriasAsync = ref.watch(coachCategoriasProvider);
         final dashboardAsync = ref.watch(coachDashboardProvider);
 
-        List<_TeamData> allTeams = _mockTeams;
+        List<_TeamData> allTeams = Environment.useBackend ? <_TeamData>[] : _mockTeams;
         if (Environment.useBackend) {
           final raw = categoriasAsync.valueOrNull?['categorias'] as List<dynamic>? ?? const [];
           if (raw.isNotEmpty) {
@@ -112,7 +113,10 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
 
         final totalPlayers = allTeams.fold<int>(0, (sum, t) => sum + t.players);
         final totalTeams = allTeams.length;
-        final totalEntrenos = _extractEntrenos(dashboardAsync.valueOrNull);
+        final totalEntrenos = _extractEntrenos(
+          dashboardAsync.valueOrNull,
+          useBackend: Environment.useBackend,
+        );
 
         if (Environment.useBackend &&
             categoriasAsync.isLoading &&
@@ -129,7 +133,17 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 42),
                 const SizedBox(height: 8),
-                Text('Error cargando equipos: ${categoriasAsync.error}'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    apiErrorMessage(
+                      categoriasAsync.error,
+                      defaultMessage:
+                          'No se pudieron cargar los equipos. Intenta de nuevo.',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () => ref.invalidate(coachCategoriasProvider),
@@ -546,7 +560,7 @@ List<String> _buildCategories(List<_TeamData> teams) {
   return ['Todos', ...cats];
 }
 
-int _extractEntrenos(Map<String, dynamic>? dashboard) {
+int _extractEntrenos(Map<String, dynamic>? dashboard, {required bool useBackend}) {
   final resumen = dashboard?['resumen'];
   if (resumen is Map) {
     final r = Map<String, dynamic>.from(resumen);
@@ -555,7 +569,7 @@ int _extractEntrenos(Map<String, dynamic>? dashboard) {
   }
   final proximos = dashboard?['proximos_entrenamientos'];
   if (proximos is List) return proximos.length;
-  return 4;
+  return useBackend ? 0 : 4;
 }
 
 String _fallbackAssetForId(int id) {

@@ -248,7 +248,10 @@ class AuthService {
 
   AuthResult _parseAuthResponse(Map<String, dynamic>? data) {
     final map = data ?? {};
-    final token = map['token']?.toString();
+    final token =
+        map['token']?.toString() ??
+        map['access_token']?.toString() ??
+        (map['data'] is Map ? (map['data'] as Map)['token']?.toString() : null);
     final expiresAtRaw = map['expires_at']?.toString();
     final userJson = (map['usuario'] as Map?)?.cast<String, dynamic>() ?? {};
     final user = AuthUser.fromJson(userJson);

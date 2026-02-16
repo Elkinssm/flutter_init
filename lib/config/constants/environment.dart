@@ -3,34 +3,17 @@
 /// INSTRUCCIONES DE USO:
 /// =====================
 ///
-/// 1. Para usar el BACKEND REAL:
-///    - Cambia useBackend a true
-///    - Configura backendHost según tu caso:
-///      * '10.0.2.2' para emulador Android
-///      * '192.168.x.x' para dispositivo físico (tu IP local)
-///      * '127.0.0.1' para pruebas en la misma máquina
-///
-/// 2. Para usar MODO LOCAL (sin backend):
-///    - Cambia useBackend a false
-///    - La app usará datos mock y no intentará conectar al servidor
-///
-/// EJEMPLO:
-///   static const bool useBackend = false; // Modo local
-///   static const bool useBackend = true;  // Modo backend
+/// Cambia solo [appProfile] para controlar modo local/prod y herramientas debug.
 class Environment {
   // ============================================
   // CONFIGURACIÓN: Cambia esto según necesites
   // ============================================
 
-  /// Modo de operación:
-  /// - true: Se conecta al backend real
-  /// - false: Usa datos locales/mock (sin conexión al backend)
-  static const bool useBackend = true; // Cambia a false para modo local
-
-  /// Selector de backend cuando `useBackend = true`.
-  /// - `BackendTarget.local`: emulador Android/local network
-  /// - `BackendTarget.prod`: API productiva (Render)
-  static const BackendTarget backendTarget = BackendTarget.prod;
+  /// Perfil actual de la app:
+  /// - demoLocal: sin backend, datos mock
+  /// - devBackendLocal: backend local + herramientas debug
+  /// - prodBackend: backend productivo (sin herramientas debug)
+  static const AppProfile appProfile = AppProfile.devBackendLocal;
 
   // Configuración local (emulador Android por defecto)
   static const String localBackendHost = '10.0.2.2';
@@ -42,17 +25,42 @@ class Environment {
   static const String prodBackendScheme = 'https';
   static const int prodBackendPort = 443;
 
+  /// Activa consumo de backend.
+  static bool get useBackend => appProfile != AppProfile.demoLocal;
+
+  /// Selector efectivo de backend.
+  static BackendTarget get backendTarget {
+    switch (appProfile) {
+      case AppProfile.devBackendLocal:
+        return BackendTarget.local;
+      case AppProfile.prodBackend:
+        return BackendTarget.prod;
+      case AppProfile.demoLocal:
+        return BackendTarget.local;
+    }
+  }
+
   // API compatible con el resto del proyecto
   static String get backendHost =>
       backendTarget == BackendTarget.prod ? prodBackendHost : localBackendHost;
   static String get backendScheme =>
-      backendTarget == BackendTarget.prod ? prodBackendScheme : localBackendScheme;
+      backendTarget == BackendTarget.prod
+          ? prodBackendScheme
+          : localBackendScheme;
   static int get backendPort =>
       backendTarget == BackendTarget.prod ? prodBackendPort : localBackendPort;
 
   /// Logs HTTP en consola (request/response/error) para depurar consumo de API.
-  /// Recomendado: true en desarrollo, false en producción.
-  static const bool enableHttpLogs = true;
+  static bool get enableHttpLogs => appProfile == AppProfile.devBackendLocal;
+
+  /// Switch manual (rápido) para mostrar el botón flotante de recarga forzada.
+  /// Recomendado:
+  /// - true: cuando pruebas local/mock
+  /// - false: para pruebas de usuario final / producción
+  static const bool forceReloadButtonEnabled = true;
+
+  /// Visibilidad efectiva del botón de recarga.
+  static bool get showForceReloadButton => forceReloadButtonEnabled;
 
   // URLs del backend
   static String get baseUrl => '$backendScheme://$backendHost:$backendPort';
@@ -91,5 +99,7 @@ class Environment {
   // REGISTRO — Cualquier email válido funciona en modo local.
   // El registro crea sesión automáticamente y redirige a player_screen.
 }
+
+enum AppProfile { demoLocal, devBackendLocal, prodBackend }
 
 enum BackendTarget { local, prod }

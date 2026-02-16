@@ -1,4 +1,5 @@
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/api_client.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
@@ -108,7 +109,7 @@ class CustomBottomAppbar extends ConsumerWidget {
               child: _CenterFab(),
             ),
           ),
-          if (kDebugMode)
+          if (kDebugMode && Environment.showForceReloadButton)
             Positioned(
               right: 8,
               top: 6,

@@ -58,13 +58,8 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _precacheImages();
       _checkProfileIncomplete();
     });
-  }
-
-  void _precacheImages() {
-    precacheImage(const AssetImage('assets/images/player.png'), context);
   }
 
   void _checkProfileIncomplete() {
@@ -79,10 +74,26 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
     }
   }
 
+  void _requireCompleteProfile({
+    required bool profileComplete,
+    required VoidCallback onAllowed,
+  }) {
+    if (profileComplete) {
+      onAllowed();
+      return;
+    }
+    if (!context.mounted) return;
+    CustomModal.showProfileIncomplete(
+      context: context,
+      onCompleteProfile: () => context.push('/new_player_screen'),
+      onSkip: () {},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileComplete = ref.watch(currentUserProfileCompleteProvider);
-    final initials = ref.watch(currentUserInitialsProvider);
+    final displayName = ref.watch(currentUserDisplayNameProvider).trim();
     final dashboardAsync = ref.watch(jugadorDashboardProvider);
     final dashboardValue = dashboardAsync.valueOrNull;
     String? jugadorName;
@@ -93,13 +104,11 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
       }
     }
     final dashboardData = dashboardValue;
-
-    if (!profileComplete) {
-      return _IncompleteProfileView(
-        initials: initials,
-        onCompleteProfile: () => context.push('/new_player_screen'),
-      );
-    }
+    final resolvedName = (jugadorName ?? '').trim().isNotEmpty
+        ? jugadorName!.trim()
+        : (displayName.isNotEmpty && displayName != 'Usuario'
+            ? displayName
+            : 'Jugador');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 100),
@@ -108,10 +117,19 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
         child: Column(
           children: [
             const SizedBox(height: 16),
+            if (!profileComplete)
+              _ProfileIncompleteBanner(
+                onCompleteProfile: () => context.push('/new_player_screen'),
+                onDismiss: () {
+                  ref.read(showProfileIncompleteModalProvider.notifier).state =
+                      false;
+                },
+              ),
+            if (!profileComplete) const SizedBox(height: 14),
 
             // ── Perfil del jugador ──
             _PlayerProfileCard(
-              name: jugadorName ?? 'David Ballesteros',
+              name: resolvedName,
             ),
 
             const SizedBox(height: 16),
@@ -122,20 +140,36 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                 Expanded(
                   child: _InfoCard(
                     icon: Icons.category_rounded,
-                    title: _dashboardCategoria(dashboardData) ?? '2012',
-                    subtitle: 'Categoría',
-                    actionLabel: 'Ver categoría',
-                    onTap: () => context.push('/category_screen'),
+                    title: profileComplete
+                        ? (_dashboardCategoria(dashboardData) ?? '--')
+                        : 'Completa perfil',
+                    subtitle: profileComplete
+                        ? 'Categoría'
+                        : 'Verás tu categoría asignada',
+                    actionLabel:
+                        profileComplete ? 'Ver categoría' : 'Completar perfil',
+                    onTap: () => _requireCompleteProfile(
+                      profileComplete: profileComplete,
+                      onAllowed: () => context.push('/category_screen'),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _InfoCard(
                     icon: Icons.bar_chart_rounded,
-                    title: _dashboardEquipo(dashboardData) ?? 'Los Tigres',
-                    subtitle: 'Mi equipo',
-                    actionLabel: 'Ver asistencia',
-                    onTap: () => context.push('/history_screen'),
+                    title: profileComplete
+                        ? (_dashboardEquipo(dashboardData) ?? '--')
+                        : 'Completa perfil',
+                    subtitle: profileComplete
+                        ? 'Mi equipo'
+                        : 'Verás tu equipo y asistencias',
+                    actionLabel:
+                        profileComplete ? 'Ver asistencia' : 'Completar perfil',
+                    onTap: () => _requireCompleteProfile(
+                      profileComplete: profileComplete,
+                      onAllowed: () => context.push('/history_screen'),
+                    ),
                   ),
                 ),
               ],
@@ -145,17 +179,135 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
 
             // ── Asistencia (tocable) ──
             _AttendanceCard(
-              onTap: () => context.push('/category_screen'),
+              isPreview: !profileComplete,
+              percentage: _dashboardAttendancePercent(dashboardData),
+              onTap: () => _requireCompleteProfile(
+                profileComplete: profileComplete,
+                onAllowed: () => context.push('/category_screen'),
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // ── Próximo Encuentro ──
-            const _NextMatchCard(),
+            _NextMatchCard(
+              isPreview: !profileComplete,
+              dashboardData: dashboardData,
+            ),
 
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileIncompleteBanner extends StatelessWidget {
+  const _ProfileIncompleteBanner({
+    required this.onCompleteProfile,
+    required this.onDismiss,
+  });
+
+  final VoidCallback onCompleteProfile;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color.fromRGBO(224, 214, 200, 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD94929).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.star_rounded,
+              color: Color(0xFFD94929),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Casi estas listo',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0B1926),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Completa tu perfil para desbloquear toda la experiencia.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: const Color(0xFF6B7280),
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: onCompleteProfile,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 2,
+                      vertical: 2,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Completar ahora',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFD94929),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: Color(0xFFD94929),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onDismiss,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            color: const Color(0xFF9CA3AF),
+            splashRadius: 18,
+            tooltip: 'Ocultar',
+          ),
+        ],
       ),
     );
   }
@@ -175,6 +327,37 @@ String? _dashboardEquipo(Map<String, dynamic>? d) {
   if (d == null) return null;
   final eq = d['equipo'] as Map<String, dynamic>?;
   return eq?['nombre']?.toString();
+}
+
+int? _dashboardAttendancePercent(Map<String, dynamic>? d) {
+  if (d == null) return null;
+  final asistencia = d['asistencia'];
+  if (asistencia is num) return asistencia.round();
+  if (asistencia is Map) {
+    final map = Map<String, dynamic>.from(asistencia);
+    final raw =
+        map['porcentaje'] ?? map['porcentaje_asistencia'] ?? map['asistencia_porcentaje'];
+    if (raw is num) return raw.round();
+    return int.tryParse(raw?.toString() ?? '');
+  }
+  final raw = d['porcentaje_asistencia'] ?? d['asistencia_porcentaje'];
+  if (raw is num) return raw.round();
+  return int.tryParse(raw?.toString() ?? '');
+}
+
+Map<String, String?> _dashboardNextMatch(Map<String, dynamic>? d) {
+  if (d == null) return {'evento': null, 'fecha': null, 'hora': null, 'lugar': null};
+  final raw = d['proximo_encuentro'] ?? d['proximo_partido'] ?? d['proximo_entrenamiento'];
+  if (raw is! Map) {
+    return {'evento': null, 'fecha': null, 'hora': null, 'lugar': null};
+  }
+  final m = Map<String, dynamic>.from(raw);
+  return {
+    'evento': (m['evento'] ?? m['titulo'] ?? m['nombre'] ?? m['competencia'])?.toString(),
+    'fecha': m['fecha']?.toString(),
+    'hora': (m['hora'] ?? m['hora_inicio'])?.toString(),
+    'lugar': (m['lugar'] ?? m['cancha'] ?? m['estadio'])?.toString(),
+  };
 }
 
 
@@ -229,9 +412,17 @@ class _PlayerProfileCard extends StatelessWidget {
               ],
             ),
             child: ClipOval(
-              child: Image.asset(
-                'assets/images/player.png',
-                fit: BoxFit.cover,
+              child: Container(
+                color: const Color.fromRGBO(214, 229, 239, 1),
+                alignment: Alignment.center,
+                child: Text(
+                  _initialsFromName(name),
+                  style: GoogleFonts.inter(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF22423A),
+                  ),
+                ),
               ),
             ),
           ),
@@ -267,6 +458,17 @@ class _PlayerProfileCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _initialsFromName(String name) {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return 'JG';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 }
 
@@ -390,11 +592,21 @@ class _InfoCard extends StatelessWidget {
 
 /// Card de asistencia modernizada y tocable.
 class _AttendanceCard extends StatelessWidget {
+  final bool isPreview;
+  final int? percentage;
   final VoidCallback? onTap;
-  const _AttendanceCard({this.onTap});
+  const _AttendanceCard({
+    this.isPreview = false,
+    this.percentage,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final pct = (percentage != null) ? percentage!.clamp(0, 100) : null;
+    final progress = (pct ?? 0) / 100;
+    final rightText = isPreview ? '---' : (pct != null ? '$pct%' : '--');
+
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
@@ -448,7 +660,7 @@ class _AttendanceCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicator(
-                        value: 0.90,
+                        value: isPreview ? 0.0 : progress,
                         minHeight: 8,
                         backgroundColor: Colors.grey.shade200,
                         valueColor: const AlwaysStoppedAnimation<Color>(
@@ -456,13 +668,23 @@ class _AttendanceCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (isPreview) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Completa tu perfil para ver tu porcentaje real.',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
               const SizedBox(width: 14),
               // Porcentaje
               Text(
-                '90%',
+                rightText,
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -485,10 +707,22 @@ class _AttendanceCard extends StatelessWidget {
 
 /// Tarjeta de Próximo Encuentro.
 class _NextMatchCard extends StatelessWidget {
-  const _NextMatchCard();
+  const _NextMatchCard({
+    this.isPreview = false,
+    this.dashboardData,
+  });
+
+  final bool isPreview;
+  final Map<String, dynamic>? dashboardData;
 
   @override
   Widget build(BuildContext context) {
+    final next = _dashboardNextMatch(dashboardData);
+    final evento = next['evento'] ?? (isPreview ? 'Disponible al completar perfil' : '--');
+    final fecha = next['fecha'] ?? (isPreview ? '--' : '--');
+    final hora = next['hora'] ?? (isPreview ? '--' : '--');
+    final lugar = next['lugar'] ?? (isPreview ? 'Completa perfil para desbloquear' : '--');
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -538,7 +772,7 @@ class _NextMatchCard extends StatelessWidget {
             icon: Icons.emoji_events_rounded,
             iconColor: const Color(0xFFD94929),
             label: 'EVENTO',
-            value: 'Partido de Liga',
+            value: evento,
           ),
           Divider(color: Colors.grey.shade100, height: 24),
           // Fecha y Hora
@@ -549,7 +783,7 @@ class _NextMatchCard extends StatelessWidget {
                   icon: Icons.calendar_month_rounded,
                   iconColor: const Color(0xFFD94929),
                   label: 'FECHA',
-                  value: 'Sáb, 14 Oct',
+                  value: fecha,
                 ),
               ),
               Expanded(
@@ -557,7 +791,7 @@ class _NextMatchCard extends StatelessWidget {
                   icon: Icons.access_time_rounded,
                   iconColor: const Color(0xFF0B1926),
                   label: 'HORA',
-                  value: '10:30 AM',
+                  value: hora,
                 ),
               ),
             ],
@@ -568,7 +802,7 @@ class _NextMatchCard extends StatelessWidget {
             icon: Icons.location_on_rounded,
             iconColor: const Color(0xFFD94929),
             label: 'UBICACIÓN',
-            value: 'Cancha Principal - Sede Norte',
+            value: lugar,
           ),
         ],
       ),

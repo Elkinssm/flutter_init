@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
 import 'package:coach_app/presentation/helpers/nav_loading.dart';
@@ -293,6 +294,26 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                         passwordConfirmation: password,
                                       );
                                       if (!mounted) return;
+                                      final hasToken =
+                                          auth.token != null &&
+                                          auth.token!.isNotEmpty;
+                                      if (Environment.useBackend && !hasToken) {
+                                        if (!context.mounted) return;
+                                        CustomModal.show(
+                                          context: context,
+                                          title: 'Registro completado',
+                                          message:
+                                              'Tu cuenta fue creada, pero el backend no devolvió token de sesión. Inicia sesión para continuar.',
+                                          type: ModalType.warning,
+                                          buttonText: 'Ir a login',
+                                          onButtonPressed: () {
+                                            Navigator.of(context).pop();
+                                            if (!context.mounted) return;
+                                            context.go('/login_screen');
+                                          },
+                                        );
+                                        return;
+                                      }
                                       if (auth.token != null &&
                                           auth.token!.isNotEmpty) {
                                         await ref
@@ -348,9 +369,8 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                             .state = true;
                                       }
                                       final destination =
-                                          !auth.user.profileComplete &&
-                                                  currentUserRole == 'player'
-                                              ? '/new_player_screen'
+                                          currentUserRole == 'coach'
+                                              ? '/coach_screen'
                                               : '/player_screen';
                                       if (!context.mounted) return;
                                       context.go(destination);

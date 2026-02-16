@@ -3,7 +3,12 @@ import 'dart:io';
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/infrastructure/services/mi_perfil_service.dart';
+import 'package:coach_app/infrastructure/services/public_api_service.dart';
 import 'package:coach_app/infrastructure/services/upload_api_service.dart';
+import 'package:coach_app/presentation/providers/auth_role_provider.dart';
+import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
+import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +46,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   List<Map<String, dynamic>> _posiciones = <Map<String, dynamic>>[];
 
   int? _equipoId;
+  String? _categoria;
   int? _posicionId;
   int? _dorsal;
   int? _alturaCm;
@@ -53,6 +59,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   static final _dorsales = List<int>.generate(99, (i) => i + 1);
   static final _alturasCm = List<int>.generate(151, (i) => i + 100);
   static final _pesosKg = List<double>.generate(191, (i) => (i + 10).toDouble());
+  bool get _isPlayerMode => ref.read(currentUserRoleProvider) == 'player';
 
   @override
   void initState() {
@@ -76,6 +83,26 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     if (!mounted) return;
     setState(() => _loadingMeta = true);
 
+    // Precargar datos de sesión para no pedir al usuario repetir información.
+    try {
+      final sessionUser = await ref.read(sessionServiceProvider).getSavedUser();
+      if (sessionUser != null) {
+        if (_emailCtrl.text.trim().isEmpty) {
+          _emailCtrl.text = sessionUser.email;
+        }
+        if (_nombreCtrl.text.trim().isEmpty &&
+            sessionUser.nombre.trim().isNotEmpty) {
+          _nombreCtrl.text = sessionUser.nombre.trim();
+        }
+        if (_apellidoCtrl.text.trim().isEmpty &&
+            sessionUser.apellido.trim().isNotEmpty) {
+          _apellidoCtrl.text = sessionUser.apellido.trim();
+        }
+      }
+    } catch (_) {
+      // Si falla lectura de sesión, continuamos con carga normal.
+    }
+
     if (!Environment.useBackend) {
       _equipos = [
         {'id': 1, 'nombre': 'Juveniles A', 'categoria': 'U17'},
@@ -88,16 +115,30 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         {'id': 4, 'nombre': 'Delantero', 'codigo': 'DL'},
       ];
       _equipoId ??= (_equipos.isNotEmpty ? _equipos.first['id'] as int : null);
+      _categoria = _categoriaByEquipoId(_equipoId);
       if (mounted) setState(() => _loadingMeta = false);
       return;
     }
 
     try {
-      final coachApi = ref.read(coachApiServiceProvider);
-      final categoriasData = await coachApi.getCategorias();
-      final posicionesData = await coachApi.getPosiciones();
+      Map<String, dynamic>? categoriasData;
+      Map<String, dynamic>? posicionesData;
+      if (_isPlayerMode) {
+        final publicApi = ref.read(publicApiServiceProvider);
+        categoriasData = await publicApi.getEscuelas();
+        posicionesData = await publicApi.getPosiciones();
+      } else {
+        final coachApi = ref.read(coachApiServiceProvider);
+        categoriasData = await coachApi.getCategorias();
+        posicionesData = await coachApi.getPosiciones();
+      }
 
-      final categoriasRaw = categoriasData?['categorias'] as List<dynamic>? ?? const [];
+      final categoriasRaw = _isPlayerMode
+          ? _extractListFromPayload(
+              categoriasData,
+              preferredKeys: const ['escuelas', 'data'],
+            )
+          : (categoriasData?['categorias'] as List<dynamic>? ?? const []);
       _equipos = categoriasRaw
           .whereType<Map>()
           .map((e) => Map<String, dynamic>.from(e))
@@ -116,11 +157,14 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       if (!currentExists) {
         _equipoId = _equipos.isNotEmpty ? _equipos.first['id'] as int : null;
       }
+      _categoria = _categoriaByEquipoId(_equipoId);
     } catch (_) {
       if (!mounted) return;
       CustomModal.showNetworkError(
         context,
-        detail: 'No fue posible cargar equipos/posiciones.',
+        detail: _isPlayerMode
+            ? 'No fue posible cargar escuelas/posiciones.'
+            : 'No fue posible cargar equipos/posiciones.',
       );
     } finally {
       if (mounted) setState(() => _loadingMeta = false);
@@ -139,6 +183,29 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     final dataNode = data['data'];
     if (dataNode is List) return dataNode;
     return const [];
+  }
+
+  String? _categoriaByEquipoId(int? id) {
+    if (id == null) return null;
+    for (final e in _equipos) {
+      if (e['id'] == id) return e['categoria']?.toString();
+    }
+    return null;
+  }
+
+  List<String> _categoriasDisponibles() {
+    final set = _equipos
+        .map((e) => (e['categoria']?.toString() ?? '').trim())
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList();
+    set.sort();
+    return set;
+  }
+
+  List<Map<String, dynamic>> _equiposFiltrados() {
+    if ((_categoria ?? '').isEmpty) return _equipos;
+    return _equipos.where((e) => e['categoria']?.toString() == _categoria).toList();
   }
 
   Future<void> _pickBirthDate() async {
@@ -225,10 +292,25 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
 
     final formOk = _formKey.currentState?.validate() ?? false;
     final equipoOk = _equipoId != null;
+    final posicionOk = !_isPlayerMode || _posicionId != null;
+    final fechaOk = !_isPlayerMode || _fechaCtrl.text.trim().isNotEmpty;
     setState(() {
-      _equipoError = equipoOk ? null : 'Selecciona un equipo';
+      _equipoError = equipoOk
+          ? null
+          : (_isPlayerMode ? 'Selecciona una escuela' : 'Selecciona un equipo');
     });
-    if (!formOk || !equipoOk) return;
+    if (!formOk || !equipoOk || !posicionOk || !fechaOk) {
+      if (_isPlayerMode && mounted) {
+        CustomModal.show(
+          context: context,
+          title: 'Faltan datos',
+          message: 'Completa fecha de nacimiento y posición para continuar.',
+          type: ModalType.warning,
+          buttonText: 'Entendido',
+        );
+      }
+      return;
+    }
 
     if (!Environment.useBackend) {
       if (!mounted) return;
@@ -249,17 +331,80 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     setState(() => _saving = true);
     try {
       final coachApi = ref.read(coachApiServiceProvider);
+      final miPerfilApi = ref.read(miPerfilServiceProvider);
       final uploadApi = ref.read(uploadApiServiceProvider);
 
       String? fotoUrl;
+      MultipartFile? fotoFile;
       if (_selectedImage != null) {
         final fileName = _selectedImage!.path.split(Platform.pathSeparator).last;
-        final uploadRes = await uploadApi.uploadFoto(
-          await MultipartFile.fromFile(_selectedImage!.path, filename: fileName),
+        fotoFile = await MultipartFile.fromFile(_selectedImage!.path, filename: fileName);
+        if (!_isPlayerMode) {
+          final uploadRes = await uploadApi.uploadFoto(fotoFile);
+          fotoUrl = uploadRes['url']?.toString() ??
+              uploadRes['foto_url']?.toString() ??
+              uploadRes['path']?.toString();
+        }
+      }
+
+      if (_isPlayerMode) {
+        final body = <String, dynamic>{
+          'nombre': _nombreCtrl.text.trim(),
+          'apellido': _apellidoCtrl.text.trim(),
+          'escuela_id': _equipoId,
+          'posicion_id': _posicionId ?? (_posiciones.isNotEmpty ? _posiciones.first['id'] : null),
+          'fecha_nacimiento': _fechaCtrl.text.trim(),
+          'anio_vinculacion': DateTime.now().year,
+          'lugar_nacimiento': 'No definido',
+          'ciudad_residencia': 'No definido',
+          'telefono_contacto': _telefonoCtrl.text.trim().isEmpty
+              ? '0000000000'
+              : _telefonoCtrl.text.trim(),
+          'acudiente_nombre_1': 'No definido',
+          'acudiente_telefono': _telefonoCtrl.text.trim().isEmpty
+              ? '0000000000'
+              : _telefonoCtrl.text.trim(),
+          'pie_habil': _pieHabil ?? 'Derecha',
+        };
+        if (_dorsal != null) body['dorsal_actual'] = _dorsal;
+        if (_alturaCm != null) body['altura_cm'] = _alturaCm;
+        if (_pesoKg != null) body['peso_kg'] = _pesoKg;
+        if (_saludCtrl.text.trim().isNotEmpty) {
+          body['estado_salud'] = _saludCtrl.text.trim();
+        }
+
+        final res = await miPerfilApi.putMiPerfilCompletar(body);
+        if (fotoFile != null) {
+          await miPerfilApi.putMiPerfilFoto(fotoFile);
+        }
+        ref.invalidate(miPerfilProvider);
+        ref.read(currentUserProfileCompleteProvider.notifier).state = true;
+        final fullName =
+            '${_nombreCtrl.text.trim()} ${_apellidoCtrl.text.trim()}'.trim();
+        if (fullName.isNotEmpty) {
+          ref.read(currentUserDisplayNameProvider.notifier).state = fullName;
+          final parts = fullName.split(RegExp(r'\s+'));
+          final initials = parts.length > 1
+              ? '${parts.first[0]}${parts.last[0]}'
+              : parts.first[0];
+          ref.read(currentUserInitialsProvider.notifier).state = initials.toUpperCase();
+        }
+
+        final message = res['message']?.toString() ?? 'Perfil completado correctamente.';
+        if (!mounted) return;
+        CustomModal.show(
+          context: context,
+          title: 'Perfil completado',
+          message: message,
+          type: ModalType.success,
+          buttonText: 'Aceptar',
+          onButtonPressed: () {
+            Navigator.of(context).pop();
+            if (!context.mounted) return;
+            context.go('/player_screen');
+          },
         );
-        fotoUrl = uploadRes['url']?.toString() ??
-            uploadRes['foto_url']?.toString() ??
-            uploadRes['path']?.toString();
+        return;
       }
 
       final body = <String, dynamic>{
@@ -321,13 +466,20 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isPlayerMode = ref.watch(currentUserRoleProvider) == 'player';
     return SafeArea(
       top: false,
       child: Scaffold(
         backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
         appBar: CustomAppbar(
-          title: 'Añadir jugador',
-          onPressed: () => context.pop(),
+          title: isPlayerMode ? 'Completar perfil' : 'Añadir jugador',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(isPlayerMode ? '/player_screen' : '/coach_screen');
+            }
+          },
         ),
         bottomNavigationBar: const CustomBottomAppbar(),
         floatingActionButton: const CustomFloatingActionButton(),
@@ -344,6 +496,9 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
                 saludCtrl: _saludCtrl,
                 selectedImage: _selectedImage,
                 equipos: _equipos,
+                categorias: _categoriasDisponibles(),
+                categoria: _categoria,
+                equiposFiltrados: _equiposFiltrados(),
                 posiciones: _posiciones,
                 equipoId: _equipoId,
                 lockEquipo: widget.equipoId != null,
@@ -358,6 +513,16 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
                 onPickPhoto: _showPhotoOptions,
                 onEquipoChanged: (v) => setState(() {
                   _equipoId = v;
+                  _categoria = _categoriaByEquipoId(v) ?? _categoria;
+                  _equipoError = null;
+                }),
+                onCategoriaChanged: (v) => setState(() {
+                  _categoria = v;
+                  final filtrados = _equiposFiltrados();
+                  final exists = filtrados.any((e) => e['id'] == _equipoId);
+                  _equipoId = exists
+                      ? _equipoId
+                      : (filtrados.isNotEmpty ? filtrados.first['id'] as int : null);
                   _equipoError = null;
                 }),
                 onPosicionChanged: (v) => setState(() => _posicionId = v),
@@ -366,6 +531,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
                 onPesoChanged: (v) => setState(() => _pesoKg = v),
                 onPieChanged: (v) => setState(() => _pieHabil = v),
                 onSubmit: _submit,
+                isPlayerMode: isPlayerMode,
               ),
       ),
     );
@@ -383,6 +549,9 @@ class _NewPlayerView extends StatelessWidget {
     required this.saludCtrl,
     required this.selectedImage,
     required this.equipos,
+    required this.categorias,
+    required this.categoria,
+    required this.equiposFiltrados,
     required this.posiciones,
     required this.equipoId,
     required this.lockEquipo,
@@ -396,12 +565,14 @@ class _NewPlayerView extends StatelessWidget {
     required this.onPickDate,
     required this.onPickPhoto,
     required this.onEquipoChanged,
+    required this.onCategoriaChanged,
     required this.onPosicionChanged,
     required this.onDorsalChanged,
     required this.onAlturaChanged,
     required this.onPesoChanged,
     required this.onPieChanged,
     required this.onSubmit,
+    required this.isPlayerMode,
   });
 
   final GlobalKey<FormState> formKey;
@@ -414,6 +585,9 @@ class _NewPlayerView extends StatelessWidget {
 
   final File? selectedImage;
   final List<Map<String, dynamic>> equipos;
+  final List<String> categorias;
+  final String? categoria;
+  final List<Map<String, dynamic>> equiposFiltrados;
   final List<Map<String, dynamic>> posiciones;
   final int? equipoId;
   final bool lockEquipo;
@@ -428,12 +602,14 @@ class _NewPlayerView extends StatelessWidget {
   final VoidCallback onPickDate;
   final VoidCallback onPickPhoto;
   final ValueChanged<int?> onEquipoChanged;
+  final ValueChanged<String?> onCategoriaChanged;
   final ValueChanged<int?> onPosicionChanged;
   final ValueChanged<int?> onDorsalChanged;
   final ValueChanged<int?> onAlturaChanged;
   final ValueChanged<double?> onPesoChanged;
   final ValueChanged<String?> onPieChanged;
   final VoidCallback onSubmit;
+  final bool isPlayerMode;
 
   @override
   Widget build(BuildContext context) {
@@ -467,15 +643,34 @@ class _NewPlayerView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              const _FieldLabel(text: 'Equipo'),
+              _FieldLabel(text: isPlayerMode ? 'Escuela' : 'Equipo'),
+              if (!isPlayerMode && !lockEquipo) ...[
+                const SizedBox(height: 8),
+                const _FieldLabel(text: 'Categoría'),
+                _SelectField<String>(
+                  value: categoria,
+                  hint: 'Selecciona categoría',
+                  items: categorias
+                      .map(
+                        (c) => DropdownMenuItem<String>(
+                          value: c,
+                          child: Text(c),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: categorias.isEmpty ? null : onCategoriaChanged,
+                ),
+                const SizedBox(height: 12),
+                const _FieldLabel(text: 'Equipo'),
+              ],
               lockEquipo
                   ? _LockedField(
                       text: _equipoLabelById(equipos, equipoId) ?? 'Equipo asignado',
                     )
                   : _SelectField<int>(
                       value: equipoId,
-                      hint: 'Selecciona equipo',
-                      items: equipos
+                      hint: isPlayerMode ? 'Selecciona escuela' : 'Selecciona equipo',
+                      items: (isPlayerMode ? equipos : equiposFiltrados)
                           .map((e) => DropdownMenuItem<int>(
                                 value: e['id'] as int,
                                 child: Text(_equipoLabel(e)),
@@ -576,6 +771,7 @@ class _NewPlayerView extends StatelessWidget {
                 controller: emailCtrl,
                 hintText: 'jugador@email.com',
                 keyboardType: TextInputType.emailAddress,
+                readOnly: isPlayerMode,
                 validator: (v) {
                   final t = (v ?? '').trim();
                   if (t.isEmpty) return null;
@@ -641,7 +837,9 @@ class _NewPlayerView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OnboardingNextButton(
-                  text: saving ? 'Guardando...' : 'Crear Jugador',
+                  text: saving
+                      ? 'Guardando...'
+                      : (isPlayerMode ? 'Completar perfil' : 'Crear Jugador'),
                   isEnabled: !saving,
                   action: saving ? null : onSubmit,
                 ),
@@ -710,6 +908,7 @@ class _InputField extends StatelessWidget {
     this.keyboardType,
     this.validator,
     this.maxLines = 1,
+    this.readOnly = false,
   });
 
   final TextEditingController controller;
@@ -717,6 +916,7 @@ class _InputField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final int maxLines;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -725,11 +925,15 @@ class _InputField extends StatelessWidget {
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
+      readOnly: readOnly,
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: readOnly ? const Color.fromRGBO(245, 245, 245, 1) : Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        suffixIcon: readOnly
+            ? const Icon(Icons.lock_outline, size: 18, color: Colors.grey)
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

@@ -1,10 +1,10 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -85,7 +85,11 @@ class _CoachView extends ConsumerWidget {
     }
 
     if (dashboardAsync.hasError) {
-      final errorText = _friendlyError(dashboardAsync.error);
+      final errorText = apiErrorMessage(
+        dashboardAsync.error,
+        defaultMessage: 'No se pudo cargar el dashboard. Intenta nuevamente.',
+        forbiddenMessage: 'No tienes permisos para acceder a esta vista.',
+      );
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -313,27 +317,6 @@ class _CoachView extends ConsumerWidget {
     final sign = diff >= 0 ? '+' : '';
     final color = diff >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
     return _TrendData(text: '$sign${diff.toStringAsFixed(1)}%', color: color);
-  }
-
-  static String _friendlyError(Object? error) {
-    if (error is DioException) {
-      final code = error.response?.statusCode;
-      final data = error.response?.data;
-      if (code == 403) {
-        if (data is Map && data['message'] != null) {
-          return data['message'].toString();
-        }
-        return 'No tienes permisos para acceder a esta vista.';
-      }
-      if (data is Map && data['message'] != null) {
-        return data['message'].toString();
-      }
-      if (code != null) {
-        return 'No se pudo cargar el dashboard (HTTP $code).';
-      }
-      return 'No se pudo cargar el dashboard. Revisa tu conexión.';
-    }
-    return 'No se pudo cargar el dashboard. Intenta nuevamente.';
   }
 
   Future<void> _showCategoryPicker(BuildContext context, WidgetRef ref) async {

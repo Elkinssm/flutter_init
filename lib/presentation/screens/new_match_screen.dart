@@ -1,5 +1,6 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,10 +44,13 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
   final _rivalController = TextEditingController();
   final _lugarController = TextEditingController();
   final _competenciaController = TextEditingController();
+  int? _selectedEquipoId;
+  String? _selectedCategoria;
   String? _selectedTipoPartido;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _saving = false;
+  bool _initializedSelection = false;
 
   @override
   void dispose() {
@@ -116,6 +120,17 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
 
   @override
   Widget build(BuildContext context) {
+    final categoriasAsync = ref.watch(coachCategoriasProvider);
+    final equipos = _buildEquipoOptions(categoriasAsync.valueOrNull);
+    final categorias = _buildCategorias(equipos);
+    _syncInitialSelection(equipos);
+
+    final equiposFiltrados = _selectedCategoria == null
+        ? equipos
+        : equipos.where((e) => e.categoria == _selectedCategoria).toList();
+    final hasSingleCategoria = categorias.length == 1;
+    final hasSingleEquipo = equiposFiltrados.length == 1;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
@@ -139,6 +154,80 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
             ),
           ),
           const SizedBox(height: 24),
+
+          if (Environment.useBackend) ...[
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromRGBO(0, 0, 0, 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildLabel('CATEGORÍA'),
+                  const SizedBox(height: 8),
+                  hasSingleCategoria
+                      ? _buildLockedSelector(
+                          text: categorias.first,
+                          icon: Icons.category_outlined,
+                        )
+                      : _buildSimpleDropdown<String>(
+                          value: _selectedCategoria,
+                          hint: 'Selecciona categoría',
+                          items: categorias,
+                          icon: Icons.category_outlined,
+                          itemLabel: (v) => v,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCategoria = value;
+                              final equiposCat = equipos
+                                  .where((e) => e.categoria == value)
+                                  .toList();
+                              _selectedEquipoId =
+                                  equiposCat.isNotEmpty ? equiposCat.first.id : null;
+                            });
+                          },
+                        ),
+                  const SizedBox(height: 20),
+                  _buildLabel('EQUIPO'),
+                  const SizedBox(height: 8),
+                  if (categoriasAsync.isLoading && categoriasAsync.valueOrNull == null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else
+                    hasSingleEquipo
+                        ? _buildLockedSelector(
+                            text: equiposFiltrados.first.nombre,
+                            icon: Icons.shield_outlined,
+                          )
+                        : _buildSimpleDropdown<_EquipoOption>(
+                            value: _findEquipoById(equiposFiltrados, _selectedEquipoId),
+                            hint: 'Selecciona equipo',
+                            items: equiposFiltrados,
+                            icon: Icons.shield_outlined,
+                            itemLabel: (e) => e.nombre,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedEquipoId = value?.id;
+                                _selectedCategoria = value?.categoria;
+                              });
+                            },
+                          ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Tarjeta principal de información
           Container(
@@ -292,11 +381,13 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
   Future<void> _submit() async {
     FocusManager.instance.primaryFocus?.unfocus();
 
-    if (widget.equipoId == null) {
+    final equipoId = _selectedEquipoId ?? widget.equipoId;
+
+    if (equipoId == null) {
       CustomModal.show(
         context: context,
         title: 'Falta equipo',
-        message: 'Debes entrar desde un equipo para crear el partido.',
+        message: 'Selecciona una categoría y un equipo para crear el partido.',
         type: ModalType.warning,
       );
       return;
@@ -322,7 +413,7 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     }
 
     final body = <String, dynamic>{
-      'equipo_id': widget.equipoId,
+      'equipo_id': equipoId,
       'rival_nombre': _rivalController.text.trim(),
       'es_local': _selectedTipoPartido == 'Local / Casa',
       'fecha': fecha,
@@ -351,7 +442,7 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     try {
       final res = await ref.read(coachApiServiceProvider).postPartido(body);
       ref.invalidate(coachPartidosProvider);
-      ref.invalidate(coachPartidosByEquipoProvider(widget.equipoId!));
+      ref.invalidate(coachPartidosByEquipoProvider(equipoId));
 
       if (!mounted) return;
       CustomModal.show(
@@ -369,12 +460,76 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
       CustomModal.show(
         context: context,
         title: 'No se pudo crear',
-        message: '$e',
+        message: apiErrorMessage(
+          e,
+          defaultMessage: 'No fue posible crear el partido. Intenta de nuevo.',
+        ),
         type: ModalType.error,
       );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  List<_EquipoOption> _buildEquipoOptions(Map<String, dynamic>? data) {
+    final raw = (data?['categorias'] as List<dynamic>?) ?? const [];
+    return raw
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .map(
+          (m) => _EquipoOption(
+            id: (m['id'] as num?)?.toInt() ?? 0,
+            nombre: m['nombre']?.toString() ?? 'Equipo',
+            categoria: m['categoria']?.toString() ?? 'Sin categoría',
+          ),
+        )
+        .where((e) => e.id > 0)
+        .toList();
+  }
+
+  List<String> _buildCategorias(List<_EquipoOption> equipos) {
+    final set = equipos.map((e) => e.categoria).toSet().toList();
+    set.sort();
+    return set;
+  }
+
+  _EquipoOption? _findEquipoById(List<_EquipoOption> equipos, int? id) {
+    if (id == null) return null;
+    for (final e in equipos) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
+  void _syncInitialSelection(List<_EquipoOption> equipos) {
+    if (_initializedSelection) return;
+
+    if (equipos.isEmpty) {
+      if (widget.equipoId != null && _selectedEquipoId == null) {
+        _selectedEquipoId = widget.equipoId;
+      }
+      return;
+    }
+
+    _EquipoOption? base;
+    if (widget.equipoId != null) {
+      for (final e in equipos) {
+        if (e.id == widget.equipoId) {
+          base = e;
+          break;
+        }
+      }
+    }
+    base ??= equipos.first;
+    _initializedSelection = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _selectedEquipoId = base?.id;
+        _selectedCategoria = base?.categoria;
+      });
+    });
   }
 
   Widget _buildLabel(String text) {
@@ -491,6 +646,102 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     );
   }
 
+  Widget _buildSimpleDropdown<T>({
+    required T? value,
+    required String hint,
+    required List<T> items,
+    required IconData icon,
+    required String Function(T) itemLabel,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            child: Icon(icon, size: 24, color: const Color(0xFFD94929)),
+          ),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<T>(
+                value: value,
+                hint: Text(
+                  hint,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+                isExpanded: true,
+                icon: const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(
+                    Icons.unfold_more_rounded,
+                    color: Color(0xFF6B7280),
+                    size: 24,
+                  ),
+                ),
+                items: items
+                    .map(
+                      (item) => DropdownMenuItem<T>(
+                        value: item,
+                        child: Text(
+                          itemLabel(item),
+                          style: GoogleFonts.inter(fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedSelector({
+    required String text,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            child: Icon(icon, size: 24, color: const Color(0xFFD94929)),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: const Color(0xFF0B1926),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Icon(Icons.lock_outline, size: 18, color: Color(0xFF9CA3AF)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDateTimeField({
     required String value,
     required IconData icon,
@@ -528,4 +779,16 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
       ),
     );
   }
+}
+
+class _EquipoOption {
+  final int id;
+  final String nombre;
+  final String categoria;
+
+  const _EquipoOption({
+    required this.id,
+    required this.nombre,
+    required this.categoria,
+  });
 }

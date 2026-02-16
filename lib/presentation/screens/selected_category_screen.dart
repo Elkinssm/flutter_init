@@ -1,6 +1,7 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/providers/player_photo_overrides_provider.dart';
 import 'package:coach_app/presentation/screens/player_status_screen.dart';
@@ -65,7 +66,13 @@ class _SelectedCategoryView extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${jugadoresAsync.error}',
+                apiErrorMessage(
+                  jugadoresAsync.error,
+                  defaultMessage:
+                      'No se pudo cargar la categoría. Intenta de nuevo.',
+                  forbiddenMessage:
+                      'No tienes permisos para ver esta categoría.',
+                ),
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54),
               ),

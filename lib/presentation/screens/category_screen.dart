@@ -2,6 +2,7 @@ import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/providers/auth_role_provider.dart';
 import 'package:coach_app/presentation/screens/selected_category_screen.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -107,6 +108,19 @@ class _CategoryViewState extends ConsumerState<_CategoryView> {
               'No se pudieron cargar las categorías',
               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                apiErrorMessage(
+                  async.error,
+                  defaultMessage:
+                      'Intenta nuevamente en unos segundos.',
+                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 24),
             TextButton.icon(
