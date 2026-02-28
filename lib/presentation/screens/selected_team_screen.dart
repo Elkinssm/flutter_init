@@ -1,7 +1,6 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/presentation/helpers/api_error_message.dart';
-import 'package:coach_app/presentation/helpers/hepler_aligment.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/selected_buttons_provider.dart';
 import 'package:coach_app/presentation/screens/player_status_screen.dart';
@@ -75,7 +74,7 @@ class _SelectedTeamView extends ConsumerWidget {
         content = _TeamOverviewSection(equipoId: equipoId);
         break;
       case 'Alineación':
-        content = Expanded(child: HeplerAligment());
+        content = const _LineupComingSoonSection();
         break;
       case 'Partidos':
         content = _PartidosSection(equipoId: equipoId);
@@ -102,6 +101,55 @@ class _SelectedTeamView extends ConsumerWidget {
             content,
             const SizedBox(height: 80),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LineupComingSoonSection extends ConsumerWidget {
+  const _LineupComingSoonSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Expanded(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.construction_rounded,
+                size: 54,
+                color: Color(0xFFD94929),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Alineación en construcción',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Estamos ajustando esta sección para conectar la alineación real del equipo.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(selectedMenuProvider.notifier).state = 'Inicio';
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD94929),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                child: const Text('Volver a Inicio'),
+              ),
+            ],
+          ),
         ),
       ),
     );

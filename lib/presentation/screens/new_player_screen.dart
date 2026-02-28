@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
 import 'package:coach_app/infrastructure/services/mi_perfil_service.dart';
 import 'package:coach_app/infrastructure/services/public_api_service.dart';
 import 'package:coach_app/infrastructure/services/upload_api_service.dart';
+import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/providers/auth_role_provider.dart';
+import 'package:coach_app/presentation/providers/player_photo_overrides_provider.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/providers/session_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -46,6 +49,7 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   List<Map<String, dynamic>> _posiciones = <Map<String, dynamic>>[];
 
   int? _equipoId;
+  int? _currentJugadorId;
   String? _categoria;
   int? _posicionId;
   int? _dorsal;
@@ -258,6 +262,10 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     final equipoActual = payload['equipo_actual'] is Map
         ? Map<String, dynamic>.from(payload['equipo_actual'])
         : <String, dynamic>{};
+    final jugadorIdRaw = jugador['id'];
+    _currentJugadorId = jugadorIdRaw is int
+        ? jugadorIdRaw
+        : int.tryParse(jugadorIdRaw?.toString() ?? '');
 
     final nombre = (usuario['nombre'] ?? jugador['nombre'] ?? '').toString().trim();
     final apellido = (usuario['apellido'] ?? jugador['apellido'] ?? '').toString().trim();
@@ -326,6 +334,38 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     } else if (categoriaRoot.isNotEmpty) {
       _categoria = categoriaRoot;
     }
+
+    // Normalizar valores heredados del backend para que encajen con el selector UI.
+    _pieHabil = _normalizePieHabil(_pieHabil);
+  }
+
+  String? _normalizePieHabil(String? raw) {
+    final v = (raw ?? '').trim().toLowerCase();
+    if (v.isEmpty) return null;
+    if (v == 'derecha' || v == 'diestro') return 'Derecha';
+    if (v == 'izquierda' || v == 'zurdo') return 'Izquierda';
+    if (v == 'ambas' || v == 'ambidiestro') return 'Ambas';
+    return null;
+  }
+
+  String? _normalizePhotoUrl(String? raw) {
+    final v = (raw ?? '').trim();
+    if (v.isEmpty || v.toLowerCase() == 'null') return null;
+    if (v.startsWith('http://localhost')) {
+      return v.replaceFirst(
+        'http://localhost',
+        '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+      );
+    }
+    if (v.startsWith('https://localhost')) {
+      return v.replaceFirst(
+        'https://localhost',
+        '${Environment.backendScheme}://${Environment.backendHost}:${Environment.backendPort}',
+      );
+    }
+    if (v.startsWith('http://') || v.startsWith('https://')) return v;
+    if (v.startsWith('/')) return '${Environment.baseUrl}$v';
+    return '${Environment.baseUrl}/$v';
   }
 
   List<String> _categoriasDisponibles() {
@@ -486,23 +526,19 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       }
 
       if (_isPlayerMode) {
+        final isAlreadyComplete = ref.read(currentUserProfileCompleteProvider);
         final body = <String, dynamic>{
           'nombre': _nombreCtrl.text.trim(),
           'apellido': _apellidoCtrl.text.trim(),
           'equipo_id': _equipoId,
-          'posicion_id': _posicionId ?? (_posiciones.isNotEmpty ? _posiciones.first['id'] : null),
+          'posicion_id':
+              _posicionId ??
+              (_posiciones.isNotEmpty ? _posiciones.first['id'] : null),
           'fecha_nacimiento': _fechaCtrl.text.trim(),
-          'anio_vinculacion': DateTime.now().year,
-          'lugar_nacimiento': 'No definido',
-          'ciudad_residencia': 'No definido',
+          'pie_habil': _pieHabil ?? 'Derecha',
           'telefono_contacto': _telefonoCtrl.text.trim().isEmpty
               ? '0000000000'
               : _telefonoCtrl.text.trim(),
-          'acudiente_nombre_1': 'No definido',
-          'acudiente_telefono': _telefonoCtrl.text.trim().isEmpty
-              ? '0000000000'
-              : _telefonoCtrl.text.trim(),
-          'pie_habil': _pieHabil ?? 'Derecha',
         };
         if (_dorsal != null) body['dorsal_actual'] = _dorsal;
         if (_alturaCm != null) body['altura_cm'] = _alturaCm;
@@ -510,13 +546,52 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         if (_saludCtrl.text.trim().isNotEmpty) {
           body['estado_salud'] = _saludCtrl.text.trim();
         }
+        if (_emailCtrl.text.trim().isNotEmpty) {
+          body['email'] = _emailCtrl.text.trim();
+        }
 
-        final res = await miPerfilApi.putMiPerfilCompletar(body);
+        final res = isAlreadyComplete
+            ? await miPerfilApi.putMiPerfil(body)
+            : await miPerfilApi.putMiPerfilCompletar({
+                ...body,
+                'anio_vinculacion': DateTime.now().year,
+                'lugar_nacimiento': 'No definido',
+                'ciudad_residencia': 'No definido',
+                'acudiente_nombre_1': 'No definido',
+                'acudiente_telefono': _telefonoCtrl.text.trim().isEmpty
+                    ? '0000000000'
+                    : _telefonoCtrl.text.trim(),
+              });
+        final jugadorRes = res['jugador'] is Map
+            ? Map<String, dynamic>.from(res['jugador'])
+            : <String, dynamic>{};
+        final jugadorIdRaw = jugadorRes['id'];
+        final jugadorIdFromRes = jugadorIdRaw is int
+            ? jugadorIdRaw
+            : int.tryParse(jugadorIdRaw?.toString() ?? '');
+        if (jugadorIdFromRes != null) {
+          _currentJugadorId = jugadorIdFromRes;
+        }
         if (fotoFile != null) {
-          await miPerfilApi.putMiPerfilFoto(fotoFile);
+          final fotoRes = await miPerfilApi.putMiPerfilFoto(fotoFile);
+          final rawFoto = fotoRes['foto_url']?.toString() ??
+              fotoRes['url']?.toString() ??
+              fotoRes['path']?.toString();
+          final normalizedFoto = _normalizePhotoUrl(rawFoto);
+          final jugadorId = _currentJugadorId;
+          if (normalizedFoto != null && jugadorId != null) {
+            ref.read(playerPhotoOverridesProvider.notifier).update((state) {
+              final copy = Map<int, String>.from(state);
+              copy[jugadorId] = normalizedFoto;
+              return copy;
+            });
+          }
         }
         ref.invalidate(miPerfilProvider);
         ref.invalidate(jugadorDashboardProvider);
+        if (_equipoId != null) {
+          ref.invalidate(jugadorCategoriaByIdProvider(_equipoId!));
+        }
         ref.read(currentUserProfileCompleteProvider.notifier).state = true;
         final fullName =
             '${_nombreCtrl.text.trim()} ${_apellidoCtrl.text.trim()}'.trim();
@@ -591,10 +666,15 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      final userMessage = apiErrorMessage(
+        e,
+        defaultMessage: 'No fue posible guardar los cambios. Intenta de nuevo.',
+        forbiddenMessage: 'No tienes permisos para actualizar este perfil.',
+      );
       CustomModal.show(
         context: context,
-        title: 'No se pudo crear',
-        message: '$e',
+        title: _isPlayerMode ? 'No se pudo actualizar perfil' : 'No se pudo crear',
+        message: userMessage,
         type: ModalType.error,
         buttonText: 'Aceptar',
       );
@@ -1149,8 +1229,11 @@ class _SelectField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final values = items.map((i) => i.value).toList();
+    final safeValue = values.contains(value) ? value : null;
+
     return DropdownButtonFormField<T>(
-      value: value,
+      value: safeValue,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,

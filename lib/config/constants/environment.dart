@@ -1,10 +1,11 @@
 class Environment {
-  static const bool isProd = false; // true=prod, false=local/mock
+  static const bool isProd = true; // true=prod, false=local/mock
 
   // Si false: usa datos mock (sin llamadas API).
   static const bool useBackend = true;
   static const bool enableHttpLogs = !isProd;
   static const bool showForceReloadButton = !isProd;
+  static const bool showDevQuickActions = !isProd;
 
   static const String localHost = '10.0.2.2';
   static const int localPort = 8000;

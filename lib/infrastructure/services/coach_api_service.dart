@@ -87,6 +87,14 @@ class CoachApiService {
     return response.data ?? {};
   }
 
+  /// POST /api/coach/equipos
+  /// Para ENTRENADOR: enviar nombre, categoria, escudo_url.
+  /// Para ADMIN: puede requerir escuela_id según backend.
+  Future<Map<String, dynamic>> postEquipo(Map<String, dynamic> body) async {
+    final response = await _dio.post<Map<String, dynamic>>('/coach/equipos', data: body);
+    return response.data ?? {};
+  }
+
   /// GET /api/coach/equipos/{equipo_id}/alineacion
   Future<Map<String, dynamic>?> getAlineacion(int equipoId) async =>
       _get('/coach/equipos/$equipoId/alineacion');

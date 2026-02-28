@@ -216,13 +216,20 @@ class _MyTeamsViewState extends State<_MyTeamsView> {
                       itemBuilder: (_, i) {
                         if (i == teams.length) {
                           return _CreateTeamCard(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Crear equipo (próximamente)'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
+                            onTap: () async {
+                              if (!Environment.useBackend) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Activar backend para crear equipo'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                return;
+                              }
+                              await context.push('/create_team_screen');
+                              if (!mounted) return;
+                              ref.invalidate(coachCategoriasProvider);
+                              ref.invalidate(coachDashboardProvider);
                             },
                           );
                         }

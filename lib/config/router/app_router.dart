@@ -185,6 +185,12 @@ final appRouter = GoRouter(
           (context, state) => CustomTransition.slideLeft(const MyTeamsScreen()),
     ),
     GoRoute(
+      path: '/create_team_screen',
+      name: CreateTeamScreen.name,
+      pageBuilder:
+          (context, state) => CustomTransition.slideLeft(const CreateTeamScreen()),
+    ),
+    GoRoute(
       path: '/selected_team_screen',
       name: SelectedTeamScreen.name,
       pageBuilder: (context, state) {

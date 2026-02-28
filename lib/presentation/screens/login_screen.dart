@@ -307,7 +307,8 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                 ),
                               ),
                             ),
-                            if (!isKeyboardVisible) ...[
+                            if (!isKeyboardVisible &&
+                                Environment.showDevQuickActions) ...[
                               const SizedBox(height: 8),
                               Center(
                                 child: TextButton(

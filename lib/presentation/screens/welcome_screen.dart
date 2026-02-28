@@ -1,3 +1,4 @@
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/presentation/providers/carousel_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -213,18 +214,20 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
                             text: 'Continuar',
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () => context.push('/health_check'),
-                          child: Text(
-                            'Probar conexión al servidor',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              decoration: TextDecoration.underline,
+                        if (Environment.showDevQuickActions) ...[
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => context.push('/health_check'),
+                            child: Text(
+                              'Probar conexión al servidor',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.9),
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
