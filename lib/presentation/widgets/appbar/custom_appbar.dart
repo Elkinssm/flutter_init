@@ -1,3 +1,4 @@
+import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,36 +7,51 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final Color? backgroundColor;
   final VoidCallback? onPressed;
+  final bool showBackButton;
   const CustomAppbar({
     super.key,
     required this.title,
     this.backgroundColor = const Color.fromRGBO(249, 248, 247, 1),
     this.onPressed,
+    this.showBackButton = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: backgroundColor,
+      automaticallyImplyLeading: false,
       leadingWidth: 40,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leading: Padding(
-        padding: const EdgeInsets.all(0),
-        child: IconButton(
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          onPressed: onPressed ??
-              () {
-                if (Navigator.of(context).canPop()) context.pop();
-              },
-          icon: Icon(Icons.arrow_back_outlined),
-          // Área táctil
-          constraints: BoxConstraints(minWidth: 60, minHeight: 60),
-        ),
-      ),
-      titleSpacing: 0,
+      leading:
+          showBackButton
+              ? Padding(
+                padding: const EdgeInsets.all(0),
+                child: IconButton(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  onPressed:
+                      onPressed ??
+                      () {
+                        if (Navigator.of(context).canPop()) {
+                          context.pop();
+                          return;
+                        }
+                        final fallbackRoute =
+                            currentUserRole == 'coach'
+                                ? '/coach_screen'
+                                : '/player_screen';
+                        context.go(fallbackRoute);
+                      },
+                  icon: Icon(Icons.arrow_back_outlined),
+                  // Área táctil
+                  constraints: BoxConstraints(minWidth: 60, minHeight: 60),
+                ),
+              )
+              : null,
+      titleSpacing: showBackButton ? 0 : 16,
       title: CustomText(text: title, size: 20, fontWeight: FontWeight.w600),
       centerTitle: false,
       actions: [

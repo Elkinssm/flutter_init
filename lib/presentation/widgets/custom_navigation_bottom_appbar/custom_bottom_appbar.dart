@@ -21,6 +21,7 @@ class CustomBottomAppbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isCoach = currentUserRole == 'coach';
     final selectedIndex = ref.watch(selectedIconProvider);
     final bottomInset = MediaQuery.of(context).padding.bottom;
     const barHeight = 64.0;
@@ -39,13 +40,13 @@ class CustomBottomAppbar extends ConsumerWidget {
             bottom: 0,
             child: Container(
               height: barHeight + bottomInset,
-              decoration: const BoxDecoration(
-                color: _orange,
-              ),
+              decoration: const BoxDecoration(color: _orange),
               child: SafeArea(
                 top: false,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset : 6),
+                  padding: EdgeInsets.only(
+                    bottom: bottomInset > 0 ? bottomInset : 6,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -56,29 +57,44 @@ class CustomBottomAppbar extends ConsumerWidget {
                         isSelected: selectedIndex == 0,
                         onTap: () {
                           ref.read(selectedIconProvider.notifier).state = 0;
-                          final route = currentUserRole == 'coach'
-                              ? '/coach_screen'
-                              : '/player_screen';
+                          final route =
+                              currentUserRole == 'coach'
+                                  ? '/coach_screen'
+                                  : '/player_screen';
                           context.go(route);
                         },
                       ),
                       _NavItem(
-                        label: 'EQUIPO',
-                        icon: Icons.groups_rounded,
+                        label: isCoach ? 'EQUIPO' : 'ASISTENCIA',
+                        icon:
+                            isCoach
+                                ? Icons.groups_rounded
+                                : Icons.fact_check_rounded,
                         isSelected: selectedIndex == 1,
                         onTap: () {
                           ref.read(selectedIconProvider.notifier).state = 1;
-                          context.push('/my_teams_screen');
+                          if (isCoach) {
+                            context.push('/my_teams_screen');
+                          } else {
+                            context.push('/assistance_screen');
+                          }
                         },
                       ),
                       const SizedBox(width: 72),
                       _NavItem(
-                        label: 'CALENDARIO',
-                        icon: Icons.calendar_month_rounded,
+                        label: isCoach ? 'CALENDARIO' : 'HISTORIAL',
+                        icon:
+                            isCoach
+                                ? Icons.calendar_month_rounded
+                                : Icons.history_rounded,
                         isSelected: selectedIndex == 2,
                         onTap: () {
                           ref.read(selectedIconProvider.notifier).state = 2;
-                          context.push('/category_screen');
+                          if (isCoach) {
+                            context.push('/category_screen');
+                          } else {
+                            context.push('/history_screen');
+                          }
                         },
                       ),
                       _NavItem(
@@ -87,10 +103,12 @@ class CustomBottomAppbar extends ConsumerWidget {
                         isSelected: selectedIndex == 3,
                         onTap: () {
                           ref.read(selectedIconProvider.notifier).state = 3;
-                          ref.read(openProfileDrawerProvider.notifier).state = true;
-                          final route = currentUserRole == 'coach'
-                              ? '/coach_screen'
-                              : '/player_screen';
+                          ref.read(openProfileDrawerProvider.notifier).state =
+                              true;
+                          final route =
+                              currentUserRole == 'coach'
+                                  ? '/coach_screen'
+                                  : '/player_screen';
                           context.go(route);
                         },
                       ),
@@ -105,9 +123,7 @@ class CustomBottomAppbar extends ConsumerWidget {
             left: 0,
             right: 0,
             bottom: bottomInset + barHeight - 36,
-            child: const Center(
-              child: _CenterFab(),
-            ),
+            child: Center(child: _CenterFab(isCoach: isCoach)),
           ),
           if (kDebugMode && Environment.showForceReloadButton)
             Positioned(
@@ -180,11 +196,7 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 26,
-              color: Colors.white,
-            ),
+            Icon(icon, size: 26, color: Colors.white),
             const SizedBox(height: 4),
             Text(
               label,
@@ -203,7 +215,9 @@ class _NavItem extends StatelessWidget {
 }
 
 class _CenterFab extends ConsumerWidget {
-  const _CenterFab();
+  const _CenterFab({required this.isCoach});
+
+  final bool isCoach;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -212,7 +226,15 @@ class _CenterFab extends ConsumerWidget {
       shadowColor: Colors.black26,
       shape: const CircleBorder(),
       child: InkWell(
-        onTap: () => context.push('/selected_team_screen', extra: 'Equipo'),
+        onTap: () {
+          if (isCoach) {
+            ref.read(selectedIconProvider.notifier).state = 1;
+            context.go('/my_teams_screen');
+          } else {
+            ref.read(selectedIconProvider.notifier).state = 2;
+            context.go('/category_screen');
+          }
+        },
         customBorder: const CircleBorder(),
         child: Container(
           width: 72,

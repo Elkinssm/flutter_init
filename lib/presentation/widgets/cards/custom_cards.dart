@@ -42,25 +42,33 @@ class CustomCards extends StatelessWidget {
                   size: 12,
                   fontWeight: FontWeight.w400,
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: action,
-                    style: ElevatedButton.styleFrom(
-                      splashFactory: NoSplash.splashFactory,
-                      overlayColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final buttonWidth =
+                        constraints.hasBoundedWidth
+                            ? constraints.maxWidth
+                            : null;
+                    return SizedBox(
+                      width: buttonWidth,
+                      child: ElevatedButton(
+                        onPressed: action,
+                        style: ElevatedButton.styleFrom(
+                          splashFactory: NoSplash.splashFactory,
+                          overlayColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: CustomText(
+                          color: Color.fromRGBO(27, 71, 56, 1),
+                          text: textButton,
+                          size: sizeTextButton,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: CustomText(
-                      color: Color.fromRGBO(27, 71, 56, 1),
-                      text: textButton,
-                      size: sizeTextButton,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ],
             ),

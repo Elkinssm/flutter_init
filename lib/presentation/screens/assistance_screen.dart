@@ -58,12 +58,16 @@ class _AssitanceView extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 8,
           children: [
-            CustomCards(
-              action: () => context.push('/history_screen'),
-              title: 'Categoría',
-              subtitle: '2012',
-              textButton: 'Ver histórico',
-              sizeTextButton: 16,
+            SizedBox(
+              height: 120,
+              width: 175,
+              child: CustomCards(
+                action: () => context.push('/history_screen'),
+                title: 'Categoría',
+                subtitle: '2012',
+                textButton: 'Ver histórico',
+                sizeTextButton: 16,
+              ),
             ),
             const SizedBox(
               height: 120,

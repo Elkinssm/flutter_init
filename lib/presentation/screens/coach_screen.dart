@@ -49,7 +49,7 @@ class _CoachScreenState extends State<CoachScreen> {
             backgroundColor: const Color.fromRGBO(249, 248, 247, 1),
             appBar: CustomAppbar(
               title: 'Coach Dashboard',
-              onPressed: () => context.push('/login_screen'),
+              showBackButton: false,
             ),
             endDrawer: const ProfileDrawer(),
             bottomNavigationBar: const CustomBottomAppbar(),
