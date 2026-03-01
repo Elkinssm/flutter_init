@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/errors/app_error_reporter.dart';
 import 'package:coach_app/infrastructure/services/coach_api_service.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
 import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
@@ -62,7 +63,10 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   static const _piesHabiles = <String>['Derecha', 'Izquierda', 'Ambas'];
   static final _dorsales = List<int>.generate(99, (i) => i + 1);
   static final _alturasCm = List<int>.generate(151, (i) => i + 100);
-  static final _pesosKg = List<double>.generate(191, (i) => (i + 10).toDouble());
+  static final _pesosKg = List<double>.generate(
+    191,
+    (i) => (i + 10).toDouble(),
+  );
   bool get _isPlayerMode => ref.read(currentUserRoleProvider) == 'player';
 
   @override
@@ -103,7 +107,12 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
           _apellidoCtrl.text = sessionUser.apellido.trim();
         }
       }
-    } catch (_) {
+    } catch (e, st) {
+      AppErrorReporter.report(
+        e,
+        st,
+        context: 'new_player_screen.prefill_session',
+      );
       // Si falla lectura de sesión, continuamos con carga normal.
     }
 
@@ -112,7 +121,12 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       try {
         final miPerfil = await ref.read(miPerfilServiceProvider).getMiPerfil();
         _prefillFromMiPerfil(miPerfil);
-      } catch (_) {
+      } catch (e, st) {
+        AppErrorReporter.report(
+          e,
+          st,
+          context: 'new_player_screen.prefill_mi_perfil',
+        );
         // Si falla, seguimos con sesión + metadatos.
       }
     }
@@ -151,38 +165,47 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         posicionesData = await coachApi.getPosiciones();
       }
 
-      final categoriasRaw = _isPlayerMode
-          ? _extractListFromPayload(
-              categoriasData,
-              preferredKeys: const ['equipos', 'data'],
-            )
-          : (categoriasData?['categorias'] as List<dynamic>? ?? const []);
-      _equipos = categoriasRaw
-          .whereType<Map>()
-          .map((e) => _normalizeEquipoForForm(Map<String, dynamic>.from(e)))
-          .toList();
+      final categoriasRaw =
+          _isPlayerMode
+              ? _extractListFromPayload(
+                categoriasData,
+                preferredKeys: const ['equipos', 'data'],
+              )
+              : (categoriasData?['categorias'] as List<dynamic>? ?? const []);
+      _equipos =
+          categoriasRaw
+              .whereType<Map>()
+              .map((e) => _normalizeEquipoForForm(Map<String, dynamic>.from(e)))
+              .toList();
 
       final posicionesRaw = _extractListFromPayload(
         posicionesData,
         preferredKeys: const ['posiciones', 'data'],
       );
-      _posiciones = posicionesRaw
-          .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
-          .toList();
+      _posiciones =
+          posicionesRaw
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
 
       final currentExists = _equipos.any((e) => e['id'] == _equipoId);
       if (!currentExists) {
         _equipoId = _equipos.isNotEmpty ? _equipos.first['id'] as int : null;
       }
       _categoria = _categoriaByEquipoId(_equipoId);
-    } catch (_) {
+    } catch (e, st) {
+      AppErrorReporter.report(
+        e,
+        st,
+        context: 'new_player_screen.load_initial_data',
+      );
       if (!mounted) return;
       CustomModal.showNetworkError(
         context,
-        detail: _isPlayerMode
-            ? 'No fue posible cargar equipos/categorías del backend.'
-            : 'No fue posible cargar equipos/posiciones.',
+        detail:
+            _isPlayerMode
+                ? 'No fue posible cargar equipos/categorías del backend.'
+                : 'No fue posible cargar equipos/posiciones.',
       );
     } finally {
       if (mounted) setState(() => _loadingMeta = false);
@@ -222,25 +245,28 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
 
   Map<String, dynamic> _normalizeEquipoForForm(Map<String, dynamic> raw) {
     final id = raw['id'] ?? raw['equipo_id'];
-    final nombre = (raw['nombre'] ??
-            raw['equipo'] ??
-            raw['nombre_equipo'] ??
-            raw['equipo_nombre'] ??
-            '')
-        .toString()
-        .trim();
-    final rawCategoria = raw['categoria'] ??
+    final nombre =
+        (raw['nombre'] ??
+                raw['equipo'] ??
+                raw['nombre_equipo'] ??
+                raw['equipo_nombre'] ??
+                '')
+            .toString()
+            .trim();
+    final rawCategoria =
+        raw['categoria'] ??
         raw['categoria_nombre'] ??
         raw['nombre_categoria'] ??
         raw['categoria_codigo'];
-    final categoria = rawCategoria is Map
-        ? (rawCategoria['nombre'] ??
-                rawCategoria['codigo'] ??
-                rawCategoria['categoria'] ??
-                '')
-            .toString()
-            .trim()
-        : (rawCategoria ?? '').toString().trim();
+    final categoria =
+        rawCategoria is Map
+            ? (rawCategoria['nombre'] ??
+                    rawCategoria['codigo'] ??
+                    rawCategoria['categoria'] ??
+                    '')
+                .toString()
+                .trim()
+            : (rawCategoria ?? '').toString().trim();
 
     return {
       ...raw,
@@ -253,23 +279,30 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   void _prefillFromMiPerfil(Map<String, dynamic>? payload) {
     if (payload == null) return;
 
-    final usuario = payload['usuario'] is Map
-        ? Map<String, dynamic>.from(payload['usuario'])
-        : <String, dynamic>{};
-    final jugador = payload['jugador'] is Map
-        ? Map<String, dynamic>.from(payload['jugador'])
-        : <String, dynamic>{};
-    final equipoActual = payload['equipo_actual'] is Map
-        ? Map<String, dynamic>.from(payload['equipo_actual'])
-        : <String, dynamic>{};
+    final usuario =
+        payload['usuario'] is Map
+            ? Map<String, dynamic>.from(payload['usuario'])
+            : <String, dynamic>{};
+    final jugador =
+        payload['jugador'] is Map
+            ? Map<String, dynamic>.from(payload['jugador'])
+            : <String, dynamic>{};
+    final equipoActual =
+        payload['equipo_actual'] is Map
+            ? Map<String, dynamic>.from(payload['equipo_actual'])
+            : <String, dynamic>{};
     final jugadorIdRaw = jugador['id'];
-    _currentJugadorId = jugadorIdRaw is int
-        ? jugadorIdRaw
-        : int.tryParse(jugadorIdRaw?.toString() ?? '');
+    _currentJugadorId =
+        jugadorIdRaw is int
+            ? jugadorIdRaw
+            : int.tryParse(jugadorIdRaw?.toString() ?? '');
 
-    final nombre = (usuario['nombre'] ?? jugador['nombre'] ?? '').toString().trim();
-    final apellido = (usuario['apellido'] ?? jugador['apellido'] ?? '').toString().trim();
-    final email = (usuario['email'] ?? jugador['email'] ?? '').toString().trim();
+    final nombre =
+        (usuario['nombre'] ?? jugador['nombre'] ?? '').toString().trim();
+    final apellido =
+        (usuario['apellido'] ?? jugador['apellido'] ?? '').toString().trim();
+    final email =
+        (usuario['email'] ?? jugador['email'] ?? '').toString().trim();
 
     if (nombre.isNotEmpty && _nombreCtrl.text.trim().isEmpty) {
       _nombreCtrl.text = nombre;
@@ -296,12 +329,19 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       _saludCtrl.text = salud;
     }
 
-    final equipoIdRaw = jugador['equipo_id'] ?? jugador['equipo_actual_id'] ?? jugador['equipo'];
-    final equipoIdVal = equipoIdRaw is int ? equipoIdRaw : int.tryParse(equipoIdRaw?.toString() ?? '');
+    final equipoIdRaw =
+        jugador['equipo_id'] ??
+        jugador['equipo_actual_id'] ??
+        jugador['equipo'];
+    final equipoIdVal =
+        equipoIdRaw is int
+            ? equipoIdRaw
+            : int.tryParse(equipoIdRaw?.toString() ?? '');
     final equipoActualIdRaw = equipoActual['id'];
-    final equipoActualIdVal = equipoActualIdRaw is int
-        ? equipoActualIdRaw
-        : int.tryParse(equipoActualIdRaw?.toString() ?? '');
+    final equipoActualIdVal =
+        equipoActualIdRaw is int
+            ? equipoActualIdRaw
+            : int.tryParse(equipoActualIdRaw?.toString() ?? '');
     if (equipoIdVal != null) {
       _equipoId = equipoIdVal;
     } else if (equipoActualIdVal != null) {
@@ -309,25 +349,38 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     }
 
     final dorsalRaw = jugador['dorsal_actual'] ?? jugador['dorsal'];
-    final dorsalVal = dorsalRaw is int ? dorsalRaw : int.tryParse(dorsalRaw?.toString() ?? '');
+    final dorsalVal =
+        dorsalRaw is int
+            ? dorsalRaw
+            : int.tryParse(dorsalRaw?.toString() ?? '');
     if (dorsalVal != null) _dorsal = dorsalVal;
 
     final alturaRaw = jugador['altura_cm'];
-    final alturaVal = alturaRaw is int ? alturaRaw : int.tryParse(alturaRaw?.toString() ?? '');
+    final alturaVal =
+        alturaRaw is int
+            ? alturaRaw
+            : int.tryParse(alturaRaw?.toString() ?? '');
     if (alturaVal != null) _alturaCm = alturaVal;
 
     final pesoRaw = jugador['peso_kg'];
-    final pesoVal = pesoRaw is num ? pesoRaw.toDouble() : double.tryParse(pesoRaw?.toString() ?? '');
+    final pesoVal =
+        pesoRaw is num
+            ? pesoRaw.toDouble()
+            : double.tryParse(pesoRaw?.toString() ?? '');
     if (pesoVal != null) _pesoKg = pesoVal;
 
     final pie = (jugador['pie_habil'] ?? '').toString().trim();
     if (pie.isNotEmpty) _pieHabil = pie;
 
     final posRaw = jugador['posicion_id'];
-    final posVal = posRaw is int ? posRaw : int.tryParse(posRaw?.toString() ?? '');
+    final posVal =
+        posRaw is int ? posRaw : int.tryParse(posRaw?.toString() ?? '');
     if (posVal != null) _posicionId = posVal;
 
-    final categoria = (jugador['categoria'] ?? jugador['categoria_nombre'] ?? '').toString().trim();
+    final categoria =
+        (jugador['categoria'] ?? jugador['categoria_nombre'] ?? '')
+            .toString()
+            .trim();
     final categoriaRoot = (equipoActual['categoria'] ?? '').toString().trim();
     if (categoria.isNotEmpty) {
       _categoria = categoria;
@@ -369,18 +422,21 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
   }
 
   List<String> _categoriasDisponibles() {
-    final set = _equipos
-        .map((e) => (e['categoria']?.toString() ?? '').trim())
-        .where((c) => c.isNotEmpty)
-        .toSet()
-        .toList();
+    final set =
+        _equipos
+            .map((e) => (e['categoria']?.toString() ?? '').trim())
+            .where((c) => c.isNotEmpty)
+            .toSet()
+            .toList();
     set.sort();
     return set;
   }
 
   List<Map<String, dynamic>> _equiposFiltrados() {
     if ((_categoria ?? '').isEmpty) return _equipos;
-    return _equipos.where((e) => e['categoria']?.toString() == _categoria).toList();
+    return _equipos
+        .where((e) => e['categoria']?.toString() == _categoria)
+        .toList();
   }
 
   Future<void> _pickBirthDate() async {
@@ -469,20 +525,20 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     final equipoOk = _equipoId != null;
     final posicionOk = !_isPlayerMode || _posicionId != null;
     final fechaOk = !_isPlayerMode || _fechaCtrl.text.trim().isNotEmpty;
-    final categoriaOk = !_isPlayerMode || ((_categoria ?? '').trim().isNotEmpty);
+    final categoriaOk =
+        !_isPlayerMode || ((_categoria ?? '').trim().isNotEmpty);
     setState(() {
-      _equipoError = equipoOk
-          ? null
-          : 'Selecciona un equipo';
+      _equipoError = equipoOk ? null : 'Selecciona un equipo';
     });
     if (!formOk || !equipoOk || !posicionOk || !fechaOk || !categoriaOk) {
       if (_isPlayerMode && mounted) {
         CustomModal.show(
           context: context,
           title: 'Faltan datos',
-          message: !categoriaOk
-              ? 'El backend no está enviando categoría por equipo. No se puede completar el perfil hasta corregir ese dato.'
-              : 'Completa fecha de nacimiento y posición para continuar.',
+          message:
+              !categoriaOk
+                  ? 'El backend no está enviando categoría por equipo. No se puede completar el perfil hasta corregir ese dato.'
+                  : 'Completa fecha de nacimiento y posición para continuar.',
           type: ModalType.warning,
           buttonText: 'Entendido',
         );
@@ -515,11 +571,16 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       String? fotoUrl;
       MultipartFile? fotoFile;
       if (_selectedImage != null) {
-        final fileName = _selectedImage!.path.split(Platform.pathSeparator).last;
-        fotoFile = await MultipartFile.fromFile(_selectedImage!.path, filename: fileName);
+        final fileName =
+            _selectedImage!.path.split(Platform.pathSeparator).last;
+        fotoFile = await MultipartFile.fromFile(
+          _selectedImage!.path,
+          filename: fileName,
+        );
         if (!_isPlayerMode) {
           final uploadRes = await uploadApi.uploadFoto(fotoFile);
-          fotoUrl = uploadRes['url']?.toString() ??
+          fotoUrl =
+              uploadRes['url']?.toString() ??
               uploadRes['foto_url']?.toString() ??
               uploadRes['path']?.toString();
         }
@@ -536,9 +597,10 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
               (_posiciones.isNotEmpty ? _posiciones.first['id'] : null),
           'fecha_nacimiento': _fechaCtrl.text.trim(),
           'pie_habil': _pieHabil ?? 'Derecha',
-          'telefono_contacto': _telefonoCtrl.text.trim().isEmpty
-              ? '0000000000'
-              : _telefonoCtrl.text.trim(),
+          'telefono_contacto':
+              _telefonoCtrl.text.trim().isEmpty
+                  ? '0000000000'
+                  : _telefonoCtrl.text.trim(),
         };
         if (_dorsal != null) body['dorsal_actual'] = _dorsal;
         if (_alturaCm != null) body['altura_cm'] = _alturaCm;
@@ -550,31 +612,36 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
           body['email'] = _emailCtrl.text.trim();
         }
 
-        final res = isAlreadyComplete
-            ? await miPerfilApi.putMiPerfil(body)
-            : await miPerfilApi.putMiPerfilCompletar({
-                ...body,
-                'anio_vinculacion': DateTime.now().year,
-                'lugar_nacimiento': 'No definido',
-                'ciudad_residencia': 'No definido',
-                'acudiente_nombre_1': 'No definido',
-                'acudiente_telefono': _telefonoCtrl.text.trim().isEmpty
-                    ? '0000000000'
-                    : _telefonoCtrl.text.trim(),
-              });
-        final jugadorRes = res['jugador'] is Map
-            ? Map<String, dynamic>.from(res['jugador'])
-            : <String, dynamic>{};
+        final res =
+            isAlreadyComplete
+                ? await miPerfilApi.putMiPerfil(body)
+                : await miPerfilApi.putMiPerfilCompletar({
+                  ...body,
+                  'anio_vinculacion': DateTime.now().year,
+                  'lugar_nacimiento': 'No definido',
+                  'ciudad_residencia': 'No definido',
+                  'acudiente_nombre_1': 'No definido',
+                  'acudiente_telefono':
+                      _telefonoCtrl.text.trim().isEmpty
+                          ? '0000000000'
+                          : _telefonoCtrl.text.trim(),
+                });
+        final jugadorRes =
+            res['jugador'] is Map
+                ? Map<String, dynamic>.from(res['jugador'])
+                : <String, dynamic>{};
         final jugadorIdRaw = jugadorRes['id'];
-        final jugadorIdFromRes = jugadorIdRaw is int
-            ? jugadorIdRaw
-            : int.tryParse(jugadorIdRaw?.toString() ?? '');
+        final jugadorIdFromRes =
+            jugadorIdRaw is int
+                ? jugadorIdRaw
+                : int.tryParse(jugadorIdRaw?.toString() ?? '');
         if (jugadorIdFromRes != null) {
           _currentJugadorId = jugadorIdFromRes;
         }
         if (fotoFile != null) {
           final fotoRes = await miPerfilApi.putMiPerfilFoto(fotoFile);
-          final rawFoto = fotoRes['foto_url']?.toString() ??
+          final rawFoto =
+              fotoRes['foto_url']?.toString() ??
               fotoRes['url']?.toString() ??
               fotoRes['path']?.toString();
           final normalizedFoto = _normalizePhotoUrl(rawFoto);
@@ -598,13 +665,16 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         if (fullName.isNotEmpty) {
           ref.read(currentUserDisplayNameProvider.notifier).state = fullName;
           final parts = fullName.split(RegExp(r'\s+'));
-          final initials = parts.length > 1
-              ? '${parts.first[0]}${parts.last[0]}'
-              : parts.first[0];
-          ref.read(currentUserInitialsProvider.notifier).state = initials.toUpperCase();
+          final initials =
+              parts.length > 1
+                  ? '${parts.first[0]}${parts.last[0]}'
+                  : parts.first[0];
+          ref.read(currentUserInitialsProvider.notifier).state =
+              initials.toUpperCase();
         }
 
-        final message = res['message']?.toString() ?? 'Perfil completado correctamente.';
+        final message =
+            res['message']?.toString() ?? 'Perfil completado correctamente.';
         if (!mounted) return;
         CustomModal.show(
           context: context,
@@ -622,7 +692,8 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       }
 
       final body = <String, dynamic>{
-        'nombre_completo': '${_nombreCtrl.text.trim()} ${_apellidoCtrl.text.trim()}'.trim(),
+        'nombre_completo':
+            '${_nombreCtrl.text.trim()} ${_apellidoCtrl.text.trim()}'.trim(),
         'equipo_id': _equipoId,
       };
 
@@ -639,14 +710,17 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       if (_telefonoCtrl.text.trim().isNotEmpty) {
         body['telefono_contacto'] = _telefonoCtrl.text.trim();
       }
-      if (_emailCtrl.text.trim().isNotEmpty) body['email'] = _emailCtrl.text.trim();
+      if (_emailCtrl.text.trim().isNotEmpty) {
+        body['email'] = _emailCtrl.text.trim();
+      }
       if (_saludCtrl.text.trim().isNotEmpty) {
         body['estado_salud'] = _saludCtrl.text.trim();
       }
       if ((fotoUrl ?? '').isNotEmpty) body['foto_url'] = fotoUrl;
 
       final res = await coachApi.postJugadorByCategoria(_equipoId!, body);
-      final message = res['message']?.toString() ?? 'Jugador creado exitosamente.';
+      final message =
+          res['message']?.toString() ?? 'Jugador creado exitosamente.';
 
       ref.invalidate(coachDashboardProvider);
       ref.invalidate(coachCategoriasProvider);
@@ -673,7 +747,8 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
       );
       CustomModal.show(
         context: context,
-        title: _isPlayerMode ? 'No se pudo actualizar perfil' : 'No se pudo crear',
+        title:
+            _isPlayerMode ? 'No se pudo actualizar perfil' : 'No se pudo crear',
         message: userMessage,
         type: ModalType.error,
         buttonText: 'Aceptar',
@@ -703,55 +778,63 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
         bottomNavigationBar: const CustomBottomAppbar(),
         floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _loadingMeta
-            ? const Center(child: CircularProgressIndicator())
-            : _NewPlayerView(
-                formKey: _formKey,
-                nombreCtrl: _nombreCtrl,
-                apellidoCtrl: _apellidoCtrl,
-                fechaCtrl: _fechaCtrl,
-                telefonoCtrl: _telefonoCtrl,
-                emailCtrl: _emailCtrl,
-                saludCtrl: _saludCtrl,
-                selectedImage: _selectedImage,
-                equipos: _equipos,
-                categorias: _categoriasDisponibles(),
-                categoria: _categoria,
-                equiposFiltrados: _equiposFiltrados(),
-                posiciones: _posiciones,
-                equipoId: _equipoId,
-                lockEquipo: widget.equipoId != null,
-                posicionId: _posicionId,
-                dorsal: _dorsal,
-                alturaCm: _alturaCm,
-                pesoKg: _pesoKg,
-                pieHabil: _pieHabil,
-                equipoError: _equipoError,
-                saving: _saving,
-                onPickDate: _pickBirthDate,
-                onPickPhoto: _showPhotoOptions,
-                onEquipoChanged: (v) => setState(() {
-                  _equipoId = v;
-                  _categoria = _categoriaByEquipoId(v) ?? _categoria;
-                  _equipoError = null;
-                }),
-                onCategoriaChanged: (v) => setState(() {
-                  _categoria = v;
-                  final filtrados = _equiposFiltrados();
-                  final exists = filtrados.any((e) => e['id'] == _equipoId);
-                  _equipoId = exists
-                      ? _equipoId
-                      : (filtrados.isNotEmpty ? filtrados.first['id'] as int : null);
-                  _equipoError = null;
-                }),
-                onPosicionChanged: (v) => setState(() => _posicionId = v),
-                onDorsalChanged: (v) => setState(() => _dorsal = v),
-                onAlturaChanged: (v) => setState(() => _alturaCm = v),
-                onPesoChanged: (v) => setState(() => _pesoKg = v),
-                onPieChanged: (v) => setState(() => _pieHabil = v),
-                onSubmit: _submit,
-                isPlayerMode: isPlayerMode,
-              ),
+        body:
+            _loadingMeta
+                ? const Center(child: CircularProgressIndicator())
+                : _NewPlayerView(
+                  formKey: _formKey,
+                  nombreCtrl: _nombreCtrl,
+                  apellidoCtrl: _apellidoCtrl,
+                  fechaCtrl: _fechaCtrl,
+                  telefonoCtrl: _telefonoCtrl,
+                  emailCtrl: _emailCtrl,
+                  saludCtrl: _saludCtrl,
+                  selectedImage: _selectedImage,
+                  equipos: _equipos,
+                  categorias: _categoriasDisponibles(),
+                  categoria: _categoria,
+                  equiposFiltrados: _equiposFiltrados(),
+                  posiciones: _posiciones,
+                  equipoId: _equipoId,
+                  lockEquipo: widget.equipoId != null,
+                  posicionId: _posicionId,
+                  dorsal: _dorsal,
+                  alturaCm: _alturaCm,
+                  pesoKg: _pesoKg,
+                  pieHabil: _pieHabil,
+                  equipoError: _equipoError,
+                  saving: _saving,
+                  onPickDate: _pickBirthDate,
+                  onPickPhoto: _showPhotoOptions,
+                  onEquipoChanged:
+                      (v) => setState(() {
+                        _equipoId = v;
+                        _categoria = _categoriaByEquipoId(v) ?? _categoria;
+                        _equipoError = null;
+                      }),
+                  onCategoriaChanged:
+                      (v) => setState(() {
+                        _categoria = v;
+                        final filtrados = _equiposFiltrados();
+                        final exists = filtrados.any(
+                          (e) => e['id'] == _equipoId,
+                        );
+                        _equipoId =
+                            exists
+                                ? _equipoId
+                                : (filtrados.isNotEmpty
+                                    ? filtrados.first['id'] as int
+                                    : null);
+                        _equipoError = null;
+                      }),
+                  onPosicionChanged: (v) => setState(() => _posicionId = v),
+                  onDorsalChanged: (v) => setState(() => _dorsal = v),
+                  onAlturaChanged: (v) => setState(() => _alturaCm = v),
+                  onPesoChanged: (v) => setState(() => _pesoKg = v),
+                  onPieChanged: (v) => setState(() => _pieHabil = v),
+                  onSubmit: _submit,
+                  isPlayerMode: isPlayerMode,
+                ),
       ),
     );
   }
@@ -846,9 +929,11 @@ class _NewPlayerView extends StatelessWidget {
               _InputField(
                 controller: nombreCtrl,
                 hintText: 'Ingresa el nombre',
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'El nombre es obligatorio'
-                    : null,
+                validator:
+                    (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? 'El nombre es obligatorio'
+                            : null,
               ),
               const SizedBox(height: 12),
 
@@ -856,9 +941,11 @@ class _NewPlayerView extends StatelessWidget {
               _InputField(
                 controller: apellidoCtrl,
                 hintText: 'Ingresa el apellido',
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'El apellido es obligatorio'
-                    : null,
+                validator:
+                    (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? 'El apellido es obligatorio'
+                            : null,
               ),
               const SizedBox(height: 12),
 
@@ -869,14 +956,15 @@ class _NewPlayerView extends StatelessWidget {
                 _SelectField<String>(
                   value: categoria,
                   hint: 'Selecciona categoría',
-                  items: categorias
-                      .map(
-                        (c) => DropdownMenuItem<String>(
-                          value: c,
-                          child: Text(c),
-                        ),
-                      )
-                      .toList(),
+                  items:
+                      categorias
+                          .map(
+                            (c) => DropdownMenuItem<String>(
+                              value: c,
+                              child: Text(c),
+                            ),
+                          )
+                          .toList(),
                   onChanged: categorias.isEmpty ? null : onCategoriaChanged,
                 ),
                 const SizedBox(height: 12),
@@ -895,19 +983,24 @@ class _NewPlayerView extends StatelessWidget {
                 ),
               lockEquipo
                   ? _LockedField(
-                      text: _equipoLabelById(equipos, equipoId) ?? 'Equipo asignado',
-                    )
+                    text:
+                        _equipoLabelById(equipos, equipoId) ??
+                        'Equipo asignado',
+                  )
                   : _SelectField<int>(
-                      value: equipoId,
-                      hint: 'Selecciona equipo',
-                      items: (categorias.isEmpty ? equipos : equiposFiltrados)
-                          .map((e) => DropdownMenuItem<int>(
+                    value: equipoId,
+                    hint: 'Selecciona equipo',
+                    items:
+                        (categorias.isEmpty ? equipos : equiposFiltrados)
+                            .map(
+                              (e) => DropdownMenuItem<int>(
                                 value: e['id'] as int,
                                 child: Text(_equipoLabel(e)),
-                              ))
-                          .toList(),
-                      onChanged: onEquipoChanged,
-                    ),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: onEquipoChanged,
+                  ),
               if (equipoId != null)
                 Builder(
                   builder: (_) {
@@ -968,13 +1061,19 @@ class _NewPlayerView extends StatelessWidget {
               const _FieldLabel(text: 'Posición'),
               _SelectField<int>(
                 value: posicionId,
-                hint: posiciones.isEmpty ? 'Sin posiciones disponibles' : 'Selecciona posición',
-                items: posiciones
-                    .map((p) => DropdownMenuItem<int>(
-                          value: p['id'] as int,
-                          child: Text(_posicionLabel(p)),
-                        ))
-                    .toList(),
+                hint:
+                    posiciones.isEmpty
+                        ? 'Sin posiciones disponibles'
+                        : 'Selecciona posición',
+                items:
+                    posiciones
+                        .map(
+                          (p) => DropdownMenuItem<int>(
+                            value: p['id'] as int,
+                            child: Text(_posicionLabel(p)),
+                          ),
+                        )
+                        .toList(),
                 onChanged: posiciones.isEmpty ? null : onPosicionChanged,
               ),
               const SizedBox(height: 12),
@@ -1003,9 +1102,15 @@ class _NewPlayerView extends StatelessWidget {
               _SelectField<String>(
                 value: pieHabil,
                 hint: 'Selecciona pierna hábil',
-                items: _NewPlayerScreenState._piesHabiles
-                    .map((p) => DropdownMenuItem<String>(value: p, child: Text(p)))
-                    .toList(),
+                items:
+                    _NewPlayerScreenState._piesHabiles
+                        .map(
+                          (p) => DropdownMenuItem<String>(
+                            value: p,
+                            child: Text(p),
+                          ),
+                        )
+                        .toList(),
                 onChanged: onPieChanged,
               ),
               const SizedBox(height: 12),
@@ -1052,36 +1157,40 @@ class _NewPlayerView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.white,
                   ),
-                  child: selectedImage == null
-                      ? Row(
-                          children: const [
-                            Icon(Icons.camera_alt_outlined, color: Colors.grey),
-                            SizedBox(width: 8),
-                            Text('Seleccionar foto'),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                selectedImage!,
-                                height: 140,
-                                fit: BoxFit.cover,
+                  child:
+                      selectedImage == null
+                          ? Row(
+                            children: const [
+                              Icon(
+                                Icons.camera_alt_outlined,
+                                color: Colors.grey,
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                              'Cambiar foto',
-                              textAlign: TextAlign.left,
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            ),
-                          ],
-                        ),
+                              SizedBox(width: 8),
+                              Text('Seleccionar foto'),
+                            ],
+                          )
+                          : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  selectedImage!,
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Cambiar foto',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
                 ),
               ),
 
@@ -1089,9 +1198,12 @@ class _NewPlayerView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OnboardingNextButton(
-                  text: saving
-                      ? 'Guardando...'
-                      : (isPlayerMode ? 'Completar perfil' : 'Crear Jugador'),
+                  text:
+                      saving
+                          ? 'Guardando...'
+                          : (isPlayerMode
+                              ? 'Completar perfil'
+                              : 'Crear Jugador'),
                   isEnabled: !saving,
                   action: saving ? null : onSubmit,
                 ),
@@ -1192,11 +1304,16 @@ class _InputField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hintText,
         filled: true,
-        fillColor: readOnly ? const Color.fromRGBO(245, 245, 245, 1) : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        suffixIcon: readOnly
-            ? const Icon(Icons.lock_outline, size: 18, color: Colors.grey)
-            : null,
+        fillColor:
+            readOnly ? const Color.fromRGBO(245, 245, 245, 1) : Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        suffixIcon:
+            readOnly
+                ? const Icon(Icons.lock_outline, size: 18, color: Colors.grey)
+                : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -1233,12 +1350,15 @@ class _SelectField<T> extends StatelessWidget {
     final safeValue = values.contains(value) ? value : null;
 
     return DropdownButtonFormField<T>(
-      value: safeValue,
+      initialValue: safeValue,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -1342,7 +1462,9 @@ class _WheelPickerField<T> extends StatelessWidget {
       ),
       builder: (ctx) {
         var tempIndex = selectedIndex;
-        final controller = FixedExtentScrollController(initialItem: selectedIndex);
+        final controller = FixedExtentScrollController(
+          initialItem: selectedIndex,
+        );
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -1371,7 +1493,8 @@ class _WheelPickerField<T> extends StatelessWidget {
                           ),
                           const Spacer(),
                           TextButton(
-                            onPressed: () => Navigator.pop(ctx, options[tempIndex]),
+                            onPressed:
+                                () => Navigator.pop(ctx, options[tempIndex]),
                             child: const Text('Aceptar'),
                           ),
                         ],
@@ -1396,8 +1519,13 @@ class _WheelPickerField<T> extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: selected ? 20 : 17,
                                   fontWeight:
-                                      selected ? FontWeight.w700 : FontWeight.w400,
-                                  color: selected ? Colors.black : Colors.grey[700],
+                                      selected
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                  color:
+                                      selected
+                                          ? Colors.black
+                                          : Colors.grey[700],
                                 ),
                               ),
                             );

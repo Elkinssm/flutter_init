@@ -227,8 +227,9 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
                         ),
                         validator: (v) {
                           final value = (v ?? '').trim();
-                          if (value.isEmpty)
+                          if (value.isEmpty) {
                             return 'Ingresa el nombre del equipo';
+                          }
                           if (value.length < 2) return 'Nombre demasiado corto';
                           return null;
                         },
@@ -237,7 +238,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
                       const _CreateTeamLabel('CATEGORÍA'),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value:
+                        initialValue:
                             categorias.contains(_categoria) ? _categoria : null,
                         decoration: InputDecoration(
                           hintText: 'Selecciona una categoría',

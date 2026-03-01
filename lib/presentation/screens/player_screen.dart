@@ -107,11 +107,12 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
       }
     }
     final dashboardData = dashboardValue;
-    final resolvedName = (jugadorName ?? '').trim().isNotEmpty
-        ? jugadorName!.trim()
-        : (displayName.isNotEmpty && displayName != 'Usuario'
-            ? displayName
-            : 'Jugador');
+    final resolvedName =
+        (jugadorName ?? '').trim().isNotEmpty
+            ? jugadorName!.trim()
+            : (displayName.isNotEmpty && displayName != 'Usuario'
+                ? displayName
+                : 'Jugador');
     final photoUrl = _resolvePlayerPhotoUrl(
       dashboardData: dashboardData,
       miPerfilData: miPerfilData,
@@ -135,10 +136,7 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
             if (!profileComplete) const SizedBox(height: 14),
 
             // ── Perfil del jugador ──
-            _PlayerProfileCard(
-              name: resolvedName,
-              photoUrl: photoUrl,
-            ),
+            _PlayerProfileCard(name: resolvedName, photoUrl: photoUrl),
 
             const SizedBox(height: 16),
 
@@ -148,36 +146,42 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
                 Expanded(
                   child: _InfoCard(
                     icon: Icons.category_rounded,
-                    title: profileComplete
-                        ? (_dashboardCategoria(dashboardData) ?? '--')
-                        : 'Completa perfil',
-                    subtitle: profileComplete
-                        ? 'Categoría'
-                        : 'Verás tu categoría asignada',
+                    title:
+                        profileComplete
+                            ? (_dashboardCategoria(dashboardData) ?? '--')
+                            : 'Completa perfil',
+                    subtitle:
+                        profileComplete
+                            ? 'Categoría'
+                            : 'Verás tu categoría asignada',
                     actionLabel:
                         profileComplete ? 'Ver categoría' : 'Completar perfil',
-                    onTap: () => _requireCompleteProfile(
-                      profileComplete: profileComplete,
-                      onAllowed: () => context.push('/category_screen'),
-                    ),
+                    onTap:
+                        () => _requireCompleteProfile(
+                          profileComplete: profileComplete,
+                          onAllowed: () => context.push('/category_screen'),
+                        ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _InfoCard(
                     icon: Icons.bar_chart_rounded,
-                    title: profileComplete
-                        ? (_dashboardEquipo(dashboardData) ?? '--')
-                        : 'Completa perfil',
-                    subtitle: profileComplete
-                        ? 'Mi equipo'
-                        : 'Verás tu equipo y asistencias',
+                    title:
+                        profileComplete
+                            ? (_dashboardEquipo(dashboardData) ?? '--')
+                            : 'Completa perfil',
+                    subtitle:
+                        profileComplete
+                            ? 'Mi equipo'
+                            : 'Verás tu equipo y asistencias',
                     actionLabel:
                         profileComplete ? 'Ver asistencia' : 'Completar perfil',
-                    onTap: () => _requireCompleteProfile(
-                      profileComplete: profileComplete,
-                      onAllowed: () => context.push('/history_screen'),
-                    ),
+                    onTap:
+                        () => _requireCompleteProfile(
+                          profileComplete: profileComplete,
+                          onAllowed: () => context.push('/history_screen'),
+                        ),
                   ),
                 ),
               ],
@@ -189,10 +193,11 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
             _AttendanceCard(
               isPreview: !profileComplete,
               percentage: _dashboardAttendancePercent(dashboardData),
-              onTap: () => _requireCompleteProfile(
-                profileComplete: profileComplete,
-                onAllowed: () => context.push('/category_screen'),
-              ),
+              onTap:
+                  () => _requireCompleteProfile(
+                    profileComplete: profileComplete,
+                    onAllowed: () => context.push('/category_screen'),
+                  ),
             ),
 
             const SizedBox(height: 16),
@@ -349,7 +354,9 @@ int? _dashboardAttendancePercent(Map<String, dynamic>? d) {
   if (asistencia is Map) {
     final map = Map<String, dynamic>.from(asistencia);
     final raw =
-        map['porcentaje'] ?? map['porcentaje_asistencia'] ?? map['asistencia_porcentaje'];
+        map['porcentaje'] ??
+        map['porcentaje_asistencia'] ??
+        map['asistencia_porcentaje'];
     if (raw is num) return raw.round();
     return int.tryParse(raw?.toString() ?? '');
   }
@@ -359,29 +366,25 @@ int? _dashboardAttendancePercent(Map<String, dynamic>? d) {
 }
 
 Map<String, String?> _dashboardNextMatch(Map<String, dynamic>? d) {
-  if (d == null) return {'evento': null, 'fecha': null, 'hora': null, 'lugar': null};
-  final raw = d['proximo_encuentro'] ?? d['proximo_partido'] ?? d['proximo_entrenamiento'];
+  if (d == null) {
+    return {'evento': null, 'fecha': null, 'hora': null, 'lugar': null};
+  }
+  final raw =
+      d['proximo_encuentro'] ??
+      d['proximo_partido'] ??
+      d['proximo_entrenamiento'];
   if (raw is! Map) {
     return {'evento': null, 'fecha': null, 'hora': null, 'lugar': null};
   }
   final m = Map<String, dynamic>.from(raw);
   return {
-    'evento': (m['evento'] ?? m['titulo'] ?? m['nombre'] ?? m['competencia'])?.toString(),
+    'evento':
+        (m['evento'] ?? m['titulo'] ?? m['nombre'] ?? m['competencia'])
+            ?.toString(),
     'fecha': m['fecha']?.toString(),
     'hora': (m['hora'] ?? m['hora_inicio'])?.toString(),
     'lugar': (m['lugar'] ?? m['cancha'] ?? m['estadio'])?.toString(),
   };
-}
-
-
-int? _dashboardCategoriaId(Map<String, dynamic>? d) {
-  if (d == null) return null;
-  final rawEq = d['equipo_actual'] ?? d['equipo'];
-  if (rawEq is! Map) return null;
-  final eq = Map<String, dynamic>.from(rawEq);
-  final cat = eq?['categoria_id'] ?? eq?['categoria'];
-  if (cat is int) return cat;
-  return int.tryParse(cat?.toString() ?? '');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -392,10 +395,7 @@ int? _dashboardCategoriaId(Map<String, dynamic>? d) {
 class _PlayerProfileCard extends StatelessWidget {
   final String name;
   final String? photoUrl;
-  const _PlayerProfileCard({
-    required this.name,
-    this.photoUrl,
-  });
+  const _PlayerProfileCard({required this.name, this.photoUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -431,13 +431,14 @@ class _PlayerProfileCard extends StatelessWidget {
               ],
             ),
             child: ClipOval(
-              child: (photoUrl ?? '').isNotEmpty
-                  ? Image.network(
-                      photoUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _initialsAvatar(name),
-                    )
-                  : _initialsAvatar(name),
+              child:
+                  (photoUrl ?? '').isNotEmpty
+                      ? Image.network(
+                        photoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _initialsAvatar(name),
+                      )
+                      : _initialsAvatar(name),
             ),
           ),
           const SizedBox(height: 14),
@@ -475,11 +476,8 @@ class _PlayerProfileCard extends StatelessWidget {
   }
 
   static String _initialsFromName(String name) {
-    final parts = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'JG';
     if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
@@ -634,7 +632,10 @@ class _InfoCard extends StatelessWidget {
               const SizedBox(height: 12),
               // Botón "Ver detalle"
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD94929).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -672,11 +673,7 @@ class _AttendanceCard extends StatelessWidget {
   final bool isPreview;
   final int? percentage;
   final VoidCallback? onTap;
-  const _AttendanceCard({
-    this.isPreview = false,
-    this.percentage,
-    this.onTap,
-  });
+  const _AttendanceCard({this.isPreview = false, this.percentage, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -784,10 +781,7 @@ class _AttendanceCard extends StatelessWidget {
 
 /// Tarjeta de Próximo Encuentro.
 class _NextMatchCard extends StatelessWidget {
-  const _NextMatchCard({
-    this.isPreview = false,
-    this.dashboardData,
-  });
+  const _NextMatchCard({this.isPreview = false, this.dashboardData});
 
   final bool isPreview;
   final Map<String, dynamic>? dashboardData;
@@ -795,10 +789,13 @@ class _NextMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final next = _dashboardNextMatch(dashboardData);
-    final evento = next['evento'] ?? (isPreview ? 'Disponible al completar perfil' : '--');
+    final evento =
+        next['evento'] ?? (isPreview ? 'Disponible al completar perfil' : '--');
     final fecha = next['fecha'] ?? (isPreview ? '--' : '--');
     final hora = next['hora'] ?? (isPreview ? '--' : '--');
-    final lugar = next['lugar'] ?? (isPreview ? 'Completa perfil para desbloquear' : '--');
+    final lugar =
+        next['lugar'] ??
+        (isPreview ? 'Completa perfil para desbloquear' : '--');
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -929,82 +926,6 @@ class _NextMatchCard extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-
-}
-
-/// Vista simplificada cuando el perfil está incompleto.
-class _IncompleteProfileView extends StatelessWidget {
-  const _IncompleteProfileView({
-    required this.initials,
-    required this.onCompleteProfile,
-  });
-
-  final String initials;
-  final VoidCallback onCompleteProfile;
-
-  static const _avatarColor = Color(0xFFD94929);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 56,
-              backgroundColor: _avatarColor,
-              child: Text(
-                initials,
-                style: GoogleFonts.inter(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Completa tu perfil',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0B1926),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Cuéntanos un poco más sobre ti para que el profe te conozca mejor.',
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6B7280),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: onCompleteProfile,
-                style: FilledButton.styleFrom(
-                  backgroundColor: _avatarColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('Completar perfil'),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

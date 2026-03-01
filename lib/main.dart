@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:coach_app/config/errors/app_error_reporter.dart';
+import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/config/router/app_router.dart';
 import 'package:coach_app/config/theme/app_theme.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Environment.validate();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -18,20 +21,22 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light, 
-      statusBarBrightness: Brightness.dark, 
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    debugPrint('FlutterError: ${details.exceptionAsString()}');
-    if (details.stack != null) debugPrint(details.stack.toString());
+    AppErrorReporter.report(
+      details.exception,
+      details.stack ?? StackTrace.current,
+      context: 'FlutterError',
+    );
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Uncaught error: $error');
-    debugPrint(stack.toString());
+    AppErrorReporter.report(error, stack, context: 'PlatformDispatcher');
     return true;
   };
 

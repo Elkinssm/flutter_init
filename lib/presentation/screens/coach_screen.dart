@@ -128,31 +128,35 @@ class _CoachView extends ConsumerWidget {
 
     final asistenciaMesRaw =
         ((dashboard?['asistencia_por_mes'] ?? dashboard?['asistencia_mensual'])
-                as List<dynamic>?) ??
-            const [];
-    final asistenciaSeries = asistenciaMesRaw.asMap().entries.map((entry) {
-      final idx = entry.key;
-      final item = entry.value;
-      final m = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
-      final mesRaw = m['mes']?.toString() ?? 'Mes';
-      final mesLabel = _toMonthLabel(mesRaw);
-      final percentageRaw = m['porcentaje_asistencia'] ?? m['porcentaje'];
-      final value = (percentageRaw is num)
-          ? percentageRaw.toDouble()
-          : double.tryParse(percentageRaw?.toString() ?? '') ?? 0;
-      return AssistanceChartPoint(
-        label: mesLabel,
-        value: value,
-        color: _chartColors[idx % _chartColors.length],
-      );
-    }).toList();
+            as List<dynamic>?) ??
+        const [];
+    final asistenciaSeries =
+        asistenciaMesRaw.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final item = entry.value;
+          final m =
+              item is Map
+                  ? Map<String, dynamic>.from(item)
+                  : <String, dynamic>{};
+          final mesRaw = m['mes']?.toString() ?? 'Mes';
+          final mesLabel = _toMonthLabel(mesRaw);
+          final percentageRaw = m['porcentaje_asistencia'] ?? m['porcentaje'];
+          final value =
+              (percentageRaw is num)
+                  ? percentageRaw.toDouble()
+                  : double.tryParse(percentageRaw?.toString() ?? '') ?? 0;
+          return AssistanceChartPoint(
+            label: mesLabel,
+            value: value,
+            color: _chartColors[idx % _chartColors.length],
+          );
+        }).toList();
 
-    final mediaAsistencia = asistenciaSeries.isNotEmpty
-        ? asistenciaSeries
-                .map((e) => e.value)
-                .reduce((a, b) => a + b) /
-            asistenciaSeries.length
-        : 92.0;
+    final mediaAsistencia =
+        asistenciaSeries.isNotEmpty
+            ? asistenciaSeries.map((e) => e.value).reduce((a, b) => a + b) /
+                asistenciaSeries.length
+            : 92.0;
     final mediaText = '${mediaAsistencia.toStringAsFixed(0)}%';
     final trend = _computeTrend(asistenciaSeries);
 
@@ -329,17 +333,17 @@ class _CoachView extends ConsumerWidget {
         showDialog<void>(
           context: context,
           barrierDismissible: false,
-          builder:
-              (_) => const Center(child: CircularProgressIndicator()),
+          builder: (_) => const Center(child: CircularProgressIndicator()),
         );
 
         final data = await ref.read(coachApiServiceProvider).getCategorias();
         final list = data?['categorias'] as List<dynamic>? ?? [];
-        items = list.map((e) {
-          final m =
-              e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
-          return m;
-        }).toList();
+        items =
+            list.map((e) {
+              final m =
+                  e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
+              return m;
+            }).toList();
       } catch (_) {
         // Si falla backend, usar fallback local
       } finally {
@@ -359,6 +363,7 @@ class _CoachView extends ConsumerWidget {
       ];
     }
 
+    if (!context.mounted) return;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -396,7 +401,8 @@ class _CoachView extends ConsumerWidget {
                     cat['categoria']?.toString() ??
                     cat['nombre']?.toString() ??
                     '—';
-                final count = cat['total_miembros'] ?? cat['jugadores_count'] ?? 0;
+                final count =
+                    cat['total_miembros'] ?? cat['jugadores_count'] ?? 0;
                 final equipoId = cat['id'] ?? 0;
                 return ListTile(
                   leading: const Icon(
@@ -481,10 +487,7 @@ class _CoachGreeting extends StatelessWidget {
               ],
             ),
             child: ClipOval(
-              child: Image.asset(
-                'assets/images/coach.png',
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset('assets/images/coach.png', fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: 16),
@@ -514,7 +517,10 @@ class _CoachGreeting extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD94929).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),

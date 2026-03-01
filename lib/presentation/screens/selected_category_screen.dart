@@ -335,7 +335,7 @@ class _JugadorTile extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        _chip('$dorsal', const Color.fromRGBO(79, 166, 38, 1)),
+                        _chip(dorsal, const Color.fromRGBO(79, 166, 38, 1)),
                         const SizedBox(width: 6),
                         _chip(posicion, const Color.fromRGBO(173, 111, 57, 1)),
                         if ((peso ?? '').isNotEmpty) ...[
@@ -425,7 +425,7 @@ class _JugadorTile extends StatelessWidget {
       child: ClipOval(
         child: hasPhoto
             ? Image.network(
-                normalizedUrl!,
+                normalizedUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _initialsAvatar(nombre),
               )

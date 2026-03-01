@@ -24,6 +24,18 @@ void clearUserRole() {
   currentUserRole = null;
 }
 
+int? _extraAsInt(Object? extra) {
+  if (extra is int) return extra;
+  if (extra is String) return int.tryParse(extra);
+  return null;
+}
+
+Map<String, dynamic> _extraAsMap(Object? extra) {
+  if (extra is Map<String, dynamic>) return extra;
+  if (extra is Map) return Map<String, dynamic>.from(extra);
+  return <String, dynamic>{};
+}
+
 final appRouter = GoRouter(
   navigatorKey: rootNavKey,
   observers: [LoadingNavObserver()],
@@ -136,7 +148,7 @@ final appRouter = GoRouter(
       path: '/selected_category_screen',
       name: SelectedCategoryScreen.name,
       pageBuilder: (context, state) {
-        final year = state.extra as int;
+        final year = _extraAsInt(state.extra) ?? DateTime.now().year;
         return CustomTransition.slideLeft(SelectedCategoryScreen(year: year));
       },
     ),
@@ -144,15 +156,17 @@ final appRouter = GoRouter(
       path: '/daily_attendance_screen',
       name: DailyAttendanceScreen.name,
       pageBuilder: (context, state) {
-        final equipoId = state.extra as int?;
-        return CustomTransition.slideLeft(DailyAttendanceScreen(equipoId: equipoId));
+        final equipoId = _extraAsInt(state.extra);
+        return CustomTransition.slideLeft(
+          DailyAttendanceScreen(equipoId: equipoId),
+        );
       },
     ),
     GoRoute(
       path: '/new_player_screen',
       name: NewPlayerScreen.name,
       pageBuilder: (context, state) {
-        final equipoId = state.extra as int?;
+        final equipoId = _extraAsInt(state.extra);
         return CustomTransition.slideLeft(NewPlayerScreen(equipoId: equipoId));
       },
     ),
@@ -160,7 +174,7 @@ final appRouter = GoRouter(
       path: '/new_match_screen',
       name: NewMatchScreen.name,
       pageBuilder: (context, state) {
-        final equipoId = state.extra as int?;
+        final equipoId = _extraAsInt(state.extra);
         return CustomTransition.slideLeft(NewMatchScreen(equipoId: equipoId));
       },
     ),
@@ -168,10 +182,10 @@ final appRouter = GoRouter(
       path: '/player_status_screen',
       name: PlayerStatusScreen.name,
       pageBuilder: (context, state) {
-        final data = state.extra as Map<String, dynamic>? ?? {};
+        final data = _extraAsMap(state.extra);
         final name = data['name'] ?? '';
         final image = data['image'] ?? '';
-        final jugadorId = data['jugador_id'] as int?;
+        final jugadorId = _extraAsInt(data['jugador_id']);
 
         return CustomTransition.slideLeft(
           PlayerStatusScreen(names: name, image: image, jugadorId: jugadorId),
@@ -188,7 +202,8 @@ final appRouter = GoRouter(
       path: '/create_team_screen',
       name: CreateTeamScreen.name,
       pageBuilder:
-          (context, state) => CustomTransition.slideLeft(const CreateTeamScreen()),
+          (context, state) =>
+              CustomTransition.slideLeft(const CreateTeamScreen()),
     ),
     GoRoute(
       path: '/selected_team_screen',
@@ -197,11 +212,17 @@ final appRouter = GoRouter(
         final extra = state.extra;
         String teamName = 'Equipo';
         int? equipoId;
-        if (extra is Map<String, dynamic>) {
-          teamName = extra['teamName']?.toString() ?? 'Equipo';
-          equipoId = extra['equipoId'] as int?;
+        if (extra is Map) {
+          final map = _extraAsMap(extra);
+          teamName = map['teamName']?.toString() ?? 'Equipo';
+          equipoId = _extraAsInt(map['equipoId']);
         } else if (extra is String) {
-          teamName = extra;
+          final parsedId = int.tryParse(extra);
+          if (parsedId != null) {
+            equipoId = parsedId;
+          } else {
+            teamName = extra;
+          }
         }
         return CustomTransition.slideLeft(
           SelectedTeamScreen(teamName: teamName, equipoId: equipoId),

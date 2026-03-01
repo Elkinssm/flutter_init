@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'nav_loading.dart';
@@ -7,24 +5,12 @@ import 'nav_loading.dart';
 class LoadingNavObserver extends NavigatorObserver {
   // Threshold más alto para evitar flashes de loading en navegación rápida
   static const int _loadingThresholdMs = 400;
-  Timer? _safetyEndTimer;
-
-  void _cancelSafetyEnd() {
-    _safetyEndTimer?.cancel();
-    _safetyEndTimer = null;
-  }
 
   void _endNextFrame() {
-    _cancelSafetyEnd();
     // Cierre en el siguiente frame
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await SchedulerBinding.instance.endOfFrame;
       NavLoading.instance.end();
-    });
-    // Respaldo: forzar cierre tras 600ms por si el callback no corre a tiempo
-    _safetyEndTimer = Timer(const Duration(milliseconds: 600), () {
-      NavLoading.instance.end();
-      _cancelSafetyEnd();
     });
   }
 
@@ -54,7 +40,8 @@ class LoadingNavObserver extends NavigatorObserver {
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
     final skipOverlay =
-        _isComingFromAuth(oldRoute) || (newRoute != null && _isGoingToMainApp(newRoute));
+        _isComingFromAuth(oldRoute) ||
+        (newRoute != null && _isGoingToMainApp(newRoute));
     if (!skipOverlay) {
       NavLoading.instance.begin(thresholdMs: _loadingThresholdMs);
     }

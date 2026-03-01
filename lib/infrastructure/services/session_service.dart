@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:coach_app/config/errors/app_error_reporter.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Claves para [SharedPreferences].
@@ -10,13 +12,39 @@ const _kUser = 'auth_user';
 
 /// Persistencia de sesión (token, expires_at, usuario) para restaurar al abrir la app.
 class SessionService {
-  SessionService({SharedPreferences? prefs}) : _prefs = prefs;
+  SessionService({
+    SharedPreferences? prefs,
+    FlutterSecureStorage? secureStorage,
+  }) : _prefs = prefs,
+       _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   SharedPreferences? _prefs;
+  final FlutterSecureStorage _secureStorage;
+  String? _tokenCache;
+  String? _expiresAtCache;
+  String? _userJsonCache;
+  bool _cacheLoaded = false;
+  Future<void>? _loadCacheFuture;
 
   Future<SharedPreferences> get _storage async {
     _prefs ??= await SharedPreferences.getInstance();
     return _prefs!;
+  }
+
+  Future<void> _ensureCacheLoaded() async {
+    if (_cacheLoaded) return;
+    if (_loadCacheFuture != null) return _loadCacheFuture;
+
+    _loadCacheFuture = () async {
+      final prefs = await _storage;
+      _tokenCache = await _secureStorage.read(key: _kToken);
+      _expiresAtCache = await _secureStorage.read(key: _kExpiresAt);
+      _userJsonCache = prefs.getString(_kUser);
+      _cacheLoaded = true;
+      _loadCacheFuture = null;
+    }();
+
+    return _loadCacheFuture;
   }
 
   /// Guarda token, expires_at y usuario tras login/register.
@@ -26,11 +54,11 @@ class SessionService {
     String? expiresAt,
   }) async {
     final prefs = await _storage;
-    await prefs.setString(_kToken, token);
+    await _secureStorage.write(key: _kToken, value: token);
     if (expiresAt != null) {
-      await prefs.setString(_kExpiresAt, expiresAt);
+      await _secureStorage.write(key: _kExpiresAt, value: expiresAt);
     } else {
-      await prefs.remove(_kExpiresAt);
+      await _secureStorage.delete(key: _kExpiresAt);
     }
     final userMap = {
       'id': user.id,
@@ -40,44 +68,56 @@ class SessionService {
       'apellido': user.apellido,
       'perfil_completo': user.profileComplete,
     };
-    await prefs.setString(_kUser, jsonEncode(userMap));
+    final userJson = jsonEncode(userMap);
+    await prefs.setString(_kUser, userJson);
+
+    _tokenCache = token;
+    _expiresAtCache = expiresAt;
+    _userJsonCache = userJson;
+    _cacheLoaded = true;
   }
 
   /// Actualiza solo el token (y opcionalmente expires_at) tras refresh.
   Future<void> updateToken(String token, {String? expiresAt}) async {
-    final prefs = await _storage;
-    await prefs.setString(_kToken, token);
+    await _secureStorage.write(key: _kToken, value: token);
     if (expiresAt != null) {
-      await prefs.setString(_kExpiresAt, expiresAt);
+      await _secureStorage.write(key: _kExpiresAt, value: expiresAt);
     } else {
-      await prefs.remove(_kExpiresAt);
+      await _secureStorage.delete(key: _kExpiresAt);
     }
+    _tokenCache = token;
+    _expiresAtCache = expiresAt;
+    _cacheLoaded = true;
   }
 
   /// Elimina sesión (logout).
   Future<void> clearSession() async {
     final prefs = await _storage;
-    await prefs.remove(_kToken);
-    await prefs.remove(_kExpiresAt);
+    await _secureStorage.delete(key: _kToken);
+    await _secureStorage.delete(key: _kExpiresAt);
     await prefs.remove(_kUser);
+    _tokenCache = null;
+    _expiresAtCache = null;
+    _userJsonCache = null;
+    _cacheLoaded = true;
   }
 
   /// Devuelve el token guardado o null.
   Future<String?> getToken() async {
-    final prefs = await _storage;
-    return prefs.getString(_kToken);
+    await _ensureCacheLoaded();
+    return _tokenCache;
   }
 
   /// Devuelve expires_at (ISO 8601) o null.
   Future<String?> getExpiresAt() async {
-    final prefs = await _storage;
-    return prefs.getString(_kExpiresAt);
+    await _ensureCacheLoaded();
+    return _expiresAtCache;
   }
 
   /// Devuelve el usuario guardado o null. Solo campos necesarios para UI/rol.
   Future<AuthUser?> getSavedUser() async {
-    final prefs = await _storage;
-    final jsonStr = prefs.getString(_kUser);
+    await _ensureCacheLoaded();
+    final jsonStr = _userJsonCache;
     if (jsonStr == null) return null;
     try {
       final map = jsonDecode(jsonStr) as Map<String, dynamic>;
@@ -93,7 +133,8 @@ class SessionService {
         intentosFallidos: 0,
         profileComplete: map['perfil_completo'] as bool? ?? true,
       );
-    } catch (_) {
+    } catch (e, st) {
+      AppErrorReporter.report(e, st, context: 'session_service.get_saved_user');
       return null;
     }
   }

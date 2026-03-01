@@ -1,4 +1,5 @@
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/security/tls_pinning.dart';
 import 'package:coach_app/infrastructure/services/api_logger.dart';
 import 'package:dio/dio.dart';
 
@@ -21,6 +22,7 @@ class AuthService {
         receiveTimeout: const Duration(seconds: 8),
       ),
     );
+    TlsPinning.applyToDio(dio);
     dio.interceptors.add(
       ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
     );
@@ -201,7 +203,8 @@ class AuthService {
     // Usar solo la parte antes del @ para detectar rol y evitar falsos positivos con el dominio
     final localPart = lower.split('@').first;
     final isAdmin = localPart.contains('admin');
-    final isCoach = localPart.contains('coach') || localPart.contains('entrenador');
+    final isCoach =
+        localPart.contains('coach') || localPart.contains('entrenador');
     // Perfil incompleto para probar: usuario "incompleto@mail.com" o "perfil@mail.com"
     final profileComplete =
         lower != 'incompleto@mail.com' && lower != 'perfil@mail.com';
@@ -248,12 +251,9 @@ class AuthService {
 
   AuthResult _parseAuthResponse(Map<String, dynamic>? data) {
     final map = data ?? {};
-    final token =
-        map['token']?.toString() ??
-        map['access_token']?.toString() ??
-        (map['data'] is Map ? (map['data'] as Map)['token']?.toString() : null);
-    final expiresAtRaw = map['expires_at']?.toString();
-    final userJson = (map['usuario'] as Map?)?.cast<String, dynamic>() ?? {};
+    final token = _extractToken(map);
+    final expiresAtRaw = _extractExpiresAt(map);
+    final userJson = _extractUser(map);
     final user = AuthUser.fromJson(userJson);
     return AuthResult(
       message: map['message']?.toString() ?? 'Operación exitosa',
@@ -261,6 +261,62 @@ class AuthService {
       expiresAt: expiresAtRaw,
       user: user,
     );
+  }
+
+  String? _extractToken(Map<String, dynamic> map) {
+    final direct =
+        map['token']?.toString() ??
+        map['access_token']?.toString() ??
+        map['jwt']?.toString() ??
+        map['jwt_token']?.toString();
+    if ((direct ?? '').isNotEmpty) return direct;
+
+    final dataNode = map['data'];
+    if (dataNode is Map) {
+      final nested = Map<String, dynamic>.from(dataNode);
+      final nestedToken =
+          nested['token']?.toString() ??
+          nested['access_token']?.toString() ??
+          nested['jwt']?.toString() ??
+          nested['jwt_token']?.toString();
+      if ((nestedToken ?? '').isNotEmpty) return nestedToken;
+    }
+    return null;
+  }
+
+  String? _extractExpiresAt(Map<String, dynamic> map) {
+    final direct = map['expires_at']?.toString() ?? map['exp']?.toString();
+    if ((direct ?? '').isNotEmpty) return direct;
+
+    final dataNode = map['data'];
+    if (dataNode is Map) {
+      final nested = Map<String, dynamic>.from(dataNode);
+      final nestedExp =
+          nested['expires_at']?.toString() ?? nested['exp']?.toString();
+      if ((nestedExp ?? '').isNotEmpty) return nestedExp;
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _extractUser(Map<String, dynamic> map) {
+    if (map['usuario'] is Map) {
+      return (map['usuario'] as Map).cast<String, dynamic>();
+    }
+    if (map['user'] is Map) {
+      return (map['user'] as Map).cast<String, dynamic>();
+    }
+
+    final dataNode = map['data'];
+    if (dataNode is Map) {
+      final nested = Map<String, dynamic>.from(dataNode);
+      if (nested['usuario'] is Map) {
+        return (nested['usuario'] as Map).cast<String, dynamic>();
+      }
+      if (nested['user'] is Map) {
+        return (nested['user'] as Map).cast<String, dynamic>();
+      }
+    }
+    return <String, dynamic>{};
   }
 
   String? _extractMessage(DioException error) {

@@ -84,9 +84,21 @@ class _LoginViewState extends ConsumerState<_LoginView> {
       final userRole = currentUserRole;
       if (!mounted) return;
 
-      if (Environment.useBackend &&
-          auth.token != null &&
-          auth.token!.isNotEmpty) {
+      final hasToken = auth.token != null && auth.token!.isNotEmpty;
+      if (Environment.useBackend && !hasToken) {
+        NavLoading.instance.end();
+        CustomModal.show(
+          context: context,
+          title: 'Respuesta inválida de autenticación',
+          message:
+              'El backend autenticó, pero no devolvió token JWT. No se puede continuar la sesión.',
+          type: ModalType.error,
+          buttonText: 'Entendido',
+        );
+        return;
+      }
+
+      if (Environment.useBackend && hasToken) {
         await ref
             .read(sessionServiceProvider)
             .saveSession(
@@ -312,7 +324,8 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                               const SizedBox(height: 8),
                               Center(
                                 child: TextButton(
-                                  onPressed: isLoading ? null : _submitTestLogin,
+                                  onPressed:
+                                      isLoading ? null : _submitTestLogin,
                                   child: const Text('Probar login rápido'),
                                 ),
                               ),

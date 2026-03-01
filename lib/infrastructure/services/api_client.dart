@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/config/errors/app_error_reporter.dart';
 import 'package:coach_app/config/router/app_router.dart';
+import 'package:coach_app/config/security/tls_pinning.dart';
 import 'package:coach_app/infrastructure/services/api_logger.dart';
 import 'package:coach_app/infrastructure/services/session_service.dart';
 import 'package:coach_app/presentation/helpers/globals.dart';
@@ -15,7 +17,7 @@ import 'package:go_router/go_router.dart';
 /// interceptor que añade Bearer token desde sesión; en 401 intenta refresh token y reintenta la petición.
 final apiClientProvider = Provider<Dio>((ref) {
   final session = ref.read(sessionServiceProvider);
-  Completer<String?>? refreshCompleter;
+  Completer<_RefreshResult>? refreshCompleter;
   final dio = Dio(
     BaseOptions(
       baseUrl: Environment.apiUrl,
@@ -27,6 +29,7 @@ final apiClientProvider = Provider<Dio>((ref) {
       },
     ),
   );
+  TlsPinning.applyToDio(dio);
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -61,10 +64,13 @@ final apiClientProvider = Provider<Dio>((ref) {
 
         try {
           if (refreshCompleter == null || refreshCompleter!.isCompleted) {
-            refreshCompleter = Completer<String?>();
+            refreshCompleter = Completer<_RefreshResult>();
             () async {
               try {
-                final refreshDio = Dio(BaseOptions(baseUrl: Environment.apiUrl));
+                final refreshDio = Dio(
+                  BaseOptions(baseUrl: Environment.apiUrl),
+                );
+                TlsPinning.applyToDio(refreshDio);
                 refreshDio.interceptors.add(
                   ApiLoggerInterceptor(enabled: Environment.enableHttpLogs),
                 );
@@ -79,33 +85,61 @@ final apiClientProvider = Provider<Dio>((ref) {
                   ),
                 );
                 final data = r.data;
-                final newToken = data?['token']?.toString();
-                final expiresAt = data?['expires_at']?.toString();
+                final newToken = _extractToken(data);
+                final expiresAt = _extractExpiresAt(data);
                 if (newToken != null && newToken.isNotEmpty) {
                   await session.updateToken(newToken, expiresAt: expiresAt);
-                  refreshCompleter?.complete(newToken);
+                  refreshCompleter?.complete(
+                    _RefreshResult(token: newToken, forceLogout: false),
+                  );
                   return;
                 }
-                refreshCompleter?.complete(null);
-              } catch (_) {
-                refreshCompleter?.complete(null);
+                // Refresh respondió pero sin token utilizable.
+                refreshCompleter?.complete(
+                  const _RefreshResult(forceLogout: true),
+                );
+              } on DioException catch (e, st) {
+                AppErrorReporter.report(
+                  e,
+                  st,
+                  context: 'api_client.refresh_token',
+                );
+                final code = e.response?.statusCode ?? 0;
+                refreshCompleter?.complete(
+                  _RefreshResult(forceLogout: code == 401 || code == 403),
+                );
+              } catch (e, st) {
+                AppErrorReporter.report(
+                  e,
+                  st,
+                  context: 'api_client.refresh_token',
+                );
+                refreshCompleter?.complete(
+                  const _RefreshResult(forceLogout: false),
+                );
               }
             }();
           }
 
-          final refreshedToken = await refreshCompleter!.future;
-          if (refreshedToken != null && refreshedToken.isNotEmpty) {
-            opts.headers['Authorization'] = 'Bearer $refreshedToken';
+          final refreshResult = await refreshCompleter!.future;
+          if ((refreshResult.token ?? '').isNotEmpty) {
+            opts.headers['Authorization'] = 'Bearer ${refreshResult.token}';
             opts.extra['__retried_after_refresh'] = true;
             final response = await dio.fetch(opts);
             return handler.resolve(response);
           }
-        } catch (_) {
-          // refresh flow falló: cerrar sesión y redirigir
+          if (refreshResult.forceLogout) {
+            await _clearAndGoLogin(ref, session);
+          }
+          return handler.next(error);
+        } catch (e, st) {
+          AppErrorReporter.report(
+            e,
+            st,
+            context: 'api_client.refresh_retry_flow',
+          );
+          return handler.next(error);
         }
-
-        await _clearAndGoLogin(ref, session);
-        return handler.next(error);
       },
     ),
   );
@@ -123,4 +157,45 @@ Future<void> _clearAndGoLogin(Ref ref, SessionService session) async {
   if (ctx != null && ctx.mounted) {
     GoRouter.of(ctx).go('/login_screen');
   }
+}
+
+class _RefreshResult {
+  const _RefreshResult({this.token, required this.forceLogout});
+
+  final String? token;
+  final bool forceLogout;
+}
+
+String? _extractToken(Map<String, dynamic>? map) {
+  final data = map ?? const <String, dynamic>{};
+  final direct =
+      data['token']?.toString() ??
+      data['access_token']?.toString() ??
+      data['jwt']?.toString() ??
+      data['jwt_token']?.toString();
+  if ((direct ?? '').isNotEmpty) return direct;
+  final nested = data['data'];
+  if (nested is Map) {
+    final m = Map<String, dynamic>.from(nested);
+    final nestedToken =
+        m['token']?.toString() ??
+        m['access_token']?.toString() ??
+        m['jwt']?.toString() ??
+        m['jwt_token']?.toString();
+    if ((nestedToken ?? '').isNotEmpty) return nestedToken;
+  }
+  return null;
+}
+
+String? _extractExpiresAt(Map<String, dynamic>? map) {
+  final data = map ?? const <String, dynamic>{};
+  final direct = data['expires_at']?.toString() ?? data['exp']?.toString();
+  if ((direct ?? '').isNotEmpty) return direct;
+  final nested = data['data'];
+  if (nested is Map) {
+    final m = Map<String, dynamic>.from(nested);
+    final nestedExp = m['expires_at']?.toString() ?? m['exp']?.toString();
+    if ((nestedExp ?? '').isNotEmpty) return nestedExp;
+  }
+  return null;
 }

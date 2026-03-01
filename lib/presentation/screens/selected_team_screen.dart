@@ -53,7 +53,10 @@ class _SelectedTeamScreenState extends ConsumerState<SelectedTeamScreen> {
         bottomNavigationBar: const CustomBottomAppbar(),
         floatingActionButton: const CustomFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        body: _SelectedTeamView(teamName: widget.teamName, equipoId: widget.equipoId),
+        body: _SelectedTeamView(
+          teamName: widget.teamName,
+          equipoId: widget.equipoId,
+        ),
       ),
     );
   }
@@ -144,7 +147,10 @@ class _LineupComingSoonSection extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD94929),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                 ),
                 child: const Text('Volver a Inicio'),
               ),
@@ -157,10 +163,7 @@ class _LineupComingSoonSection extends ConsumerWidget {
 }
 
 class _TopSegmentTabs extends StatelessWidget {
-  const _TopSegmentTabs({
-    required this.selected,
-    required this.onChanged,
-  });
+  const _TopSegmentTabs({required this.selected, required this.onChanged});
 
   final String selected;
   final ValueChanged<String> onChanged;
@@ -176,34 +179,37 @@ class _TopSegmentTabs extends StatelessWidget {
         border: Border.all(color: const Color.fromRGBO(224, 214, 200, 1)),
       ),
       child: Row(
-        children: items.map((item) {
-          final active = item == selected;
-          return Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () => onChanged(item),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 140),
-                height: 42,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: active ? const Color(0xFFD94929) : Colors.transparent,
+        children:
+            items.map((item) {
+              final active = item == selected;
+              return Expanded(
+                child: InkWell(
                   borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  item,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: active
-                        ? Colors.white
-                        : const Color.fromRGBO(55, 73, 87, 1),
+                  onTap: () => onChanged(item),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 140),
+                    height: 42,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color:
+                          active ? const Color(0xFFD94929) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      item,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color:
+                            active
+                                ? Colors.white
+                                : const Color.fromRGBO(55, 73, 87, 1),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
       ),
     );
   }
@@ -218,9 +224,7 @@ class _TeamOverviewSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (equipoId == null) {
       return const Expanded(
-        child: Center(
-          child: Text('No se encontró el equipo seleccionado.'),
-        ),
+        child: Center(child: Text('No se encontró el equipo seleccionado.')),
       );
     }
 
@@ -277,32 +281,41 @@ class _TeamOverviewSection extends ConsumerWidget {
     final equipoData = equipoAsync.valueOrNull ?? <String, dynamic>{};
     final partidosData = partidosAsync.valueOrNull ?? <String, dynamic>{};
 
-    final equipoFromJugadores = (jugadoresData['equipo'] is Map)
-        ? Map<String, dynamic>.from(jugadoresData['equipo'])
-        : <String, dynamic>{};
-    final equipo = (equipoData['equipo'] is Map)
-        ? Map<String, dynamic>.from(equipoData['equipo'])
-        : equipoFromJugadores;
+    final equipoFromJugadores =
+        (jugadoresData['equipo'] is Map)
+            ? Map<String, dynamic>.from(jugadoresData['equipo'])
+            : <String, dynamic>{};
+    final equipo =
+        (equipoData['equipo'] is Map)
+            ? Map<String, dynamic>.from(equipoData['equipo'])
+            : equipoFromJugadores;
 
-    final jugadoresRaw = (jugadoresData['jugadores'] as List<dynamic>?) ?? const [];
-    final jugadores = jugadoresRaw
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    final jugadoresRaw =
+        (jugadoresData['jugadores'] as List<dynamic>?) ?? const [];
+    final jugadores =
+        jugadoresRaw
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
 
-    final totalJugadores = (jugadoresData['total'] as num?)?.toInt() ?? jugadores.length;
+    final totalJugadores =
+        (jugadoresData['total'] as num?)?.toInt() ?? jugadores.length;
     final hasMoreJugadores = jugadores.length > 3;
-    final visibleJugadores = hasMoreJugadores ? jugadores.take(3).toList() : jugadores;
+    final visibleJugadores =
+        hasMoreJugadores ? jugadores.take(3).toList() : jugadores;
     final categoria = equipo['categoria']?.toString() ?? 'Sin categoría';
-    final teamName = (equipo['nombre']?.toString().trim().isNotEmpty ?? false)
-        ? equipo['nombre'].toString()
-        : 'Equipo';
+    final teamName =
+        (equipo['nombre']?.toString().trim().isNotEmpty ?? false)
+            ? equipo['nombre'].toString()
+            : 'Equipo';
 
-    final partidosRaw = (partidosData['partidos'] as List<dynamic>?) ?? const [];
-    final partidos = partidosRaw
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    final partidosRaw =
+        (partidosData['partidos'] as List<dynamic>?) ?? const [];
+    final partidos =
+        partidosRaw
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
     final record = _buildRecord(partidos);
     final proximoPartido = _nextMatchShort(partidos);
 
@@ -379,11 +392,15 @@ class _TeamOverviewSection extends ConsumerWidget {
                 const Spacer(),
                 InkWell(
                   onTap: () {
-                    ref.read(selectedMenuProvider.notifier).state = 'Alineación';
+                    ref.read(selectedMenuProvider.notifier).state =
+                        'Alineación';
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         Text(
@@ -431,15 +448,17 @@ class _TeamOverviewSection extends ConsumerWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(bottom: 80),
-                separatorBuilder: (_, __) => Divider(
-                  height: 10,
-                  thickness: 0,
-                  color: Colors.transparent,
-                ),
-                itemBuilder: (_, i) => _TeamPlayerTile(
-                  jugador: visibleJugadores[i],
-                  equipoId: equipoId!,
-                ),
+                separatorBuilder:
+                    (_, __) => Divider(
+                      height: 10,
+                      thickness: 0,
+                      color: Colors.transparent,
+                    ),
+                itemBuilder:
+                    (_, i) => _TeamPlayerTile(
+                      jugador: visibleJugadores[i],
+                      equipoId: equipoId!,
+                    ),
               ),
           ],
         ),
@@ -457,18 +476,21 @@ class _TeamPlayerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final jugadorId = (jugador['id'] as num?)?.toInt();
     final nombre = _displayName(jugador);
-    final dorsal = (jugador['dorsal'] ??
-            jugador['dorsal_actual'] ??
-            jugador['numero_camiseta'])?.toString() ??
+    final dorsal =
+        (jugador['dorsal'] ??
+                jugador['dorsal_actual'] ??
+                jugador['numero_camiseta'])
+            ?.toString() ??
         '--';
     final posicion = _positionAbbr(jugador);
     final photo = _normalizeImageUrl(jugador['foto_url']?.toString());
     final estadoColor = _playerStateColor(jugador);
 
     return InkWell(
-      onTap: jugadorId == null
-          ? null
-          : () => context.pushNamed(
+      onTap:
+          jugadorId == null
+              ? null
+              : () => context.pushNamed(
                 PlayerStatusScreen.name,
                 extra: {
                   'name': nombre,
@@ -498,19 +520,17 @@ class _TeamPlayerTile extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFE0D6C8),
-                  width: 1.5,
-                ),
+                border: Border.all(color: const Color(0xFFE0D6C8), width: 1.5),
               ),
               child: ClipOval(
-                child: (photo ?? '').isNotEmpty
-                    ? Image.network(
-                        photo!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _initialsAvatar(nombre),
-                      )
-                    : _initialsAvatar(nombre),
+                child:
+                    (photo ?? '').isNotEmpty
+                        ? Image.network(
+                          photo!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _initialsAvatar(nombre),
+                        )
+                        : _initialsAvatar(nombre),
               ),
             ),
             const SizedBox(width: 14),
@@ -620,10 +640,11 @@ class _TeamPlayerTile extends StatelessWidget {
           .toString()
           .toUpperCase();
     }
-    final direct = (j['posicion_abreviatura'] ??
-            j['posicion_codigo'] ??
-            j['posicion_nombre'])
-        ?.toString();
+    final direct =
+        (j['posicion_abreviatura'] ??
+                j['posicion_codigo'] ??
+                j['posicion_nombre'])
+            ?.toString();
     if (direct != null && direct.trim().isNotEmpty) {
       return direct.toUpperCase();
     }
@@ -651,13 +672,14 @@ class _TeamPlayerTile extends StatelessWidget {
   }
 
   static Widget _initialsAvatar(String name) {
-    final initials = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .take(2)
-        .map((p) => p[0].toUpperCase())
-        .join();
+    final initials =
+        name
+            .trim()
+            .split(RegExp(r'\s+'))
+            .where((p) => p.isNotEmpty)
+            .take(2)
+            .map((p) => p[0].toUpperCase())
+            .join();
     return Container(
       color: const Color(0xFFD6E5EF),
       child: Center(
@@ -811,7 +833,20 @@ String _nextMatchShort(List<Map<String, dynamic>> partidos) {
   if (next == null || nextDt == null) return '--';
 
   const wd = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  const mo = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const mo = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
+  ];
   return '${wd[nextDt.weekday - 1]} ${nextDt.day} ${mo[nextDt.month - 1]}';
 }
 
@@ -835,9 +870,10 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
 
   @override
   Widget build(BuildContext context) {
-    final partidosAsync = widget.equipoId == null
-        ? ref.watch(coachPartidosProvider)
-        : ref.watch(coachPartidosByEquipoProvider(widget.equipoId!));
+    final partidosAsync =
+        widget.equipoId == null
+            ? ref.watch(coachPartidosProvider)
+            : ref.watch(coachPartidosByEquipoProvider(widget.equipoId!));
 
     if (partidosAsync.hasError && partidosAsync.valueOrNull == null) {
       return Expanded(
@@ -862,7 +898,9 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
                     if (widget.equipoId == null) {
                       ref.invalidate(coachPartidosProvider);
                     } else {
-                      ref.invalidate(coachPartidosByEquipoProvider(widget.equipoId!));
+                      ref.invalidate(
+                        coachPartidosByEquipoProvider(widget.equipoId!),
+                      );
                     }
                   },
                   child: const Text('Reintentar'),
@@ -874,22 +912,25 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
       );
     }
 
-    final raw = ((partidosAsync.valueOrNull?['partidos'] as List<dynamic>?) ?? const []);
-    final partidos = raw
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
+    final raw =
+        ((partidosAsync.valueOrNull?['partidos'] as List<dynamic>?) ??
+            const []);
+    final partidos =
+        raw.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
 
     final now = DateTime.now();
     final month = _selectedMonth ?? now.month;
-    final monthPartidos = partidos.where((p) {
-      final dt = DateTime.tryParse(p['fecha']?.toString() ?? '');
-      return dt != null && dt.month == month && dt.year == now.year;
-    }).toList();
+    final monthPartidos =
+        partidos.where((p) {
+          final dt = DateTime.tryParse(p['fecha']?.toString() ?? '');
+          return dt != null && dt.month == month && dt.year == now.year;
+        }).toList();
 
     monthPartidos.sort((a, b) {
-      final ad = DateTime.tryParse(a['fecha']?.toString() ?? '') ?? DateTime(2100);
-      final bd = DateTime.tryParse(b['fecha']?.toString() ?? '') ?? DateTime(2100);
+      final ad =
+          DateTime.tryParse(a['fecha']?.toString() ?? '') ?? DateTime(2100);
+      final bd =
+          DateTime.tryParse(b['fecha']?.toString() ?? '') ?? DateTime(2100);
       return ad.compareTo(bd);
     });
 
@@ -933,17 +974,25 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
                 SizedBox(
                   height: 36,
                   child: ElevatedButton.icon(
-                    onPressed: () =>
-                        context.pushNamed('/new_match_screen', extra: widget.equipoId),
+                    onPressed:
+                        () => context.pushNamed(
+                          '/new_match_screen',
+                          extra: widget.equipoId,
+                        ),
                     icon: const Icon(Icons.add, size: 16),
                     label: Text(
                       'Crear partido',
-                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD94929),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                       elevation: 1,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                     ),
@@ -957,10 +1006,7 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
               onMonthSelected: (m) => setState(() => _selectedMonth = m),
             ),
             const SizedBox(height: 14),
-            _AgendaSectionHeader(
-              title: _todayHeader(now),
-              count: hoy.length,
-            ),
+            _AgendaSectionHeader(title: _todayHeader(now), count: hoy.length),
             const SizedBox(height: 10),
             if (partidosAsync.isLoading && partidosAsync.valueOrNull == null)
               const Center(
@@ -972,20 +1018,24 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
             else if (hoy.isEmpty)
               _emptyDayCard()
             else
-              ...hoy.map((p) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _MatchAgendaCard(partido: p, isToday: true),
-                  )),
+              ...hoy.map(
+                (p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _MatchAgendaCard(partido: p, isToday: true),
+                ),
+              ),
             const SizedBox(height: 16),
             const _SectionMiniTitle(title: 'Próximos'),
             const SizedBox(height: 10),
             if (proximos.isEmpty)
               _emptyHint('No hay próximos partidos en este mes')
             else
-              ...proximos.map((p) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _MatchAgendaCard(partido: p),
-                  )),
+              ...proximos.map(
+                (p) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _MatchAgendaCard(partido: p),
+                ),
+              ),
             const SizedBox(height: 16),
             const _SectionMiniTitle(title: 'Pasados'),
             const SizedBox(height: 10),
@@ -1009,7 +1059,9 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _MatchHistoryTile(
                     rival: 'Vs ${p['rival_nombre'] ?? p['rival'] ?? 'Rival'}',
-                    date: _PartidosSectionState._formatShortDate(p['fecha']?.toString()),
+                    date: _PartidosSectionState._formatShortDate(
+                      p['fecha']?.toString(),
+                    ),
                     resultado: resultado,
                     isVictory: isVictory,
                   ),
@@ -1023,10 +1075,7 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
   }
 
   Widget _emptyHint(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(color: const Color(0xFF6B7280)),
-    );
+    return Text(text, style: GoogleFonts.inter(color: const Color(0xFF6B7280)));
   }
 
   Widget _emptyDayCard() {
@@ -1060,7 +1109,10 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
           const SizedBox(height: 4),
           Text(
             'No hay partidos programados para hoy.',
-            style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF6B7280),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -1084,47 +1136,40 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
   }
 
   static String _todayHeader(DateTime date) {
-    const m = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    return 'Hoy, ${date.day.toString().padLeft(2, '0')} de ${m[date.month - 1]}';
-  }
-
-  static String _formatPartidoDate(String? rawDate, String? rawHora) {
-    final d = DateTime.tryParse(rawDate ?? '');
-    if (d == null) return rawDate ?? 'Fecha por definir';
-    final months = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
+    const m = [
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sep',
+      'oct',
+      'nov',
+      'dic',
     ];
-    final weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    String hora = '';
-    if ((rawHora ?? '').isNotEmpty) {
-      final hh = rawHora!.split(':');
-      if (hh.length >= 2) {
-        var h = int.tryParse(hh[0]) ?? 0;
-        final m = hh[1];
-        final isPm = h >= 12;
-        if (h == 0) h = 12;
-        if (h > 12) h -= 12;
-        hora = ', $h:$m ${isPm ? 'pm' : 'am'}';
-      }
-    }
-    return '${weekdays[d.weekday - 1]} ${d.day} ${months[d.month - 1]}$hora';
+    return 'Hoy, ${date.day.toString().padLeft(2, '0')} de ${m[date.month - 1]}';
   }
 
   static String _formatShortDate(String? rawDate) {
     final d = DateTime.tryParse(rawDate ?? '');
     if (d == null) return rawDate ?? '--';
-    const m = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const m = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
     return '${d.day} ${m[d.month - 1]} ${d.year}';
   }
 
@@ -1149,7 +1194,20 @@ class _MonthChipsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const labels = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
 
     return SizedBox(
       height: 38,
@@ -1167,31 +1225,36 @@ class _MonthChipsRow extends StatelessWidget {
               duration: const Duration(milliseconds: 160),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               decoration: BoxDecoration(
-                color: active
-                    ? const Color(0xFFD94929)
-                    : const Color.fromRGBO(245, 240, 230, 1),
+                color:
+                    active
+                        ? const Color(0xFFD94929)
+                        : const Color.fromRGBO(245, 240, 230, 1),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: active
-                      ? const Color(0xFFD94929)
-                      : const Color.fromRGBO(224, 214, 200, 1),
+                  color:
+                      active
+                          ? const Color(0xFFD94929)
+                          : const Color.fromRGBO(224, 214, 200, 1),
                   width: 1.2,
                 ),
-                boxShadow: active
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFFD94929).withValues(alpha: 0.25),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 3,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                boxShadow:
+                    active
+                        ? [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFD94929,
+                            ).withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                        : const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 3,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
               ),
               child: Text(
                 labels[i],
@@ -1210,10 +1273,7 @@ class _MonthChipsRow extends StatelessWidget {
 }
 
 class _AgendaSectionHeader extends StatelessWidget {
-  const _AgendaSectionHeader({
-    required this.title,
-    required this.count,
-  });
+  const _AgendaSectionHeader({required this.title, required this.count});
 
   final String title;
   final int count;
@@ -1273,20 +1333,21 @@ class _SectionMiniTitle extends StatelessWidget {
 }
 
 class _MatchAgendaCard extends StatelessWidget {
-  const _MatchAgendaCard({
-    required this.partido,
-    this.isToday = false,
-  });
+  const _MatchAgendaCard({required this.partido, this.isToday = false});
 
   final Map<String, dynamic> partido;
   final bool isToday;
 
   @override
   Widget build(BuildContext context) {
-    final rival = (partido['rival_nombre'] ?? partido['rival'] ?? 'Rival por definir').toString();
+    final rival =
+        (partido['rival_nombre'] ?? partido['rival'] ?? 'Rival por definir')
+            .toString();
     final esLocal = partido['es_local'] == true;
     final competencia = (partido['competencia'] ?? 'Amistoso').toString();
-    final lugar = (partido['lugar'] ?? partido['estadio'] ?? 'Lugar por definir').toString();
+    final lugar =
+        (partido['lugar'] ?? partido['estadio'] ?? 'Lugar por definir')
+            .toString();
     final hora = _hourText(partido['hora']?.toString());
     final fecha = _datePretty(partido['fecha']?.toString());
     final heading = isToday ? 'Próximo encuentro' : competencia;
@@ -1322,7 +1383,10 @@ class _MatchAgendaCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD94929),
                   borderRadius: BorderRadius.circular(999),
@@ -1453,11 +1517,23 @@ class _MatchAgendaCard extends StatelessWidget {
   static String _datePretty(String? rawDate) {
     final d = DateTime.tryParse(rawDate ?? '');
     if (d == null) return rawDate ?? '--';
-    const mo = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const mo = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
     return '${d.day.toString().padLeft(2, '0')} ${mo[d.month - 1]} ${d.year}';
   }
 }
-
 
 /// Tile de historial de un partido jugado.
 class _MatchHistoryTile extends StatelessWidget {
@@ -1543,7 +1619,10 @@ class _MatchHistoryTile extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: tagColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),

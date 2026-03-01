@@ -22,15 +22,13 @@ class PublicApiService {
   }
 
   /// GET /api/public/equipos-disponibles — Equipos para completar perfil jugador.
-  /// Soporta filtro opcional por escuela: ?escuela_id=<id>.
+  /// Soporta filtro opcional por escuela: `?escuela_id=<id>`.
   Future<Map<String, dynamic>?> getEquiposDisponibles({int? escuelaId}) async {
     if (!Environment.useBackend) return null;
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/public/equipos-disponibles',
-        queryParameters: {
-          if (escuelaId != null) 'escuela_id': escuelaId,
-        },
+        queryParameters: {if (escuelaId != null) 'escuela_id': escuelaId},
       );
       return response.data;
     } on DioException {
@@ -53,7 +51,9 @@ class PublicApiService {
   Future<Map<String, dynamic>?> getPosiciones() async {
     if (!Environment.useBackend) return null;
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/public/posiciones');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/public/posiciones',
+      );
       return response.data;
     } on DioException {
       rethrow;
