@@ -6,6 +6,7 @@ export 'package:coach_app/presentation/screens/daily_attendance_screen.dart';
 export 'package:coach_app/presentation/screens/history_screen.dart';
 export 'package:coach_app/presentation/screens/loading_screen.dart';
 export 'package:coach_app/presentation/screens/login_screen.dart';
+export 'package:coach_app/presentation/screens/live_match_screen.dart';
 export 'package:coach_app/presentation/screens/my_teams_screen.dart';
 export 'package:coach_app/presentation/screens/new_player_screen.dart';
 export 'package:coach_app/presentation/screens/create_team_screen.dart';

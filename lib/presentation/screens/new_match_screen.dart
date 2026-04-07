@@ -46,11 +46,19 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
   final _competenciaController = TextEditingController();
   int? _selectedEquipoId;
   String? _selectedCategoria;
+  String? _selectedCondicionPartido;
   String? _selectedTipoPartido;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _saving = false;
   bool _initializedSelection = false;
+
+  static const _condicionesPartido = <String>[
+    'Local / Casa',
+    'Visitante / Fuera',
+  ];
+
+  static const _tiposPartido = <String>['TORNEO', 'AMISTOSO', 'ENTRENAMIENTO'];
 
   @override
   void dispose() {
@@ -124,12 +132,14 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     final equipos = _buildEquipoOptions(categoriasAsync.valueOrNull);
     final categorias = _buildCategorias(equipos);
     _syncInitialSelection(equipos);
+    final launchedFromTeam = widget.equipoId != null;
 
-    final equiposFiltrados = _selectedCategoria == null
-        ? equipos
-        : equipos.where((e) => e.categoria == _selectedCategoria).toList();
-    final hasSingleCategoria = categorias.length == 1;
-    final hasSingleEquipo = equiposFiltrados.length == 1;
+    final equiposFiltrados =
+        _selectedCategoria == null
+            ? equipos
+            : equipos.where((e) => e.categoria == _selectedCategoria).toList();
+    final hasSingleCategoria = launchedFromTeam || categorias.length == 1;
+    final hasSingleEquipo = launchedFromTeam || equiposFiltrados.length == 1;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -176,30 +186,34 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
                   const SizedBox(height: 8),
                   hasSingleCategoria
                       ? _buildLockedSelector(
-                          text: categorias.first,
-                          icon: Icons.category_outlined,
-                        )
+                        text: _selectedCategoria ?? categorias.first,
+                        icon: Icons.category_outlined,
+                      )
                       : _buildSimpleDropdown<String>(
-                          value: _selectedCategoria,
-                          hint: 'Selecciona categoría',
-                          items: categorias,
-                          icon: Icons.category_outlined,
-                          itemLabel: (v) => v,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedCategoria = value;
-                              final equiposCat = equipos
-                                  .where((e) => e.categoria == value)
-                                  .toList();
-                              _selectedEquipoId =
-                                  equiposCat.isNotEmpty ? equiposCat.first.id : null;
-                            });
-                          },
-                        ),
+                        value: _selectedCategoria,
+                        hint: 'Selecciona categoría',
+                        items: categorias,
+                        icon: Icons.category_outlined,
+                        itemLabel: (v) => v,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategoria = value;
+                            final equiposCat =
+                                equipos
+                                    .where((e) => e.categoria == value)
+                                    .toList();
+                            _selectedEquipoId =
+                                equiposCat.isNotEmpty
+                                    ? equiposCat.first.id
+                                    : null;
+                          });
+                        },
+                      ),
                   const SizedBox(height: 20),
                   _buildLabel('EQUIPO'),
                   const SizedBox(height: 8),
-                  if (categoriasAsync.isLoading && categoriasAsync.valueOrNull == null)
+                  if (categoriasAsync.isLoading &&
+                      categoriasAsync.valueOrNull == null)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 10),
                       child: Center(child: CircularProgressIndicator()),
@@ -207,22 +221,32 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
                   else
                     hasSingleEquipo
                         ? _buildLockedSelector(
-                            text: equiposFiltrados.first.nombre,
-                            icon: Icons.shield_outlined,
-                          )
+                          text:
+                              _findEquipoById(
+                                equipos,
+                                _selectedEquipoId,
+                              )?.nombre ??
+                              (equiposFiltrados.isNotEmpty
+                                  ? equiposFiltrados.first.nombre
+                                  : 'Equipo'),
+                          icon: Icons.shield_outlined,
+                        )
                         : _buildSimpleDropdown<_EquipoOption>(
-                            value: _findEquipoById(equiposFiltrados, _selectedEquipoId),
-                            hint: 'Selecciona equipo',
-                            items: equiposFiltrados,
-                            icon: Icons.shield_outlined,
-                            itemLabel: (e) => e.nombre,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedEquipoId = value?.id;
-                                _selectedCategoria = value?.categoria;
-                              });
-                            },
+                          value: _findEquipoById(
+                            equiposFiltrados,
+                            _selectedEquipoId,
                           ),
+                          hint: 'Selecciona equipo',
+                          items: equiposFiltrados,
+                          icon: Icons.shield_outlined,
+                          itemLabel: (e) => e.nombre,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedEquipoId = value?.id;
+                              _selectedCategoria = value?.categoria;
+                            });
+                          },
+                        ),
                 ],
               ),
             ),
@@ -257,10 +281,29 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
                 ),
                 const SizedBox(height: 20),
 
+                // Campo: Condición del Partido
+                _buildLabel('CONDICIÓN DEL PARTIDO'),
+                const SizedBox(height: 8),
+                _buildDropdownField(
+                  value: _selectedCondicionPartido,
+                  hint: 'Selecciona condición',
+                  items: _condicionesPartido,
+                  onChanged:
+                      (value) =>
+                          setState(() => _selectedCondicionPartido = value),
+                ),
+                const SizedBox(height: 20),
+
                 // Campo: Tipo de Partido
                 _buildLabel('TIPO DE PARTIDO'),
                 const SizedBox(height: 8),
-                _buildDropdownField(),
+                _buildDropdownField(
+                  value: _selectedTipoPartido,
+                  hint: 'Selecciona tipo',
+                  items: _tiposPartido,
+                  onChanged:
+                      (value) => setState(() => _selectedTipoPartido = value),
+                ),
               ],
             ),
           ),
@@ -393,12 +436,13 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
       return;
     }
     if (_rivalController.text.trim().isEmpty ||
+        _selectedCondicionPartido == null ||
         _selectedTipoPartido == null ||
         _selectedDate == null) {
       CustomModal.show(
         context: context,
         title: 'Campos obligatorios',
-        message: 'Completa rival, tipo de partido y fecha.',
+        message: 'Completa rival, condición, tipo de partido y fecha.',
         type: ModalType.warning,
       );
       return;
@@ -415,11 +459,15 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     final body = <String, dynamic>{
       'equipo_id': equipoId,
       'rival_nombre': _rivalController.text.trim(),
-      'es_local': _selectedTipoPartido == 'Local / Casa',
+      'es_local': _selectedCondicionPartido == 'Local / Casa',
       'fecha': fecha,
+      'tipo_partido': _selectedTipoPartido,
+      'estado_partido': 'PROGRAMADO',
     };
     if ((hora ?? '').isNotEmpty) body['hora'] = hora;
-    if (_lugarController.text.trim().isNotEmpty) body['lugar'] = _lugarController.text.trim();
+    if (_lugarController.text.trim().isNotEmpty) {
+      body['lugar'] = _lugarController.text.trim();
+    }
     if (_competenciaController.text.trim().isNotEmpty) {
       body['competencia'] = _competenciaController.text.trim();
     }
@@ -586,7 +634,12 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     );
   }
 
-  Widget _buildDropdownField() {
+  Widget _buildDropdownField({
+    required String? value,
+    required String hint,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
@@ -606,12 +659,12 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: _selectedTipoPartido,
+                value: value,
                 hint: Text(
-                  'Local / Casa',
+                  hint,
                   style: GoogleFonts.inter(
                     fontSize: 15,
-                    color: const Color(0xFF0B1926),
+                    color: const Color(0xFF9CA3AF),
                   ),
                 ),
                 isExpanded: true,
@@ -624,20 +677,18 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
                   ),
                 ),
                 items:
-                    ['Local / Casa', 'Visitante / Fuera']
+                    items
                         .map(
-                          (tipo) => DropdownMenuItem(
-                            value: tipo,
+                          (item) => DropdownMenuItem(
+                            value: item,
                             child: Text(
-                              tipo,
+                              item,
                               style: GoogleFonts.inter(fontSize: 15),
                             ),
                           ),
                         )
                         .toList(),
-                onChanged: (value) {
-                  setState(() => _selectedTipoPartido = value);
-                },
+                onChanged: onChanged,
               ),
             ),
           ),
@@ -686,18 +737,19 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
                     size: 24,
                   ),
                 ),
-                items: items
-                    .map(
-                      (item) => DropdownMenuItem<T>(
-                        value: item,
-                        child: Text(
-                          itemLabel(item),
-                          style: GoogleFonts.inter(fontSize: 15),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    )
-                    .toList(),
+                items:
+                    items
+                        .map(
+                          (item) => DropdownMenuItem<T>(
+                            value: item,
+                            child: Text(
+                              itemLabel(item),
+                              style: GoogleFonts.inter(fontSize: 15),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
                 onChanged: onChanged,
               ),
             ),
@@ -707,10 +759,7 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     );
   }
 
-  Widget _buildLockedSelector({
-    required String text,
-    required IconData icon,
-  }) {
+  Widget _buildLockedSelector({required String text, required IconData icon}) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),

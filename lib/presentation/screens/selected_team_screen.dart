@@ -868,6 +868,13 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
     _selectedMonth = DateTime.now().month;
   }
 
+  bool _canOpenLive(Map<String, dynamic> partido) {
+    final id = partido['id'];
+    if (id is! num) return false;
+    final estado = partido['estado_partido']?.toString().trim().toUpperCase();
+    return estado != 'FINALIZADO';
+  }
+
   @override
   Widget build(BuildContext context) {
     final partidosAsync =
@@ -958,48 +965,44 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'CALENDARIO DE PARTIDOS',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF9CA3AF),
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 36,
-                  child: ElevatedButton.icon(
-                    onPressed:
-                        () => context.pushNamed(
-                          '/new_match_screen',
-                          extra: widget.equipoId,
-                        ),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: Text(
-                      'Crear partido',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD94929),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      elevation: 1,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              'CALENDARIO DE PARTIDOS',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF9CA3AF),
+                letterSpacing: 1.0,
+              ),
             ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed:
+                    () => context.pushNamed(
+                      '/new_match_screen',
+                      extra: widget.equipoId,
+                    ),
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: Text(
+                  'Crear partido',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(56),
+                  backgroundColor: const Color(0xFFD94929),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
             const SizedBox(height: 14),
             _MonthChipsRow(
               selectedMonth: month,
@@ -1021,7 +1024,17 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
               ...hoy.map(
                 (p) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _MatchAgendaCard(partido: p, isToday: true),
+                  child: _MatchAgendaCard(
+                    partido: p,
+                    isToday: true,
+                    onOpenLive:
+                        _canOpenLive(p)
+                            ? () => context.push(
+                              '/live_match_screen',
+                              extra: (p['id'] as num).toInt(),
+                            )
+                            : null,
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
@@ -1033,7 +1046,16 @@ class _PartidosSectionState extends ConsumerState<_PartidosSection> {
               ...proximos.map(
                 (p) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _MatchAgendaCard(partido: p),
+                  child: _MatchAgendaCard(
+                    partido: p,
+                    onOpenLive:
+                        _canOpenLive(p)
+                            ? () => context.push(
+                              '/live_match_screen',
+                              extra: (p['id'] as num).toInt(),
+                            )
+                            : null,
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
@@ -1333,10 +1355,15 @@ class _SectionMiniTitle extends StatelessWidget {
 }
 
 class _MatchAgendaCard extends StatelessWidget {
-  const _MatchAgendaCard({required this.partido, this.isToday = false});
+  const _MatchAgendaCard({
+    required this.partido,
+    this.isToday = false,
+    this.onOpenLive,
+  });
 
   final Map<String, dynamic> partido;
   final bool isToday;
+  final VoidCallback? onOpenLive;
 
   @override
   Widget build(BuildContext context) {
@@ -1350,19 +1377,23 @@ class _MatchAgendaCard extends StatelessWidget {
             .toString();
     final hora = _hourText(partido['hora']?.toString());
     final fecha = _datePretty(partido['fecha']?.toString());
-    final heading = isToday ? 'Próximo encuentro' : competencia;
+    final badgeColor =
+        esLocal
+            ? const Color(0xFFD94929)
+            : const Color.fromRGBO(91, 108, 124, 1);
+    final crestText = _crestLetters(rival);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color.fromRGBO(224, 214, 200, 1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -1370,139 +1401,153 @@ class _MatchAgendaCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  heading.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.9,
-                    color: const Color.fromRGBO(173, 111, 57, 1),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (isToday ? 'Próximo encuentro' : competencia).toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.9,
+                        color: const Color.fromRGBO(173, 111, 57, 1),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      rival,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF1B1B1B),
+                        height: 1.05,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD94929),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  esLocal ? 'LOCAL' : 'VISITANTE',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Vs $rival',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF0B1926),
-              height: 1.05,
-            ),
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final colWidth = (constraints.maxWidth - 12) / 2;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 10,
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SizedBox(
-                    width: colWidth,
-                    child: _agendaMeta(
-                      icon: Icons.emoji_events_outlined,
-                      label: 'Competencia',
-                      value: competencia,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      esLocal ? 'LOCAL' : 'VISITANTE',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
                     ),
                   ),
-                  SizedBox(
-                    width: colWidth,
-                    child: _agendaMeta(
-                      icon: Icons.calendar_today_rounded,
-                      label: 'Fecha',
-                      value: fecha,
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131313),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  SizedBox(
-                    width: colWidth,
-                    child: _agendaMeta(
-                      icon: Icons.schedule_rounded,
-                      label: 'Hora',
-                      value: hora,
-                    ),
-                  ),
-                  SizedBox(
-                    width: colWidth,
-                    child: _agendaMeta(
-                      icon: Icons.location_on_rounded,
-                      label: 'Lugar',
-                      value: lugar,
+                    child: Center(
+                      child: Text(
+                        crestText,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ],
-              );
-            },
+              ),
+            ],
           ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 18,
+            runSpacing: 12,
+            children: [
+              _compactMeta(Icons.calendar_today_rounded, fecha),
+              _compactMeta(Icons.schedule_rounded, hora),
+              _compactMeta(Icons.location_on_rounded, lugar),
+            ],
+          ),
+          if (onOpenLive != null) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onOpenLive,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color.fromRGBO(194, 51, 10, 1),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Abrir partido',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _agendaMeta({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _compactMeta(IconData icon, String value) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: const Color(0xFFD94929)),
         const SizedBox(width: 7),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label.toUpperCase(),
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: const Color(0xFF9CA3AF),
-                ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                value,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0B1926),
-                ),
-              ),
-            ],
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF4B5563),
           ),
         ),
       ],
     );
+  }
+
+  static String _crestLetters(String rival) {
+    final cleaned = rival.trim();
+    if (cleaned.isEmpty) return 'FC';
+    final words = cleaned.split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      final word = words.first;
+      return word.substring(0, word.length >= 2 ? 2 : 1).toUpperCase();
+    }
+    final first = words.first.isNotEmpty ? words.first[0] : 'F';
+    final last = words.last.isNotEmpty ? words.last[0] : 'C';
+    return '$first$last'.toUpperCase();
   }
 
   static String _hourText(String? raw) {

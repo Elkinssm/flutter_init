@@ -21,14 +21,18 @@ class CoachApiService {
   }
 
   /// GET /api/coach/categorias — Lista de categorías/equipos con total de miembros.
-  Future<Map<String, dynamic>?> getCategorias() async => _get('/coach/categorias');
+  Future<Map<String, dynamic>?> getCategorias() async =>
+      _get('/coach/categorias');
 
   /// GET /api/coach/categorias/{equipo_id}/jugadores
   Future<Map<String, dynamic>?> getJugadoresByEquipo(int equipoId) async =>
       _get('/coach/categorias/$equipoId/jugadores');
 
   /// GET /api/coach/categorias/{equipo_id}/asistencia?fecha=YYYY-MM-DD
-  Future<Map<String, dynamic>?> getAsistencia(int equipoId, String fecha) async {
+  Future<Map<String, dynamic>?> getAsistencia(
+    int equipoId,
+    String fecha,
+  ) async {
     if (!Environment.useBackend) return null;
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -48,10 +52,7 @@ class CoachApiService {
     required List<Map<String, dynamic>> asistencias,
     String? hora,
   }) async {
-    final body = <String, dynamic>{
-      'fecha': fecha,
-      'asistencias': asistencias,
-    };
+    final body = <String, dynamic>{'fecha': fecha, 'asistencias': asistencias};
     if (hora != null) body['hora'] = hora;
     final response = await _dio.post<Map<String, dynamic>>(
       '/coach/categorias/$equipoId/asistencia',
@@ -64,9 +65,10 @@ class CoachApiService {
   Future<Map<String, dynamic>?> getPartidos({int? equipoId}) async {
     if (!Environment.useBackend) return null;
     try {
-      final path = equipoId != null
-          ? '/coach/partidos?equipo_id=$equipoId'
-          : '/coach/partidos';
+      final path =
+          equipoId != null
+              ? '/coach/partidos?equipo_id=$equipoId'
+              : '/coach/partidos';
       final response = await _dio.get<Map<String, dynamic>>(path);
       return response.data;
     } on DioException {
@@ -75,15 +77,22 @@ class CoachApiService {
   }
 
   /// GET /api/coach/posiciones — Para formulario crear jugador.
-  Future<Map<String, dynamic>?> getPosiciones() async => _get('/coach/posiciones');
+  Future<Map<String, dynamic>?> getPosiciones() async =>
+      _get('/coach/posiciones');
 
   /// GET /api/coach/equipos/{equipo_id} — Detalle de equipo.
   Future<Map<String, dynamic>?> getEquipo(int equipoId) async =>
       _get('/coach/equipos/$equipoId');
 
   /// PUT /api/coach/equipos/{equipo_id}
-  Future<Map<String, dynamic>> putEquipo(int equipoId, Map<String, dynamic> body) async {
-    final response = await _dio.put<Map<String, dynamic>>('/coach/equipos/$equipoId', data: body);
+  Future<Map<String, dynamic>> putEquipo(
+    int equipoId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.put<Map<String, dynamic>>(
+      '/coach/equipos/$equipoId',
+      data: body,
+    );
     return response.data ?? {};
   }
 
@@ -91,7 +100,10 @@ class CoachApiService {
   /// Para ENTRENADOR: enviar nombre, categoria, escudo_url.
   /// Para ADMIN: puede requerir escuela_id según backend.
   Future<Map<String, dynamic>> postEquipo(Map<String, dynamic> body) async {
-    final response = await _dio.post<Map<String, dynamic>>('/coach/equipos', data: body);
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/coach/equipos',
+      data: body,
+    );
     return response.data ?? {};
   }
 
@@ -100,7 +112,10 @@ class CoachApiService {
       _get('/coach/equipos/$equipoId/alineacion');
 
   /// PUT /api/coach/equipos/{equipo_id}/alineacion — body: { "formacion": "4-4-2" }
-  Future<Map<String, dynamic>> putAlineacion(int equipoId, String formacion) async {
+  Future<Map<String, dynamic>> putAlineacion(
+    int equipoId,
+    String formacion,
+  ) async {
     final response = await _dio.put<Map<String, dynamic>>(
       '/coach/equipos/$equipoId/alineacion',
       data: {'formacion': formacion},
@@ -114,7 +129,10 @@ class CoachApiService {
 
   /// POST /api/coach/jugadores — Crear jugador. Body según API (nombre_completo, equipo_id, dorsal, etc.).
   Future<Map<String, dynamic>> postJugador(Map<String, dynamic> body) async {
-    final response = await _dio.post<Map<String, dynamic>>('/coach/jugadores', data: body);
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/coach/jugadores',
+      data: body,
+    );
     return response.data ?? {};
   }
 
@@ -167,8 +185,14 @@ class CoachApiService {
   }
 
   /// PUT /api/coach/jugadores/{id}
-  Future<Map<String, dynamic>> putJugador(int jugadorId, Map<String, dynamic> body) async {
-    final response = await _dio.put<Map<String, dynamic>>('/coach/jugadores/$jugadorId', data: body);
+  Future<Map<String, dynamic>> putJugador(
+    int jugadorId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.put<Map<String, dynamic>>(
+      '/coach/jugadores/$jugadorId',
+      data: body,
+    );
     return response.data ?? {};
   }
 
@@ -179,13 +203,22 @@ class CoachApiService {
 
   /// POST /api/coach/partidos — Programar partido.
   Future<Map<String, dynamic>> postPartido(Map<String, dynamic> body) async {
-    final response = await _dio.post<Map<String, dynamic>>('/coach/partidos', data: body);
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/coach/partidos',
+      data: body,
+    );
     return response.data ?? {};
   }
 
   /// PUT /api/coach/partidos/{id} — Actualizar (reprogramar o resultado).
-  Future<Map<String, dynamic>> putPartido(int partidoId, Map<String, dynamic> body) async {
-    final response = await _dio.put<Map<String, dynamic>>('/coach/partidos/$partidoId', data: body);
+  Future<Map<String, dynamic>> putPartido(
+    int partidoId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.put<Map<String, dynamic>>(
+      '/coach/partidos/$partidoId',
+      data: body,
+    );
     return response.data ?? {};
   }
 
@@ -194,8 +227,47 @@ class CoachApiService {
     await _dio.delete('/coach/partidos/$partidoId');
   }
 
+  /// GET /api/coach/partidos/{id} — Detalle de partido para modo live en flujo coach.
+  Future<Map<String, dynamic>?> getPartidoDetalle(int partidoId) async =>
+      _get('/coach/partidos/$partidoId');
+
+  /// GET /api/coach/partidos/{id}/alineacion
+  Future<Map<String, dynamic>?> getPartidoAlineacion(int partidoId) async =>
+      _get('/coach/partidos/$partidoId/alineacion');
+
+  /// GET /api/coach/partidos/{id}/plantilla
+  Future<Map<String, dynamic>?> getPartidoPlantilla(int partidoId) async =>
+      _get('/coach/partidos/$partidoId/plantilla');
+
+  /// POST /api/coach/partidos/{id}/eventos
+  Future<Map<String, dynamic>> postPartidoEvento(
+    int partidoId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/coach/partidos/$partidoId/eventos',
+      data: body,
+    );
+    return response.data ?? {};
+  }
+
+  /// POST /api/coach/partidos/{id}/resultado
+  Future<Map<String, dynamic>> postPartidoResultado(
+    int partidoId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/coach/partidos/$partidoId/resultado',
+      data: body,
+    );
+    return response.data ?? {};
+  }
+
   /// GET /api/coach/categorias/{equipo_id}/asistencia/resumen — ?año=2026
-  Future<Map<String, dynamic>?> getAsistenciaResumen(int equipoId, {int? anio}) async {
+  Future<Map<String, dynamic>?> getAsistenciaResumen(
+    int equipoId, {
+    int? anio,
+  }) async {
     if (!Environment.useBackend) return null;
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -219,18 +291,18 @@ final coachCategoriasProvider = FutureProvider<Map<String, dynamic>?>((ref) {
 
 final coachJugadoresProvider =
     FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
-  return ref.read(coachApiServiceProvider).getJugadoresByEquipo(equipoId);
-});
+      return ref.read(coachApiServiceProvider).getJugadoresByEquipo(equipoId);
+    });
 
 /// fecha en formato YYYY-MM-DD
-final coachAsistenciaProvider =
-    FutureProvider.family<Map<String, dynamic>?, ({int equipoId, String fecha})>(
-  (ref, params) {
-    return ref
-        .read(coachApiServiceProvider)
-        .getAsistencia(params.equipoId, params.fecha);
-  },
-);
+final coachAsistenciaProvider = FutureProvider.family<
+  Map<String, dynamic>?,
+  ({int equipoId, String fecha})
+>((ref, params) {
+  return ref
+      .read(coachApiServiceProvider)
+      .getAsistencia(params.equipoId, params.fecha);
+});
 
 final coachPartidosProvider = FutureProvider<Map<String, dynamic>?>((ref) {
   return ref.read(coachApiServiceProvider).getPartidos();
@@ -238,25 +310,51 @@ final coachPartidosProvider = FutureProvider<Map<String, dynamic>?>((ref) {
 
 final coachPartidosByEquipoProvider =
     FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
-  return ref.read(coachApiServiceProvider).getPartidos(equipoId: equipoId);
-});
+      return ref.read(coachApiServiceProvider).getPartidos(equipoId: equipoId);
+    });
 
 final coachPosicionesProvider = FutureProvider<Map<String, dynamic>?>((ref) {
   return ref.read(coachApiServiceProvider).getPosiciones();
 });
 
-final coachEquipoProvider = FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
+final coachEquipoProvider = FutureProvider.family<Map<String, dynamic>?, int>((
+  ref,
+  equipoId,
+) {
   return ref.read(coachApiServiceProvider).getEquipo(equipoId);
 });
 
-final coachAlineacionProvider = FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
-  return ref.read(coachApiServiceProvider).getAlineacion(equipoId);
-});
+final coachAlineacionProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, equipoId) {
+      return ref.read(coachApiServiceProvider).getAlineacion(equipoId);
+    });
 
-final coachJugadorDetailProvider = FutureProvider.family<Map<String, dynamic>?, int>((ref, jugadorId) {
-  return ref.read(coachApiServiceProvider).getJugador(jugadorId);
-});
+final coachJugadorDetailProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, jugadorId) {
+      return ref.read(coachApiServiceProvider).getJugador(jugadorId);
+    });
 
-final coachAsistenciaResumenProvider = FutureProvider.family<Map<String, dynamic>?, ({int equipoId, int? anio})>((ref, params) {
-  return ref.read(coachApiServiceProvider).getAsistenciaResumen(params.equipoId, anio: params.anio);
-});
+final coachAsistenciaResumenProvider =
+    FutureProvider.family<Map<String, dynamic>?, ({int equipoId, int? anio})>((
+      ref,
+      params,
+    ) {
+      return ref
+          .read(coachApiServiceProvider)
+          .getAsistenciaResumen(params.equipoId, anio: params.anio);
+    });
+
+final coachPartidoDetalleProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, partidoId) {
+      return ref.read(coachApiServiceProvider).getPartidoDetalle(partidoId);
+    });
+
+final coachPartidoAlineacionProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, partidoId) {
+      return ref.read(coachApiServiceProvider).getPartidoAlineacion(partidoId);
+    });
+
+final coachPartidoPlantillaProvider =
+    FutureProvider.family<Map<String, dynamic>?, int>((ref, partidoId) {
+      return ref.read(coachApiServiceProvider).getPartidoPlantilla(partidoId);
+    });

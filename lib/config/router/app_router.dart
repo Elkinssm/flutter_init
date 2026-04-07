@@ -179,6 +179,16 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/live_match_screen',
+      name: LiveMatchScreen.name,
+      pageBuilder: (context, state) {
+        final partidoId = _extraAsInt(state.extra);
+        return CustomTransition.slideLeft(
+          LiveMatchScreen(partidoId: partidoId),
+        );
+      },
+    ),
+    GoRoute(
       path: '/player_status_screen',
       name: PlayerStatusScreen.name,
       pageBuilder: (context, state) {
