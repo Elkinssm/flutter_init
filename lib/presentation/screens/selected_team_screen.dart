@@ -350,7 +350,7 @@ class _TeamOverviewSection extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              childAspectRatio: 2.05,
+              childAspectRatio: 1.82,
               children: [
                 _OverviewMetricCard(
                   icon: Icons.groups_rounded,
@@ -382,7 +382,7 @@ class _TeamOverviewSection extends ConsumerWidget {
             Row(
               children: [
                 Text(
-                  'Plantilla ($totalJugadores)',
+                  'Plantilla',
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
@@ -423,17 +423,26 @@ class _TeamOverviewSection extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
+            Text(
+              'Temporada 2024/2025',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 4),
             if (hasMoreJugadores)
               Text(
                 'Mostrando ${visibleJugadores.length} de $totalJugadores',
                 style: GoogleFonts.inter(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF6B7280),
                 ),
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             if (jugadores.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
@@ -483,8 +492,10 @@ class _TeamPlayerTile extends StatelessWidget {
             ?.toString() ??
         '--';
     final posicion = _positionAbbr(jugador);
+    final posicionTag = _positionTag(posicion);
     final photo = _normalizeImageUrl(jugador['foto_url']?.toString());
     final estadoColor = _playerStateColor(jugador);
+    final secondaryText = _playerSecondaryText(jugador);
 
     return InkWell(
       onTap:
@@ -500,14 +511,14 @@ class _TeamPlayerTile extends StatelessWidget {
                 },
               ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color.fromRGBO(251, 248, 241, 1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color.fromRGBO(224, 214, 200, 1)),
+          border: Border.all(color: const Color.fromRGBO(235, 227, 216, 1)),
           boxShadow: const [
             BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.06),
+              color: Color.fromRGBO(0, 0, 0, 0.04),
               blurRadius: 8,
               offset: Offset(0, 2),
             ),
@@ -516,8 +527,8 @@ class _TeamPlayerTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFE0D6C8), width: 1.5),
@@ -537,31 +548,32 @@ class _TeamPlayerTile extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     nombre,
                     style: GoogleFonts.inter(
-                      fontSize: 22,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFF0B1926),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       Text(
-                        dorsal,
+                        '#$dorsal',
                         style: GoogleFonts.inter(
-                          fontSize: 20,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF4FA626),
+                          color: const Color(0xFF374957),
                           height: 1.0,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        width: 4,
-                        height: 4,
+                        width: 5,
+                        height: 5,
                         decoration: const BoxDecoration(
                           color: Color(0xFF9CA3AF),
                           shape: BoxShape.circle,
@@ -570,28 +582,40 @@ class _TeamPlayerTile extends StatelessWidget {
                       const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
+                          horizontal: 7,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(217, 73, 41, 0.14),
+                          color: posicionTag.$2,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          posicion,
+                          posicionTag.$1,
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFFD94929),
+                            color: posicionTag.$3,
                           ),
                         ),
                       ),
                     ],
                   ),
+                  if (secondaryText != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      secondaryText,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
             Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   width: 7,
@@ -603,8 +627,8 @@ class _TeamPlayerTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 28,
+                  height: 28,
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(55, 73, 87, 0.08),
                     shape: BoxShape.circle,
@@ -612,7 +636,7 @@ class _TeamPlayerTile extends StatelessWidget {
                   child: const Icon(
                     Icons.chevron_right_rounded,
                     color: Color(0xFF9CA3AF),
-                    size: 20,
+                    size: 18,
                   ),
                 ),
               ],
@@ -649,6 +673,61 @@ class _TeamPlayerTile extends StatelessWidget {
       return direct.toUpperCase();
     }
     return '--';
+  }
+
+  static (String, Color, Color) _positionTag(String raw) {
+    switch (raw.toUpperCase()) {
+      case 'PO':
+      case 'GK':
+        return (
+          'GK',
+          const Color.fromRGBO(227, 238, 255, 1),
+          const Color.fromRGBO(84, 125, 214, 1),
+        );
+      case 'DC':
+      case 'DFC':
+      case 'DEF':
+        return (
+          'DEF',
+          const Color.fromRGBO(224, 247, 235, 1),
+          const Color.fromRGBO(34, 123, 77, 1),
+        );
+      case 'MC':
+      case 'MCD':
+      case 'MCO':
+      case 'MED':
+        return (
+          'MCO',
+          const Color.fromRGBO(255, 244, 199, 1),
+          const Color.fromRGBO(165, 120, 18, 1),
+        );
+      case 'DEL':
+      case 'EI':
+      case 'ED':
+      case 'ST':
+        return (
+          'DEL',
+          const Color.fromRGBO(255, 228, 238, 1),
+          const Color.fromRGBO(193, 66, 113, 1),
+        );
+      default:
+        return (
+          raw.toUpperCase(),
+          const Color.fromRGBO(242, 235, 226, 1),
+          const Color.fromRGBO(107, 114, 128, 1),
+        );
+    }
+  }
+
+  static String? _playerSecondaryText(Map<String, dynamic> j) {
+    final cleanSheets = j['porterias_cero'];
+    if (cleanSheets is num && cleanSheets > 0) return '${cleanSheets.toInt()} Paradas';
+    final goals = j['goles'];
+    if (goals is num && goals > 0) return '${goals.toInt()} Goles';
+    if (j['es_capitan'] == true) return 'Capitán';
+    final assists = j['asistencias'];
+    if (assists is num && assists > 0) return '${assists.toInt()} Asist.';
+    return null;
   }
 
   static String? _normalizeImageUrl(String? raw) {
@@ -719,71 +798,76 @@ class _OverviewMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const backgrounds = [
-      Color.fromRGBO(255, 245, 236, 1),
-      Color.fromRGBO(239, 248, 255, 1),
-      Color.fromRGBO(244, 245, 255, 1),
-      Color.fromRGBO(241, 250, 244, 1),
-    ];
     const accents = [
       Color(0xFFD94929),
       Color.fromRGBO(30, 136, 229, 1),
       Color.fromRGBO(92, 107, 192, 1),
       Color.fromRGBO(79, 166, 38, 1),
     ];
-    final bg = backgrounds[tone % backgrounds.length];
     final accent = accents[tone % accents.length];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.18), width: 1.2),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accent.withValues(alpha: 0.10), width: 1),
         boxShadow: [
           BoxShadow(
-            color: accent.withValues(alpha: 0.14),
+            color: accent.withValues(alpha: 0.10),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+          Positioned(
+            left: 0,
+            top: 4,
+            bottom: 4,
+            child: Container(
+              width: 3,
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
-            child: Icon(icon, size: 16, color: accent),
           ),
-          const SizedBox(width: 8),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.only(left: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Row(
+                  children: [
+                    Icon(icon, size: 15, color: accent),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        subtitle.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.45,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
                 Text(
                   title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0B1926),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color.fromRGBO(55, 73, 87, 1),
+                    color: const Color(0xFF1B1B1B),
+                    height: 1.08,
                   ),
                 ),
               ],
