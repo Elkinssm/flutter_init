@@ -47,6 +47,7 @@ final appRouter = GoRouter(
       '/loading_screen',
       '/welcome_screen',
       '/login_screen',
+      '/forgot_password_screen',
       '/register_screen',
       '/health_check',
     ];
@@ -97,6 +98,16 @@ final appRouter = GoRouter(
       path: '/login_screen',
       name: LoginScreen.name,
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/forgot_password_screen',
+      name: ForgotPasswordScreen.name,
+      pageBuilder: (context, state) {
+        final data = _extraAsMap(state.extra);
+        return CustomTransition.slideLeft(
+          ForgotPasswordScreen(initialEmail: data['email']?.toString()),
+        );
+      },
     ),
     GoRoute(
       path: '/register_screen',

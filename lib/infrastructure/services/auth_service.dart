@@ -132,7 +132,7 @@ class AuthService {
   Future<String> forgotPassword({required String email}) async {
     if (!Environment.useBackend) {
       await Future.delayed(const Duration(milliseconds: 300));
-      return 'Si el email está registrado, recibirás un enlace para restablecer tu contraseña.';
+      return 'Si el email está registrado, recibirás un código para restablecer tu contraseña.';
     }
 
     try {
@@ -147,7 +147,7 @@ class AuthService {
         ),
       );
       return response.data?['message']?.toString() ??
-          'Si el email está registrado, recibirás un enlace para restablecer tu contraseña.';
+          'Si el email está registrado, recibirás un código para restablecer tu contraseña.';
     } on DioException catch (error) {
       throw AuthException(
         _extractMessage(error) ??
@@ -158,10 +158,42 @@ class AuthService {
     }
   }
 
-  /// Restablece contraseña usando token enviado por correo.
+  /// Valida el código de 6 dígitos enviado por correo.
+  Future<bool> verifyResetCode({
+    required String email,
+    required String code,
+  }) async {
+    if (!Environment.useBackend) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      return code.trim().length == 6;
+    }
+
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '$_baseUrl/verify-reset-code',
+        data: {'email': email, 'code': code},
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      return response.data?['valid'] == true;
+    } on DioException catch (error) {
+      throw AuthException(
+        _extractMessage(error) ??
+            'El código de recuperación ha expirado o es inválido.',
+      );
+    } catch (error) {
+      throw AuthException('Error inesperado: $error');
+    }
+  }
+
+  /// Restablece contraseña usando código enviado por correo.
   Future<String> resetPassword({
     required String email,
-    required String token,
+    required String code,
     required String password,
     required String passwordConfirmation,
   }) async {
@@ -175,7 +207,7 @@ class AuthService {
         '$_baseUrl/reset-password',
         data: {
           'email': email,
-          'token': token,
+          'code': code,
           'password': password,
           'password_confirmation': passwordConfirmation,
         },

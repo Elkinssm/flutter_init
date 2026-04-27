@@ -302,6 +302,36 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                     isPassword: true,
                                   ),
                                 ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed:
+                                        isLoading
+                                            ? null
+                                            : () {
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                              context.push(
+                                                '/forgot_password_screen',
+                                                extra: {
+                                                  'email':
+                                                      emailController.text
+                                                          .trim(),
+                                                },
+                                              );
+                                            },
+                                    child: const Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        color: Color.fromRGBO(217, 73, 41, 1),
+                                        fontWeight: FontWeight.w700,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor:
+                                            Color.fromRGBO(217, 73, 41, 1),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             if (!isKeyboardVisible)

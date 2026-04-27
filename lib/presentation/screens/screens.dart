@@ -4,6 +4,7 @@ export 'package:coach_app/presentation/screens/category_screen.dart';
 export 'package:coach_app/presentation/screens/coach_screen.dart';
 export 'package:coach_app/presentation/screens/daily_attendance_screen.dart';
 export 'package:coach_app/presentation/screens/history_screen.dart';
+export 'package:coach_app/presentation/screens/forgot_password_screen.dart';
 export 'package:coach_app/presentation/screens/loading_screen.dart';
 export 'package:coach_app/presentation/screens/login_screen.dart';
 export 'package:coach_app/presentation/screens/live_match_screen.dart';
