@@ -111,14 +111,14 @@ class CoachApiService {
   Future<Map<String, dynamic>?> getAlineacion(int equipoId) async =>
       _get('/coach/equipos/$equipoId/alineacion');
 
-  /// PUT /api/coach/equipos/{equipo_id}/alineacion — body: { "formacion": "4-4-2" }
+  /// PUT /api/coach/equipos/{equipo_id}/alineacion
   Future<Map<String, dynamic>> putAlineacion(
     int equipoId,
-    String formacion,
+    Map<String, dynamic> body,
   ) async {
     final response = await _dio.put<Map<String, dynamic>>(
       '/coach/equipos/$equipoId/alineacion',
-      data: {'formacion': formacion},
+      data: body,
     );
     return response.data ?? {};
   }

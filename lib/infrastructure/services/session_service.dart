@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:coach_app/config/errors/app_error_reporter.dart';
 import 'package:coach_app/infrastructure/services/auth_service.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,8 +38,21 @@ class SessionService {
 
     _loadCacheFuture = () async {
       final prefs = await _storage;
-      _tokenCache = await _secureStorage.read(key: _kToken);
-      _expiresAtCache = await _secureStorage.read(key: _kExpiresAt);
+      try {
+        _tokenCache = await _secureStorage.read(key: _kToken);
+        _expiresAtCache = await _secureStorage.read(key: _kExpiresAt);
+      } on PlatformException catch (e, st) {
+        // Si Android no puede descifrar un valor persistido de una instalación
+        // anterior, limpiamos credenciales seguras y forzamos nuevo login.
+        await _clearSecureStorageSafely();
+        AppErrorReporter.report(
+          e,
+          st,
+          context: 'session_service.ensure_cache_loaded.secure_storage',
+        );
+        _tokenCache = null;
+        _expiresAtCache = null;
+      }
       _userJsonCache = prefs.getString(_kUser);
       _cacheLoaded = true;
       _loadCacheFuture = null;
@@ -54,11 +68,11 @@ class SessionService {
     String? expiresAt,
   }) async {
     final prefs = await _storage;
-    await _secureStorage.write(key: _kToken, value: token);
+    await _writeSecureValue(_kToken, token);
     if (expiresAt != null) {
-      await _secureStorage.write(key: _kExpiresAt, value: expiresAt);
+      await _writeSecureValue(_kExpiresAt, expiresAt);
     } else {
-      await _secureStorage.delete(key: _kExpiresAt);
+      await _deleteSecureValue(_kExpiresAt);
     }
     final userMap = {
       'id': user.id,
@@ -79,11 +93,11 @@ class SessionService {
 
   /// Actualiza solo el token (y opcionalmente expires_at) tras refresh.
   Future<void> updateToken(String token, {String? expiresAt}) async {
-    await _secureStorage.write(key: _kToken, value: token);
+    await _writeSecureValue(_kToken, token);
     if (expiresAt != null) {
-      await _secureStorage.write(key: _kExpiresAt, value: expiresAt);
+      await _writeSecureValue(_kExpiresAt, expiresAt);
     } else {
-      await _secureStorage.delete(key: _kExpiresAt);
+      await _deleteSecureValue(_kExpiresAt);
     }
     _tokenCache = token;
     _expiresAtCache = expiresAt;
@@ -93,8 +107,7 @@ class SessionService {
   /// Elimina sesión (logout).
   Future<void> clearSession() async {
     final prefs = await _storage;
-    await _secureStorage.delete(key: _kToken);
-    await _secureStorage.delete(key: _kExpiresAt);
+    await _clearSecureStorageSafely();
     await prefs.remove(_kUser);
     _tokenCache = null;
     _expiresAtCache = null;
@@ -143,5 +156,44 @@ class SessionService {
   Future<bool> hasSession() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
+  }
+
+  Future<void> _writeSecureValue(String key, String value) async {
+    try {
+      await _secureStorage.write(key: key, value: value);
+    } on PlatformException catch (e, st) {
+      await _clearSecureStorageSafely();
+      AppErrorReporter.report(
+        e,
+        st,
+        context: 'session_service.write_secure_value.$key',
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> _deleteSecureValue(String key) async {
+    try {
+      await _secureStorage.delete(key: key);
+    } on PlatformException catch (e, st) {
+      AppErrorReporter.report(
+        e,
+        st,
+        context: 'session_service.delete_secure_value.$key',
+      );
+    }
+  }
+
+  Future<void> _clearSecureStorageSafely() async {
+    try {
+      await _secureStorage.delete(key: _kToken);
+      await _secureStorage.delete(key: _kExpiresAt);
+    } on PlatformException catch (e, st) {
+      AppErrorReporter.report(
+        e,
+        st,
+        context: 'session_service.clear_secure_storage',
+      );
+    }
   }
 }

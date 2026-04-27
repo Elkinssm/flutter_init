@@ -3,6 +3,7 @@ import 'package:coach_app/presentation/helpers/api_error_message.dart';
 import 'package:coach_app/presentation/helpers/responsive.dart';
 import 'package:coach_app/presentation/providers/selected_icon_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,7 @@ class _LiveMatchScreenState extends ConsumerState<LiveMatchScreen> {
   static const _textDark = Color.fromRGBO(23, 22, 20, 1);
   static const _mutedText = Color.fromRGBO(109, 113, 118, 1);
   bool _dialogScheduled = false;
+  bool _initialRetryAttempted = false;
 
   @override
   void initState() {
@@ -83,6 +85,19 @@ class _LiveMatchScreenState extends ConsumerState<LiveMatchScreen> {
     }
 
     if (live == null) {
+      if (_shouldRetryInitialLoad(error) && !_initialRetryAttempted) {
+        _initialRetryAttempted = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final partidoId = widget.partidoId;
+          if (!mounted || partidoId == null) return;
+          Future<void>.delayed(const Duration(milliseconds: 700), () {
+            if (!mounted) return;
+            ref.invalidate(coachPartidoDetalleProvider(partidoId));
+          });
+        });
+        return const Center(child: CircularProgressIndicator());
+      }
+
       _showFlowModal(
         title: 'No se pudo abrir el partido',
         message: apiErrorMessage(
@@ -97,6 +112,7 @@ class _LiveMatchScreenState extends ConsumerState<LiveMatchScreen> {
     }
 
     _dialogScheduled = false;
+    _initialRetryAttempted = false;
 
     return Container(
       color: _bgColor,
@@ -174,6 +190,18 @@ class _LiveMatchScreenState extends ConsumerState<LiveMatchScreen> {
         ),
       ),
     );
+  }
+
+  bool _shouldRetryInitialLoad(Object? error) {
+    if (error is! Exception) return false;
+    if (error is DioException) {
+      return error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          ((error.response?.statusCode ?? 0) >= 500);
+    }
+    return false;
   }
 
   Future<void> _openGoalSheet(_LiveMatchViewModel live) async {

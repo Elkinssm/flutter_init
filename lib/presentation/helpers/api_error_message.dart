@@ -33,7 +33,7 @@ String apiErrorMessage(
         error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.sendTimeout) {
-      return 'No se pudo conectar con el servidor. Verifica tu internet.';
+      return 'No se pudo conectar con el servidor. Intenta de nuevo.';
     }
   }
 

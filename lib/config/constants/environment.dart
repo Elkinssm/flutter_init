@@ -4,7 +4,11 @@ class Environment {
 
   // Backend real (debe ser true en prod).
   static const bool useBackend = true;
-  static bool get enableHttpLogs => !isProd;
+  static const bool forceHttpLogs = bool.fromEnvironment(
+    'FORCE_HTTP_LOGS',
+    defaultValue: true,
+  );
+  static bool get enableHttpLogs => !isProd || forceHttpLogs;
   static bool get showForceReloadButton => !isProd;
   static bool get showDevQuickActions => !isProd;
 
