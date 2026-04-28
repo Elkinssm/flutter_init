@@ -79,7 +79,7 @@ class LoadingNotifier extends StateNotifier<double> {
       'assets/images/player.png',
       'assets/images/stadium-100.png',
       'assets/images/stadium-black-100.png',
-      'assets/images/subtract.png',
+      'assets/images/logo1.png',
       'assets/images/whistle-96.png',
       'assets/images/winner-100.png',
       'assets/images/winner-black-100.png',

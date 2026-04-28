@@ -348,7 +348,10 @@ class _ProfilePanelContent extends ConsumerWidget {
                         context,
                         listen: false,
                       );
-                      NavLoading.instance.begin(thresholdMs: 0);
+                      NavLoading.instance.begin(
+                        thresholdMs: 0,
+                        minVisibleMs: 900,
+                      );
                       onClose();
                       try {
                         final session = container.read(sessionServiceProvider);

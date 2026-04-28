@@ -183,7 +183,10 @@ class _LoginViewState extends ConsumerState<_LoginView> {
     passwordController.addListener(_checkFields);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       precacheImage(const AssetImage('assets/images/image8.png'), context);
-      precacheImage(const AssetImage('assets/images/group6.png'), context);
+      precacheImage(
+        const AssetImage('assets/images/logo_completo.png'),
+        context,
+      );
     });
   }
 
@@ -262,7 +265,7 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                             SizedBox(height: topLogoSpace),
                             Center(
                               child: Image.asset(
-                                'assets/images/group6.png',
+                                'assets/images/logo_completo.png',
                                 height: logoH,
                                 fit: BoxFit.contain,
                               ),

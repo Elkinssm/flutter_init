@@ -1,6 +1,6 @@
 class Environment {
   // Control explícito y simple por bandera.
-  static const bool isProd = false; // true=prod, false=dev/local
+  static const bool isProd = true; // true=prod, false=dev/local
 
   // Backend real (debe ser true en prod).
   static const bool useBackend = true;

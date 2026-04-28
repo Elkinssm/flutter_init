@@ -1,4 +1,5 @@
 import 'package:coach_app/config/constants/environment.dart';
+import 'package:coach_app/presentation/helpers/nav_loading.dart';
 import 'package:coach_app/presentation/providers/carousel_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -210,7 +211,15 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
                           width: buttonWidth,
                           height: buttonHeight,
                           child: OnboardingNextButton(
-                            action: () => context.push('/login_screen'),
+                            action: () {
+                              context.push('/login_screen');
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                NavLoading.instance.begin(
+                                  thresholdMs: 0,
+                                  minVisibleMs: 1200,
+                                );
+                              });
+                            },
                             text: 'Continuar',
                           ),
                         ),
