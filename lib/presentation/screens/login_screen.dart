@@ -289,6 +289,8 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                     controller: emailController,
                                     hintText: 'usuario@ejemplo.com',
                                     icon: Icons.mail_outline_sharp,
+                                    iconColor: Colors.white,
+                                    surface: AppInputSurface.translucent,
                                   ),
                                 ),
                                 SizedBox(height: betweenFields),
@@ -303,6 +305,9 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                     hintText: 'Ingresa tu Contraseña',
                                     obscureText: true,
                                     isPassword: true,
+                                    icon: Icons.lock_outline,
+                                    iconColor: Colors.white,
+                                    surface: AppInputSurface.translucent,
                                   ),
                                 ),
                                 Align(
@@ -329,8 +334,12 @@ class _LoginViewState extends ConsumerState<_LoginView> {
                                         color: Color.fromRGBO(217, 73, 41, 1),
                                         fontWeight: FontWeight.w700,
                                         decoration: TextDecoration.underline,
-                                        decorationColor:
-                                            Color.fromRGBO(217, 73, 41, 1),
+                                        decorationColor: Color.fromRGBO(
+                                          217,
+                                          73,
+                                          41,
+                                          1,
+                                        ),
                                       ),
                                     ),
                                   ),

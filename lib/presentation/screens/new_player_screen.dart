@@ -91,29 +91,34 @@ class _NewPlayerScreenState extends ConsumerState<NewPlayerScreen> {
     if (!mounted) return;
     setState(() => _loadingMeta = true);
 
-    // Precargar datos de sesión para no pedir al usuario repetir información.
-    try {
-      final sessionUser = await ref.read(sessionServiceProvider).getSavedUser();
-      if (sessionUser != null) {
-        if (_emailCtrl.text.trim().isEmpty) {
-          _emailCtrl.text = sessionUser.email;
+    // Precargar datos de sesión SOLO cuando el jugador completa su propio perfil.
+    // En modo coach, este formulario crea un jugador diferente; copiar el correo
+    // del coach al jugador sería un dato incorrecto.
+    if (_isPlayerMode) {
+      try {
+        final sessionUser =
+            await ref.read(sessionServiceProvider).getSavedUser();
+        if (sessionUser != null) {
+          if (_emailCtrl.text.trim().isEmpty) {
+            _emailCtrl.text = sessionUser.email;
+          }
+          if (_nombreCtrl.text.trim().isEmpty &&
+              sessionUser.nombre.trim().isNotEmpty) {
+            _nombreCtrl.text = sessionUser.nombre.trim();
+          }
+          if (_apellidoCtrl.text.trim().isEmpty &&
+              sessionUser.apellido.trim().isNotEmpty) {
+            _apellidoCtrl.text = sessionUser.apellido.trim();
+          }
         }
-        if (_nombreCtrl.text.trim().isEmpty &&
-            sessionUser.nombre.trim().isNotEmpty) {
-          _nombreCtrl.text = sessionUser.nombre.trim();
-        }
-        if (_apellidoCtrl.text.trim().isEmpty &&
-            sessionUser.apellido.trim().isNotEmpty) {
-          _apellidoCtrl.text = sessionUser.apellido.trim();
-        }
+      } catch (e, st) {
+        AppErrorReporter.report(
+          e,
+          st,
+          context: 'new_player_screen.prefill_session',
+        );
+        // Si falla lectura de sesión, continuamos con carga normal.
       }
-    } catch (e, st) {
-      AppErrorReporter.report(
-        e,
-        st,
-        context: 'new_player_screen.prefill_session',
-      );
-      // Si falla lectura de sesión, continuamos con carga normal.
     }
 
     // Precargar desde /mi-perfil (fuente de verdad al editar perfil).
@@ -1295,38 +1300,17 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return CustomTextFormField(
       controller: controller,
+      hintText: hintText,
       keyboardType: keyboardType,
       validator: validator,
       maxLines: maxLines,
       readOnly: readOnly,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor:
-            readOnly ? const Color.fromRGBO(245, 245, 245, 1) : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        suffixIcon:
-            readOnly
-                ? const Icon(Icons.lock_outline, size: 18, color: Colors.grey)
-                : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-      ),
+      suffixIcon:
+          readOnly
+              ? const Icon(Icons.lock_outline, size: 18, color: Colors.grey)
+              : null,
     );
   }
 }

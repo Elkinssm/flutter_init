@@ -23,7 +23,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   static const _brand = Color.fromRGBO(217, 73, 41, 1);
   static const _text = Color(0xFF0B1926);
   static const _muted = Color(0xFF6B7280);
-  static const _border = Color(0xFFE5E7EB);
   static const _success = Color(0xFF43A047);
 
   final _emailController = TextEditingController();
@@ -281,7 +280,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           loading: _loading,
           showPassword: _showPassword,
           showConfirm: _showConfirm,
-          onTogglePassword: () => setState(() => _showPassword = !_showPassword),
+          onTogglePassword:
+              () => setState(() => _showPassword = !_showPassword),
           onToggleConfirm: () => setState(() => _showConfirm = !_showConfirm),
           onSubmit: _savePassword,
         );
@@ -612,42 +612,15 @@ class _Input extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return CustomTextFormField(
       controller: controller,
+      hintText: hintText,
+      icon: icon,
       keyboardType: keyboardType,
       obscureText: obscureText,
       maxLength: maxLength,
-      style: GoogleFonts.inter(
-        fontSize: ts(context, 15),
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: InputDecoration(
-        counterText: '',
-        hintText: hintText,
-        hintStyle: GoogleFonts.inter(
-          color: const Color(0xFF9CA3AF),
-          fontWeight: FontWeight.w500,
-        ),
-        prefixIcon: Icon(icon, color: _ForgotPasswordScreenState._muted),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 16,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: _ForgotPasswordScreenState._border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: _ForgotPasswordScreenState._brand,
-            width: 1.4,
-          ),
-        ),
-      ),
+      suffixIcon: suffix,
+      iconColor: _ForgotPasswordScreenState._muted,
     );
   }
 }

@@ -598,39 +598,11 @@ class _NewMatchViewState extends ConsumerState<_NewMatchView> {
     required IconData icon,
     required Color iconColor,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            child: Icon(icon, size: 28, color: iconColor),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                color: const Color(0xFF0B1926),
-              ),
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: GoogleFonts.inter(
-                  fontSize: 15,
-                  color: const Color(0xFF9CA3AF),
-                ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return CustomTextFormField(
+      controller: controller,
+      hintText: hintText,
+      icon: icon,
+      iconColor: iconColor,
     );
   }
 

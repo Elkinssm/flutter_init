@@ -1,5 +1,6 @@
 import 'package:coach_app/config/constants/environment.dart';
 import 'package:coach_app/infrastructure/services/dashboard_service.dart';
+import 'package:coach_app/infrastructure/services/jugador_api_service.dart';
 import 'package:coach_app/infrastructure/services/mi_perfil_service.dart';
 import 'package:coach_app/presentation/providers/profile_incomplete_provider.dart';
 import 'package:coach_app/presentation/widgets/widgets.dart';
@@ -98,13 +99,13 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
     final displayName = ref.watch(currentUserDisplayNameProvider).trim();
     final miPerfilData = ref.watch(miPerfilProvider).valueOrNull;
     final dashboardAsync = ref.watch(jugadorDashboardProvider);
+    final partidosAsync = ref.watch(jugadorPartidosProvider);
     final dashboardValue = dashboardAsync.valueOrNull;
+    final jugadorMap = _dashboardJugador(dashboardValue);
     String? jugadorName;
-    if (dashboardValue != null && dashboardValue['jugador'] != null) {
-      final jug = dashboardValue['jugador'];
-      if (jug is Map) {
-        jugadorName = jug['nombre']?.toString();
-      }
+    if (jugadorMap != null) {
+      jugadorName =
+          (jugadorMap['nombre'] ?? jugadorMap['nombre_completo'])?.toString();
     }
     final dashboardData = dashboardValue;
     final resolvedName =
@@ -117,101 +118,89 @@ class _PlayerScreenState extends ConsumerState<_PlayerScreen> {
       dashboardData: dashboardData,
       miPerfilData: miPerfilData,
     );
+    final dorsal = _extractText(jugadorMap, const [
+      'dorsal',
+      'numero',
+      'numero_camiseta',
+    ]);
+    final posicion = _extractText(jugadorMap, const [
+      'posicion',
+      'posicion_nombre',
+      'posicion_codigo',
+    ]);
+    final categoria =
+        profileComplete
+            ? (_dashboardCategoria(dashboardData) ?? '--')
+            : 'Completa perfil';
+    final equipo =
+        profileComplete
+            ? (_dashboardEquipo(dashboardData) ?? '--')
+            : 'Completa perfil';
+    final latestResults =
+        profileComplete
+            ? _extractLatestResults(partidosAsync.valueOrNull).take(3).toList()
+            : const <_PlayerResult>[];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 100),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            if (!profileComplete)
-              _ProfileIncompleteBanner(
-                onCompleteProfile: () => context.push('/new_player_screen'),
-                onDismiss: () {
-                  ref.read(showProfileIncompleteModalProvider.notifier).state =
-                      false;
-                },
+    final asistencia = _dashboardAttendancePercent(dashboardData);
+
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 112),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!profileComplete)
+                _ProfileIncompleteBanner(
+                  onCompleteProfile: () => context.push('/new_player_screen'),
+                  onDismiss: () {
+                    ref
+                        .read(showProfileIncompleteModalProvider.notifier)
+                        .state = false;
+                  },
+                ),
+              if (!profileComplete) const SizedBox(height: 18),
+
+              _PlayerProfileCard(
+                name: resolvedName,
+                photoUrl: photoUrl,
+                dorsal: dorsal,
+                position: posicion,
               ),
-            if (!profileComplete) const SizedBox(height: 14),
 
-            // ── Perfil del jugador ──
-            _PlayerProfileCard(name: resolvedName, photoUrl: photoUrl),
+              const SizedBox(height: 22),
+              _PlayerFactsStrip(
+                categoria: categoria,
+                equipo: equipo,
+                asistencia: asistencia,
+                onCategoryTap:
+                    () => _requireCompleteProfile(
+                      profileComplete: profileComplete,
+                      onAllowed: () => context.push('/category_screen'),
+                    ),
+                onAttendanceTap:
+                    () => _requireCompleteProfile(
+                      profileComplete: profileComplete,
+                      onAllowed: () => context.push('/history_screen'),
+                    ),
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 34),
+              const _SectionTitle('Próximo encuentro'),
+              const SizedBox(height: 14),
+              _NextMatchCard(
+                isPreview: !profileComplete,
+                dashboardData: dashboardData,
+              ),
 
-            // ── Info rápida: Categoría y Equipo ──
-            Row(
-              children: [
-                Expanded(
-                  child: _InfoCard(
-                    icon: Icons.category_rounded,
-                    title:
-                        profileComplete
-                            ? (_dashboardCategoria(dashboardData) ?? '--')
-                            : 'Completa perfil',
-                    subtitle:
-                        profileComplete
-                            ? 'Categoría'
-                            : 'Verás tu categoría asignada',
-                    actionLabel:
-                        profileComplete ? 'Ver categoría' : 'Completar perfil',
-                    onTap:
-                        () => _requireCompleteProfile(
-                          profileComplete: profileComplete,
-                          onAllowed: () => context.push('/category_screen'),
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _InfoCard(
-                    icon: Icons.bar_chart_rounded,
-                    title:
-                        profileComplete
-                            ? (_dashboardEquipo(dashboardData) ?? '--')
-                            : 'Completa perfil',
-                    subtitle:
-                        profileComplete
-                            ? 'Mi equipo'
-                            : 'Verás tu equipo y asistencias',
-                    actionLabel:
-                        profileComplete ? 'Ver asistencia' : 'Completar perfil',
-                    onTap:
-                        () => _requireCompleteProfile(
-                          profileComplete: profileComplete,
-                          onAllowed: () => context.push('/history_screen'),
-                        ),
-                  ),
-                ),
+              if (latestResults.isNotEmpty) ...[
+                const SizedBox(height: 34),
+                _LatestResultsSection(results: latestResults),
               ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Asistencia (tocable) ──
-            _AttendanceCard(
-              isPreview: !profileComplete,
-              percentage: _dashboardAttendancePercent(dashboardData),
-              onTap:
-                  () => _requireCompleteProfile(
-                    profileComplete: profileComplete,
-                    onAllowed: () => context.push('/category_screen'),
-                  ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Próximo Encuentro ──
-            _NextMatchCard(
-              isPreview: !profileComplete,
-              dashboardData: dashboardData,
-            ),
-
-            const SizedBox(height: 20),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -330,6 +319,25 @@ class _ProfileIncompleteBanner extends StatelessWidget {
 //  HELPERS
 // ══════════════════════════════════════════════════════════
 
+Map<String, dynamic>? _dashboardJugador(Map<String, dynamic>? d) {
+  if (d == null) return null;
+  final raw = d['jugador'] ?? d['player'];
+  if (raw is Map) return Map<String, dynamic>.from(raw);
+  return null;
+}
+
+String? _extractText(Map<String, dynamic>? source, List<String> keys) {
+  if (source == null) return null;
+  for (final key in keys) {
+    final value = source[key];
+    final text = value?.toString().trim();
+    if (text != null && text.isNotEmpty && text.toLowerCase() != 'null') {
+      return text;
+    }
+  }
+  return null;
+}
+
 String? _dashboardCategoria(Map<String, dynamic>? d) {
   if (d == null) return null;
   final rawEq = d['equipo_actual'] ?? d['equipo'];
@@ -387,89 +395,253 @@ Map<String, String?> _dashboardNextMatch(Map<String, dynamic>? d) {
   };
 }
 
+List<_PlayerResult> _extractLatestResults(Map<String, dynamic>? data) {
+  if (data == null) return const [];
+  final source =
+      data['partidos'] ??
+      data['items'] ??
+      data['resultados'] ??
+      data['ultimos_resultados'];
+  if (source is! List) return const [];
+
+  final results = <_PlayerResult>[];
+  for (final item in source) {
+    if (item is! Map) continue;
+    final row = Map<String, dynamic>.from(item);
+
+    final estadoRaw =
+        row['resultado'] ??
+        row['estado_resultado'] ??
+        row['resultado_propio'] ??
+        row['estado'];
+    final estado = estadoRaw?.toString().toUpperCase();
+    if (estado == null ||
+        (!estado.contains('GAN') &&
+            !estado.contains('VICTOR') &&
+            !estado.contains('EMP') &&
+            !estado.contains('PER') &&
+            !estado.contains('DER'))) {
+      continue;
+    }
+
+    final golesPropio = _extractInt(row, const [
+      'goles_propio',
+      'goles_favor',
+      'marcador_propio',
+    ]);
+    final golesRival = _extractInt(row, const [
+      'goles_rival',
+      'goles_contra',
+      'marcador_rival',
+    ]);
+
+    results.add(
+      _PlayerResult(
+        result: estado,
+        score:
+            golesPropio != null && golesRival != null
+                ? '$golesPropio-$golesRival'
+                : null,
+      ),
+    );
+  }
+  return results;
+}
+
+int? _extractInt(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is num) return value.toInt();
+    final parsed = int.tryParse(value?.toString() ?? '');
+    if (parsed != null) return parsed;
+  }
+  return null;
+}
+
+class _PlayerResult {
+  const _PlayerResult({required this.result, this.score});
+
+  final String result;
+  final String? score;
+
+  bool get isWin => result.contains('GAN') || result.contains('VICTOR');
+  bool get isDraw => result.contains('EMP');
+  bool get isLoss => result.contains('PER') || result.contains('DER');
+
+  String get letter {
+    if (isWin) return 'V';
+    if (isDraw) return 'E';
+    if (isLoss) return 'D';
+    return '-';
+  }
+
+  String get label {
+    if (isWin) return 'Victoria';
+    if (isDraw) return 'Empate';
+    if (isLoss) return 'Derrota';
+    return 'Resultado';
+  }
+
+  Color get color {
+    if (isWin) return const Color.fromRGBO(79, 166, 38, 1);
+    if (isDraw) return const Color(0xFF34495E);
+    if (isLoss) return const Color(0xFFD94929);
+    return const Color(0xFFD94929);
+  }
+}
+
 // ══════════════════════════════════════════════════════════
 //  WIDGETS
 // ══════════════════════════════════════════════════════════
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text.toUpperCase(),
+      style: GoogleFonts.beVietnamPro(
+        color: const Color(0xFF34495E),
+        fontSize: 28,
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.8,
+        height: 1,
+      ),
+    );
+  }
+}
 
 /// Card de perfil del jugador con foto y nombre.
 class _PlayerProfileCard extends StatelessWidget {
   final String name;
   final String? photoUrl;
-  const _PlayerProfileCard({required this.name, this.photoUrl});
+  final String? dorsal;
+  final String? position;
+
+  const _PlayerProfileCard({
+    required this.name,
+    this.photoUrl,
+    this.dorsal,
+    this.position,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: Column(
         children: [
-          // Foto
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD94929), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD94929).withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.14),
+                      blurRadius: 18,
+                      offset: const Offset(0, 9),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: ClipOval(
-              child:
-                  (photoUrl ?? '').isNotEmpty
-                      ? Image.network(
-                        photoUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _initialsAvatar(name),
-                      )
-                      : _initialsAvatar(name),
-            ),
+                child: ClipOval(
+                  child:
+                      (photoUrl ?? '').isNotEmpty
+                          ? Image.network(
+                            photoUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _initialsAvatar(name),
+                          )
+                          : _initialsAvatar(name),
+                ),
+              ),
+              if ((dorsal ?? '').isNotEmpty)
+                Positioned(
+                  right: 0,
+                  bottom: 8,
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(19, 124, 8, 1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      dorsal!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.beVietnamPro(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 14),
-          // Nombre
+          const SizedBox(height: 26),
           Text(
             name,
-            style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF0B1926),
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF9F1F0A),
+              letterSpacing: -1,
+              height: 1.05,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 4),
-          // Rol
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD94929).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              'JUGADOR',
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFD94929),
-                letterSpacing: 1,
+          if ((position ?? '').isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(139, 230, 112, 1),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color.fromRGBO(79, 166, 38, 1),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    position!,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Color.fromRGBO(27, 100, 18, 1),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -547,117 +719,117 @@ String? _normalizeImageUrl(String? raw) {
   return '${Environment.baseUrl}/$v';
 }
 
-/// Card de info (Categoría / Equipo) con más énfasis.
-class _InfoCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String actionLabel;
-  final VoidCallback onTap;
-
-  const _InfoCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.actionLabel = 'Ver detalle',
-    required this.onTap,
+class _PlayerFactsStrip extends StatelessWidget {
+  const _PlayerFactsStrip({
+    required this.categoria,
+    required this.equipo,
+    required this.asistencia,
+    required this.onCategoryTap,
+    required this.onAttendanceTap,
   });
+
+  final String categoria;
+  final String equipo;
+  final int? asistencia;
+  final VoidCallback onCategoryTap;
+  final VoidCallback onAttendanceTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _FactChip(
+            icon: Icons.category_rounded,
+            label: 'Categoría',
+            value: categoria,
+            onTap: onCategoryTap,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _FactChip(
+            icon: Icons.shield_outlined,
+            label: 'Equipo',
+            value: equipo,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _FactChip(
+            icon: Icons.fact_check_rounded,
+            label: 'Asistencia',
+            value: asistencia == null ? '--' : '$asistencia%',
+            onTap: onAttendanceTap,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FactChip extends StatelessWidget {
+  const _FactChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      color: Colors.white.withValues(alpha: 0.86),
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          constraints: const BoxConstraints(minHeight: 84),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFD94929).withValues(alpha: 0.12),
-              width: 1.5,
-            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color.fromRGBO(235, 228, 214, 1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.07),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono grande naranja sólido
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD94929),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFD94929).withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Icon(icon, color: Colors.white, size: 28),
-              ),
-              const SizedBox(height: 14),
-              // Título grande
+              Icon(icon, color: const Color(0xFFD94929), size: 20),
+              const SizedBox(height: 8),
               Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0B1926),
-                ),
-                textAlign: TextAlign.center,
+                value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: const Color(0xFF6B7280),
-                ),
                 textAlign: TextAlign.center,
+                style: GoogleFonts.beVietnamPro(
+                  color: const Color(0xFF0B1926),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
               ),
-              const SizedBox(height: 12),
-              // Botón "Ver detalle"
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD94929).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      actionLabel,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFFD94929),
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 16,
-                      color: Color(0xFFD94929),
-                    ),
-                  ],
+              const SizedBox(height: 5),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -668,112 +840,100 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-/// Card de asistencia modernizada y tocable.
-class _AttendanceCard extends StatelessWidget {
-  final bool isPreview;
-  final int? percentage;
-  final VoidCallback? onTap;
-  const _AttendanceCard({this.isPreview = false, this.percentage, this.onTap});
+class _LatestResultsSection extends StatelessWidget {
+  const _LatestResultsSection({required this.results});
+
+  final List<_PlayerResult> results;
 
   @override
   Widget build(BuildContext context) {
-    final pct = (percentage != null) ? percentage!.clamp(0, 100) : null;
-    final progress = (pct ?? 0) / 100;
-    final rightText = isPreview ? '---' : (pct != null ? '$pct%' : '--');
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Icono
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.fact_check_rounded,
-                  color: Color(0xFF16A34A),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Asistencia',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0B1926),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: isPreview ? 0.0 : progress,
-                        minHeight: 8,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF16A34A),
-                        ),
-                      ),
-                    ),
-                    if (isPreview) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'Completa tu perfil para ver tu porcentaje real.',
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Porcentaje
-              Text(
-                rightText,
-                style: GoogleFonts.inter(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF16A34A),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.grey.shade400,
-                size: 22,
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Últimos resultados',
+          style: GoogleFonts.beVietnamPro(
+            color: const Color(0xFF0B1926),
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.4,
           ),
         ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            for (var i = 0; i < results.length; i++) ...[
+              Expanded(child: _ResultCard(result: results[i])),
+              if (i < results.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ResultCard extends StatelessWidget {
+  const _ResultCard({required this.result});
+
+  final _PlayerResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+      decoration: BoxDecoration(
+        color: result.color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: result.color.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: result.color,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              result.letter,
+              style: GoogleFonts.beVietnamPro(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            result.label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: result.color,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.4,
+            ),
+          ),
+          if ((result.score ?? '').isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              result.score!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.beVietnamPro(
+                color: result.color,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                height: 1,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -789,13 +949,16 @@ class _NextMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final next = _dashboardNextMatch(dashboardData);
-    final evento =
-        next['evento'] ?? (isPreview ? 'Disponible al completar perfil' : '--');
-    final fecha = next['fecha'] ?? (isPreview ? '--' : '--');
-    final hora = next['hora'] ?? (isPreview ? '--' : '--');
-    final lugar =
-        next['lugar'] ??
-        (isPreview ? 'Completa perfil para desbloquear' : '--');
+    final evento = next['evento'];
+    final fecha = next['fecha'];
+    final hora = next['hora'];
+    final lugar = next['lugar'];
+    final hasMatchData = [
+      evento,
+      fecha,
+      hora,
+      lugar,
+    ].any((value) => (value ?? '').trim().isNotEmpty);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -841,43 +1004,71 @@ class _NextMatchCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Evento
-          _buildInfoRow(
-            icon: Icons.emoji_events_rounded,
-            iconColor: const Color(0xFFD94929),
-            label: 'EVENTO',
-            value: evento,
-          ),
-          Divider(color: Colors.grey.shade100, height: 24),
-          // Fecha y Hora
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoRow(
-                  icon: Icons.calendar_month_rounded,
-                  iconColor: const Color(0xFFD94929),
-                  label: 'FECHA',
-                  value: fecha,
+          if (!hasMatchData)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(249, 248, 247, 1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                isPreview
+                    ? 'Completa tu perfil para ver tu próximo encuentro.'
+                    : 'No hay próximos encuentros disponibles.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  height: 1.3,
                 ),
               ),
-              Expanded(
-                child: _buildInfoRow(
-                  icon: Icons.access_time_rounded,
-                  iconColor: const Color(0xFF0B1926),
-                  label: 'HORA',
-                  value: hora,
-                ),
+            )
+          else ...[
+            if ((evento ?? '').trim().isNotEmpty)
+              _buildInfoRow(
+                icon: Icons.emoji_events_rounded,
+                iconColor: const Color(0xFFD94929),
+                label: 'EVENTO',
+                value: evento!,
+              ),
+            if ((evento ?? '').trim().isNotEmpty)
+              Divider(color: Colors.grey.shade100, height: 24),
+            Row(
+              children: [
+                if ((fecha ?? '').trim().isNotEmpty)
+                  Expanded(
+                    child: _buildInfoRow(
+                      icon: Icons.calendar_month_rounded,
+                      iconColor: const Color(0xFFD94929),
+                      label: 'FECHA',
+                      value: fecha!,
+                    ),
+                  ),
+                if ((fecha ?? '').trim().isNotEmpty &&
+                    (hora ?? '').trim().isNotEmpty)
+                  const SizedBox(width: 10),
+                if ((hora ?? '').trim().isNotEmpty)
+                  Expanded(
+                    child: _buildInfoRow(
+                      icon: Icons.access_time_rounded,
+                      iconColor: const Color(0xFF0B1926),
+                      label: 'HORA',
+                      value: hora!,
+                    ),
+                  ),
+              ],
+            ),
+            if ((lugar ?? '').trim().isNotEmpty) ...[
+              Divider(color: Colors.grey.shade100, height: 24),
+              _buildInfoRow(
+                icon: Icons.location_on_rounded,
+                iconColor: const Color(0xFFD94929),
+                label: 'UBICACIÓN',
+                value: lugar!,
               ),
             ],
-          ),
-          Divider(color: Colors.grey.shade100, height: 24),
-          // Ubicación
-          _buildInfoRow(
-            icon: Icons.location_on_rounded,
-            iconColor: const Color(0xFFD94929),
-            label: 'UBICACIÓN',
-            value: lugar,
-          ),
+          ],
         ],
       ),
     );
@@ -902,28 +1093,32 @@ class _NextMatchCard extends StatelessWidget {
           child: Icon(icon, color: iconColor, size: 18),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF9CA3AF),
-                letterSpacing: 0.5,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF9CA3AF),
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0B1926),
+              const SizedBox(height: 1),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0B1926),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

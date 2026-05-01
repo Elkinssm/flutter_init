@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:coach_app/infrastructure/services/health_service.dart';
+import 'package:coach_app/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class HealthCheckScreen extends StatefulWidget {
@@ -81,21 +82,20 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
+                        child: CustomTextFormField(
                           controller: _hostCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Host',
-                            hintText: '10.0.2.2 o IP local',
-                          ),
+                          hintText: '10.0.2.2 o IP local',
+                          icon: Icons.dns_outlined,
                         ),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 90,
-                        child: TextField(
+                        child: CustomTextFormField(
                           controller: _portCtrl,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Puerto'),
+                          hintText: 'Puerto',
+                          textAlign: TextAlign.center,
                         ),
                       ),
                       IconButton(
@@ -109,7 +109,10 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
                   Text(
                     'Ping a ${_service.endpoint}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -133,8 +136,9 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
                       }
 
                       final result = snapshot.data!;
-                      final isError =
-                          result.message.toLowerCase().contains('error');
+                      final isError = result.message.toLowerCase().contains(
+                        'error',
+                      );
 
                       return Column(
                         children: [
@@ -170,8 +174,9 @@ class _HealthCheckScreenState extends State<HealthCheckScreen> {
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
                               child: Text(
-                                const JsonEncoder.withIndent('  ')
-                                    .convert(result.raw),
+                                const JsonEncoder.withIndent(
+                                  '  ',
+                                ).convert(result.raw),
                                 style: const TextStyle(fontSize: 13),
                               ),
                             ),

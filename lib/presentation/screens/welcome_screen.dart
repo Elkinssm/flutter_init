@@ -30,7 +30,10 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       precacheImage(const AssetImage('assets/images/image7.png'), context);
-      precacheImage(const AssetImage('assets/images/group5.png'), context);
+      precacheImage(
+        const AssetImage('assets/images/logo_completo.png'),
+        context,
+      );
     });
   }
 
@@ -54,14 +57,14 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
             : swp(context, 0.05);
     final logoWidth =
         isPhone(context)
-            ? swp(context, 0.41)
+            ? swp(context, 0.28)
             : isBigPhone(context)
-            ? swp(context, 0.42)
+            ? swp(context, 0.30)
             : isMediumTablet(context)
-            ? swp(context, 0.4)
+            ? swp(context, 0.28)
             : isLargeTablet(context)
-            ? swp(context, 0.25)
-            : swp(context, 0.32);
+            ? swp(context, 0.18)
+            : swp(context, 0.24);
     final skipTopPad =
         isSmallPhone(context) ? shp(context, 0.02) : shp(context, 0.02);
     final skipRightPad =
@@ -123,7 +126,7 @@ class _WelcomeViewState extends ConsumerState<_WelcomeView> {
                       Padding(
                         padding: EdgeInsets.only(left: padLeftLogo),
                         child: Image.asset(
-                          'assets/images/group5.png',
+                          'assets/images/logo_completo.png',
                           width: logoWidth,
                         ),
                       ),

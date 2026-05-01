@@ -158,9 +158,7 @@ class _LiveMatchScreenState extends ConsumerState<LiveMatchScreen> {
                 const SizedBox(height: 28),
                 FilledButton(
                   onPressed:
-                      live.isFinished
-                          ? null
-                          : () => _showFinalizePending(),
+                      live.isFinished ? null : () => _showFinalizePending(),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(74),
                     backgroundColor: const Color.fromRGBO(25, 24, 22, 1),
@@ -1145,7 +1143,9 @@ class _EventSheetFrame extends StatelessWidget {
                                   child: Text(
                                     headerNote!,
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.78),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.78,
+                                      ),
                                       fontSize: ts(context, 13),
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.3,
@@ -1455,8 +1455,9 @@ class _GoalPlayerCard extends StatelessWidget {
                   children: [
                     _PlayerAvatar(
                       photoUrl: player.photoUrl,
-                      fallbackText:
-                          (player.shirtNumber ?? 0).toString().padLeft(2, '0'),
+                      fallbackText: (player.shirtNumber ?? 0)
+                          .toString()
+                          .padLeft(2, '0'),
                       size: 68,
                     ),
                     Positioned(
@@ -1664,7 +1665,10 @@ class _MockPlayerRowTile extends StatelessWidget {
             color: selected ? accentColor : Colors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: selected ? accentColor : const Color.fromRGBO(235, 228, 214, 1),
+              color:
+                  selected
+                      ? accentColor
+                      : const Color.fromRGBO(235, 228, 214, 1),
               width: 1.4,
             ),
           ),
@@ -1756,8 +1760,7 @@ class _FallbackPlayerBubble extends StatelessWidget {
       width: 54,
       height: 54,
       decoration: BoxDecoration(
-        color:
-            selected ? Colors.white : const Color.fromRGBO(28, 31, 35, 1),
+        color: selected ? Colors.white : const Color.fromRGBO(28, 31, 35, 1),
         borderRadius: BorderRadius.circular(27),
       ),
       child: Center(
@@ -1849,28 +1852,17 @@ class _MockCardChoiceTile extends StatelessWidget {
 }
 
 class _SearchField extends StatelessWidget {
-  const _SearchField({
-    required this.onChanged,
-    required this.hintText,
-  });
+  const _SearchField({required this.onChanged, required this.hintText});
 
   final ValueChanged<String> onChanged;
   final String hintText;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return CustomTextFormField(
       onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: hintText,
-        prefixIcon: const Icon(Icons.search_rounded),
-        filled: true,
-        fillColor: const Color.fromRGBO(231, 226, 216, 1),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
-        ),
-      ),
+      hintText: hintText,
+      icon: Icons.search_rounded,
     );
   }
 }
@@ -1907,7 +1899,8 @@ class _GoalEventSheetState extends ConsumerState<_GoalEventSheet> {
       child: plantillaAsync.when(
         data: (raw) {
           final plantilla = _PartidoPlantillaViewModel.fromApi(raw);
-          final players = plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
+          final players =
+              plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
           return _EventSheetBody(
             subtitle: 'Selecciona al autor del gol',
             content: Column(
@@ -2008,7 +2001,9 @@ class _GoalEventSheetState extends ConsumerState<_GoalEventSheet> {
   }
 
   void _showInlineInfo(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -2048,7 +2043,8 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
       child: plantillaAsync.when(
         data: (raw) {
           final plantilla = _PartidoPlantillaViewModel.fromApi(raw);
-          final players = plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
+          final players =
+              plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
           final filteredPlayers =
               players.where((player) {
                 if (_query.trim().isEmpty) return true;
@@ -2087,10 +2083,7 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
               const SizedBox(height: 26),
               _ModalSectionHeader(
                 index: 2,
-                title:
-                    _isYellow
-                        ? 'JUGADOR AMONESTADO'
-                        : 'JUGADOR EXPULSADO',
+                title: _isYellow ? 'JUGADOR AMONESTADO' : 'JUGADOR EXPULSADO',
                 color:
                     _isYellow
                         ? _LiveMatchScreenState._green
@@ -2134,7 +2127,8 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
                 children: [
                   Expanded(
                     child: FilledButton(
-                      onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                      onPressed:
+                          _saving ? null : () => Navigator.of(context).pop(),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(72),
                         backgroundColor: const Color.fromRGBO(226, 220, 208, 1),
@@ -2153,7 +2147,8 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
                   Expanded(
                     flex: 2,
                     child: FilledButton(
-                      onPressed: _saving || players.isEmpty ? null : _submitCard,
+                      onPressed:
+                          _saving || players.isEmpty ? null : _submitCard,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(72),
                         backgroundColor: _LiveMatchScreenState._cardColor,
@@ -2207,16 +2202,14 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
 
     setState(() => _saving = true);
     try {
-      final response = await ref.read(coachApiServiceProvider).postPartidoEvento(
-        widget.partidoId,
-        {
-          'equipo_id': widget.live.ownTeamId,
-          'jugador_id': _selectedPlayerId,
-          'tipo_evento':
-              _isYellow ? 'TARJETA_AMARILLA' : 'TARJETA_ROJA',
-          'minuto': widget.live.minute,
-        },
-      );
+      final response = await ref
+          .read(coachApiServiceProvider)
+          .postPartidoEvento(widget.partidoId, {
+            'equipo_id': widget.live.ownTeamId,
+            'jugador_id': _selectedPlayerId,
+            'tipo_evento': _isYellow ? 'TARJETA_AMARILLA' : 'TARJETA_ROJA',
+            'minuto': widget.live.minute,
+          });
       if (!mounted) return;
       Navigator.of(context).pop();
       await widget.onSaved(
@@ -2231,7 +2224,9 @@ class _CardEventSheetState extends ConsumerState<_CardEventSheet> {
   }
 
   void _showInlineInfo(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -2285,7 +2280,8 @@ class _SubstitutionEventSheetState
       child: plantillaAsync.when(
         data: (raw) {
           final plantilla = _PartidoPlantillaViewModel.fromApi(raw);
-          final onField = plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
+          final onField =
+              plantilla?.onFieldPlayers ?? const <_PlantillaPlayer>[];
           final bench = plantilla?.benchPlayers ?? const <_PlantillaPlayer>[];
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2300,10 +2296,10 @@ class _SubstitutionEventSheetState
                 ...onField.map(
                   (player) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                      child: _MockPlayerRowTile(
-                        player: player,
-                        selected: _playerOutId == player.id,
-                        accentColor: _LiveMatchScreenState._cardColor,
+                    child: _MockPlayerRowTile(
+                      player: player,
+                      selected: _playerOutId == player.id,
+                      accentColor: _LiveMatchScreenState._cardColor,
                       onTap: () {
                         setState(() => _playerOutId = player.id);
                       },
@@ -2324,10 +2320,10 @@ class _SubstitutionEventSheetState
                 ...bench.map(
                   (player) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                      child: _MockPlayerRowTile(
-                        player: player,
-                        selected: _playerInId == player.id,
-                        accentColor: _LiveMatchScreenState._green,
+                    child: _MockPlayerRowTile(
+                      player: player,
+                      selected: _playerInId == player.id,
+                      accentColor: _LiveMatchScreenState._green,
                       onTap: () {
                         setState(() => _playerInId = player.id);
                       },
@@ -2414,11 +2410,24 @@ class _SubstitutionEventSheetState
                       children: [
                         Expanded(
                           child: FilledButton(
-                            onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                            onPressed:
+                                _saving
+                                    ? null
+                                    : () => Navigator.of(context).pop(),
                             style: FilledButton.styleFrom(
                               minimumSize: const Size.fromHeight(70),
-                              backgroundColor: const Color.fromRGBO(226, 220, 208, 1),
-                              foregroundColor: const Color.fromRGBO(75, 90, 107, 1),
+                              backgroundColor: const Color.fromRGBO(
+                                226,
+                                220,
+                                208,
+                                1,
+                              ),
+                              foregroundColor: const Color.fromRGBO(
+                                75,
+                                90,
+                                107,
+                                1,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(28),
                               ),
@@ -2497,16 +2506,15 @@ class _SubstitutionEventSheetState
 
     setState(() => _saving = true);
     try {
-      final response = await ref.read(coachApiServiceProvider).postPartidoEvento(
-        widget.partidoId,
-        {
-          'equipo_id': widget.live.ownTeamId,
-          'tipo_evento': 'CAMBIO',
-          'minuto': minute,
-          'jugador_sale_id': _playerOutId,
-          'jugador_entra_id': _playerInId,
-        },
-      );
+      final response = await ref
+          .read(coachApiServiceProvider)
+          .postPartidoEvento(widget.partidoId, {
+            'equipo_id': widget.live.ownTeamId,
+            'tipo_evento': 'CAMBIO',
+            'minuto': minute,
+            'jugador_sale_id': _playerOutId,
+            'jugador_entra_id': _playerInId,
+          });
       if (!mounted) return;
       Navigator.of(context).pop();
       await widget.onSaved(
@@ -2521,6 +2529,8 @@ class _SubstitutionEventSheetState
   }
 
   void _showInlineInfo(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

@@ -205,6 +205,8 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                     controller: emailController,
                                     hintText: 'ejemplo@correo.com',
                                     icon: Icons.mail_outline_sharp,
+                                    iconColor: Colors.white,
+                                    surface: AppInputSurface.translucent,
                                   ),
                                 ),
                                 SizedBox(height: betweenFields),
@@ -219,6 +221,9 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                     hintText: 'Ingresa tu Contraseña',
                                     obscureText: true,
                                     isPassword: true,
+                                    icon: Icons.lock_outline,
+                                    iconColor: Colors.white,
+                                    surface: AppInputSurface.translucent,
                                   ),
                                 ),
                               ],
@@ -326,7 +331,9 @@ class _RegisterViewState extends ConsumerState<_RegisterView> {
                                       }
                                       setUserRoleFromBackend(auth.user.rol);
                                       ref
-                                          .read(currentUserRoleProvider.notifier)
+                                          .read(
+                                            currentUserRoleProvider.notifier,
+                                          )
                                           .state = currentUserRole;
                                       ref
                                           .read(

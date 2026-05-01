@@ -200,30 +200,14 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
                     children: [
                       const _CreateTeamLabel('NOMBRE DEL EQUIPO'),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      CustomTextFormField(
                         controller: _nombreCtrl,
                         onChanged: (_) => setState(() {}),
+                        hintText: 'Ej. Juveniles A',
                         textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          hintText: 'Ej. Juveniles A',
-                          filled: true,
-                          fillColor: Colors.white,
-                          suffixIcon: const Icon(
-                            Icons.edit,
-                            color: Color(0xFFE86A4E),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2D7C8),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE2D7C8),
-                            ),
-                          ),
+                        suffixIcon: const Icon(
+                          Icons.edit,
+                          color: Color(0xFFD94929),
                         ),
                         validator: (v) {
                           final value = (v ?? '').trim();
